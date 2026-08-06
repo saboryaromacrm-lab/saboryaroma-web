@@ -1,0 +1,125 @@
+.minicart {
+  display: flex;
+  flex-direction: column;
+  max-height: 480px;
+  background: #fdf8f0;
+  border-radius: var(--radius-lg);
+  border: 2px solid var(--color-primary);
+  box-shadow:
+    0 0 0 1px rgba(62, 209, 161, 0.3),
+    0 4px 16px rgba(8, 102, 51, 0.25),
+    0 8px 32px rgba(62, 209, 161, 0.15),
+    0 2px 6px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+}
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 32px 20px;
+  color: var(--color-gray-400);
+  font-size: 13px;
+}
+.empty p { margin: 0; }
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 18px;
+  border-bottom: 2px solid rgba(6, 85, 40, 0.2);
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+}
+.title { font-weight: 700; font-size: 15px; color: var(--color-white); letter-spacing: 0.3px; }
+.count { font-size: 12px; color: rgba(255, 255, 255, 0.8); }
+
+.items {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  max-height: 260px;
+}
+.items::-webkit-scrollbar { width: 4px; }
+.items::-webkit-scrollbar-track { background: transparent; }
+.items::-webkit-scrollbar-thumb { background: var(--color-secondary); border-radius: 4px; }
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  border-bottom: 1px solid rgba(8, 102, 51, 0.08);
+  transition: background 0.15s ease;
+}
+.item:hover { background: #f5ede0; }
+.itemLatest { background: #f0fdf4; }
+.itemLatest:hover { background: #dcfce7; }
+
+.itemInfo { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.itemName {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-gray-800);
+  line-height: 1.3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.itemQty { font-size: 12px; color: var(--color-gray-500); }
+.itemTotal { flex-shrink: 0; font-size: 13px; font-weight: 700; color: var(--color-gray-800); white-space: nowrap; }
+
+.more {
+  text-align: center;
+  padding: 8px 16px;
+  font-size: 12px;
+  color: var(--color-gray-500);
+  border-bottom: 1px solid rgba(8, 102, 51, 0.08);
+}
+
+.footer { padding: 12px 16px; border-top: 2px solid rgba(8, 102, 51, 0.15); background: #f5ede0; }
+.total { display: flex; justify-content: space-between; align-items: center; margin: 0 0 10px; font-size: 13px; color: var(--color-gray-600); }
+.total strong { font-size: 15px; color: var(--color-gray-800); }
+
+.buttons { display: flex; gap: 8px; }
+.btnCart, .btnCheckout {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 9px 12px;
+  font-size: 12px;
+  font-weight: 700;
+  border-radius: var(--radius-md);
+  text-align: center;
+  transition: all 0.15s ease;
+}
+.btnCart { background: #fdf8f0; color: var(--color-gray-700); border: 1px solid var(--color-primary); }
+.btnCart:hover { background: #f5ede0; color: var(--color-gray-900); }
+.btnCheckout { background: var(--color-primary); color: var(--color-white); border: 1px solid var(--color-primary); }
+.btnCheckout:hover { background: var(--color-primary-dark); border-color: var(--color-primary-dark); }
+
+.progress { padding: 10px 16px; border-top: 1px solid var(--color-gray-250); background: #fff7ed; }
+.progressOk {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--color-success-dark);
+  background: #f0fdf4;
+}
+.progressRow { display: flex; justify-content: space-between; align-items: center; margin: 0 0 5px; font-size: 11px; color: var(--color-gray-700); }
+.progressRow strong { color: var(--color-accent-dark); font-weight: 700; }
+.progressMuted { font-size: 10px; color: var(--color-gray-500); }
+.progressBar { height: 6px; background: rgba(255, 143, 0, 0.15); border-radius: var(--radius-full); overflow: hidden; }
+.progressFill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--color-accent-dark) 0%, var(--color-accent) 100%);
+  border-radius: var(--radius-full);
+  transition: width 0.5s ease;
+}

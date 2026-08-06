@@ -1,0 +1,71 @@
+.headRow { display: flex; align-items: flex-end; justify-content: space-between; gap: var(--space-4); margin-bottom: var(--space-4); }
+.headLeft { display: flex; align-items: center; gap: var(--space-3); flex-wrap: wrap; }
+.title { font-size: var(--font-size-xl); font-weight: 800; margin: 0; }
+.subtitle { font-size: var(--font-size-sm); color: var(--color-gray-500); margin: 4px 0 0; }
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: linear-gradient(90deg, var(--color-accent-dark) 0%, var(--color-accent) 100%);
+  color: var(--color-white);
+  font-size: 12px;
+  font-weight: 700;
+  padding: 5px 12px;
+  border-radius: var(--radius-full);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.ofertasCard {
+  background: linear-gradient(135deg, #fff8f0 0%, #fff1e0 100%);
+  border-radius: var(--radius-xl);
+  border: 1px solid rgba(255, 143, 0, 0.12);
+  padding: 30px;
+}
+.ofertasCard .trackWrap { margin: 0 -30px; padding: 0 30px; }
+.ofertasCard .fadeLeft { background: linear-gradient(to right, #fff8f0 0%, transparent 100%); }
+.ofertasCard .fadeRight { background: linear-gradient(to left, #fff1e0 0%, transparent 100%); }
+@media (max-width: 640px) {
+  .ofertasCard { padding: 18px; }
+  .ofertasCard .trackWrap { margin: 0 -18px; padding: 0 18px; }
+}
+
+.arrows { display: flex; gap: 8px; flex-shrink: 0; }
+.arrows button {
+  width: 36px; height: 36px; border-radius: var(--radius-full);
+  border: 1px solid var(--color-gray-250); background: var(--color-white);
+  font-size: 18px; font-weight: 700; color: var(--color-gray-700); cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.2s ease;
+}
+.arrows button:hover { background: var(--color-accent); border-color: var(--color-accent); color: var(--color-white); }
+
+.trackWrap { position: relative; margin: 0 calc(var(--space-6) * -1); padding: 0 var(--space-6); }
+.fade {
+  position: absolute;
+  top: 0;
+  bottom: 4px;
+  width: 48px;
+  z-index: 2;
+  pointer-events: none;
+}
+.fadeLeft { left: 0; background: linear-gradient(to right, var(--color-gray-50) 0%, transparent 100%); }
+.fadeRight { right: 0; background: linear-gradient(to left, var(--color-gray-50) 0%, transparent 100%); }
+
+.track {
+  display: flex;
+  gap: var(--space-4);
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  padding-bottom: 4px;
+  scrollbar-width: none;
+}
+.track::-webkit-scrollbar { display: none; }
+.slide { flex: 0 0 220px; scroll-snap-align: start; }
+
+@media (max-width: 640px) {
+  .trackWrap { margin: 0 calc(var(--space-4) * -1); padding: 0 var(--space-4); }
+  .slide { flex-basis: 168px; }
+}

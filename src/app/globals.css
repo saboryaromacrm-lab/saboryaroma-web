@@ -1,0 +1,95 @@
+/**
+ * Tokens portados 1:1 de style.css del tema original (Sabor y Aroma
+ * Mayorista). Verificados contra el sitio real (ventamayorista.saboryaroma.com).
+ */
+:root {
+  --color-primary: #086633;
+  --color-primary-dark: #065528;
+  --color-primary-light: #0a8a45;
+  --color-secondary: #3ed1a1;
+  --color-secondary-dark: #2ebd8e;
+  --color-tertiary: #c0e67d;
+  --color-accent: #ff8f00;
+  --color-accent-dark: #f97316;
+  --color-success: #10b981;
+  --color-success-dark: #059669;
+  --color-error: #dc2626;
+  --color-error-light: #fef2f2;
+
+  --color-white: #ffffff;
+  --color-black: #262626;
+  --color-gray-50: #fafafa;
+  --color-gray-100: #f5f5f5;
+  --color-gray-150: #f3f4f6;
+  --color-gray-200: #e5e5e5;
+  --color-gray-250: #e5e7eb;
+  --color-gray-300: #d4d4d4;
+  --color-gray-400: #a3a3a3;
+  --color-gray-500: #737373;
+  --color-gray-550: #6b7280;
+  --color-gray-600: #525252;
+  --color-gray-700: #404040;
+  --color-gray-750: #374151;
+  --color-gray-800: #262626;
+  --color-gray-900: #171717;
+
+  --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+  --font-size-xs: 0.75rem;
+  --font-size-sm: 0.875rem;
+  --font-size-base: 1rem;
+  --font-size-lg: 1.125rem;
+  --font-size-xl: 1.25rem;
+  --font-size-2xl: 1.5rem;
+  --font-size-3xl: 1.875rem;
+
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-2xl: 20px;
+  --radius-full: 9999px;
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  --shadow-xl: 0 20px 40px rgba(0, 0, 0, 0.15);
+  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.08);
+  --shadow-card-hover: 0 12px 28px rgba(0, 0, 0, 0.12), 0 4px 8px rgba(0, 0, 0, 0.08);
+
+  --header-height: 100px;
+  --container-max: 1400px;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  font-family: var(--font-family);
+  font-size: var(--font-size-base);
+  color: var(--color-black);
+  background: var(--color-gray-50);
+  -webkit-font-smoothing: antialiased;
+}
+a { color: inherit; text-decoration: none; }
+button { font-family: inherit; }
+img { max-width: 100%; display: block; }
+
+.container {
+  max-width: var(--container-max);
+  margin: 0 auto;
+  padding: 0 var(--space-6);
+}
+
+@media (max-width: 640px) {
+  .container { padding: 0 var(--space-4); }
+}
