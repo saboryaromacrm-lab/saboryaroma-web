@@ -5,3 +5,4 @@ out
 npm-debug.log*
 _tema_extraido
 *.zip
+tsconfig.tsbuildinfo
