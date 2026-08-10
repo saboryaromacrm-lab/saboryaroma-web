@@ -6,7 +6,7 @@ import { money, cant } from '@/lib/format';
 import styles from './page.module.css';
 
 export default function CarritoPage() {
-  const { items, total, setCantidad, quitar, gate, config } = useCart();
+  const { items, total, setCantidad, quitar, gate, config, disponibleDe } = useCart();
 
   if (items.length === 0) {
     return (
@@ -25,22 +25,45 @@ export default function CarritoPage() {
 
       <div className={styles.layout}>
         <div className={styles.items}>
-          {items.map((it) => (
-            <div key={it.productoId} className={styles.item}>
-              <div className={styles.itemInfo}>
-                <span className={styles.itemBrand}>{it.marca}</span>
-                <span className={styles.itemName}>{it.nombre}</span>
-                <span className={styles.itemPrice}>{money(it.precio)} {it.unidad === 'kg' ? '/kg' : 'c/u'}</span>
+          {items.map((it) => {
+            const paso = it.unidad === 'kg' ? 0.5 : 1;
+            /* El mismo tope que la tarjeta, del mismo lugar. `enElTope` corta
+             * el +; `pasado` es el carrito viejo que quedó con más de lo que
+             * hay hoy — se avisa, no se corrige por atrás. */
+            const disponible = disponibleDe(it.productoId);
+            const conTope = Number.isFinite(disponible);
+            const enElTope = conTope && it.cantidad >= disponible;
+            const pasado = conTope && it.cantidad > disponible;
+            return (
+              <div key={it.productoId} className={styles.item}>
+                <div className={styles.itemInfo}>
+                  <span className={styles.itemBrand}>{it.marca}</span>
+                  <span className={styles.itemName}>{it.nombre}</span>
+                  <span className={styles.itemPrice}>{money(it.precio)} {it.unidad === 'kg' ? '/kg' : 'c/u'}</span>
+                  {pasado ? (
+                    <span className={styles.stockAviso}>
+                      Quedan {cant(disponible, it.unidad)}: bajá la cantidad o lo revisamos al confirmar el pedido.
+                    </span>
+                  ) : enElTope ? (
+                    <span className={styles.stockAvisoSuave}>Es todo el stock disponible.</span>
+                  ) : null}
+                </div>
+                <div className={styles.qty}>
+                  <button type="button" onClick={() => setCantidad(it.productoId, it.cantidad - paso)}>−</button>
+                  <span>{cant(it.cantidad, it.unidad)}</span>
+                  <button
+                    type="button"
+                    onClick={() => setCantidad(it.productoId, it.cantidad + paso)}
+                    disabled={enElTope}
+                  >
+                    +
+                  </button>
+                </div>
+                <div className={styles.itemTotal}>{money(it.precio * it.cantidad)}</div>
+                <button type="button" className={styles.remove} onClick={() => quitar(it.productoId)} aria-label="Quitar">×</button>
               </div>
-              <div className={styles.qty}>
-                <button type="button" onClick={() => setCantidad(it.productoId, it.cantidad - (it.unidad === 'kg' ? 0.5 : 1))}>−</button>
-                <span>{cant(it.cantidad, it.unidad)}</span>
-                <button type="button" onClick={() => setCantidad(it.productoId, it.cantidad + (it.unidad === 'kg' ? 0.5 : 1))}>+</button>
-              </div>
-              <div className={styles.itemTotal}>{money(it.precio * it.cantidad)}</div>
-              <button type="button" className={styles.remove} onClick={() => quitar(it.productoId)} aria-label="Quitar">×</button>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         <aside className={styles.summary}>

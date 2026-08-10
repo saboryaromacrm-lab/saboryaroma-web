@@ -28,6 +28,13 @@
   padding: 4px 8px;
 }
 .qty button { width: 26px; height: 26px; border: none; background: var(--color-gray-100); border-radius: var(--radius-sm); font-weight: 700; cursor: pointer; }
+/* Llegó al stock disponible: el + deja de responder. */
+.qty button:disabled { color: var(--color-gray-400); cursor: not-allowed; }
+
+/* Aviso de stock del renglón: ámbar si hay que corregir, gris si solo informa. */
+.stockAviso, .stockAvisoSuave { font-size: var(--font-size-xs); line-height: 1.35; margin-top: 2px; }
+.stockAviso { color: var(--color-warning-dark); font-weight: 600; }
+.stockAvisoSuave { color: var(--color-gray-500); }
 .qty span { font-size: var(--font-size-sm); font-weight: 600; min-width: 70px; text-align: center; white-space: nowrap; }
 
 .itemTotal { font-weight: 800; color: var(--color-primary); white-space: nowrap; }

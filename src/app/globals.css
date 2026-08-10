@@ -15,6 +15,8 @@
   --color-success-dark: #059669;
   --color-error: #dc2626;
   --color-error-light: #fef2f2;
+  /* Aviso: no es un error, es "ojo con esto" (el tope de stock del carrito). */
+  --color-warning-dark: #92400e;
 
   --color-white: #ffffff;
   --color-black: #262626;

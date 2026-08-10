@@ -37,6 +37,14 @@ interface CartContextValue {
   quitar: (productoId: number) => void;
   setCantidad: (productoId: number, cantidad: number) => void;
   vaciar: () => void;
+  /** Cuánto hay de este producto en el carrito ahora mismo (0 = ninguno). */
+  enCarrito: (productoId: number) => number;
+  /**
+   * El tope que el sitio puede vender de este producto, según el catálogo que
+   * está cargado. `Infinity` cuando todavía no llegó: nunca frenar una compra
+   * por no tener el dato — el pedido se revisa igual antes de aceptarse.
+   */
+  disponibleDe: (productoId: number) => number;
   config: Config;
   /** Catálogo completo, cargado una vez del lado del cliente: lo reusan el mega-menú y la búsqueda en vivo. */
   catalogo: Catalogo | null;
@@ -84,30 +92,70 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     try { localStorage.setItem(CART_KEY, JSON.stringify(items)); } catch { /* modo privado */ }
   }, [items, cargado]);
 
+  /**
+   * EL TOPE, EN UN SOLO LUGAR.
+   *
+   * Vive acá y no en la tarjeta porque la cantidad se toca desde tres lados
+   * (tarjeta, carrito y mini-carrito): con el tope repartido, el que se
+   * olvidara de aplicarlo dejaba pedir 50 kg de algo que tiene 3. El catálogo
+   * ya está en memoria, así que es una búsqueda, no un viaje a la red.
+   *
+   * Si el catálogo todavía no llegó, el tope es infinito: es mejor dejar
+   * comprar que frenar la venta por un dato que no está (y el pedido web lo
+   * revisa una persona antes de aceptarlo).
+   */
+  const disponibleDe = useCallback((productoId: number) => {
+    const it = catalogo?.items.find((x) => x.id === productoId);
+    return it ? it.disponible : Infinity;
+  }, [catalogo]);
+
+  const enCarrito = useCallback(
+    (productoId: number) => items.find((x) => x.productoId === productoId)?.cantidad ?? 0,
+    [items],
+  );
+
+  /** Redondeo a 3 decimales: el granel va en kilos y 0.1+0.2 no da 0.3. */
+  const r3 = (n: number) => Math.round(n * 1000) / 1000;
+
   const agregar = useCallback((producto: ItemCatalogo, cantidad = 1) => {
     setItems((prev) => {
+      const tope = disponibleDe(producto.id);
       const i = prev.findIndex((x) => x.productoId === producto.id);
+      const yaHay = i >= 0 ? prev[i].cantidad : 0;
+      const nueva = Math.min(r3(yaHay + cantidad), tope);
+      // Ya estaba en el tope: no hay nada que sumar (la pantalla lo explica).
+      if (nueva <= yaHay) return prev;
       if (i >= 0) {
         const next = [...prev];
-        next[i] = { ...next[i], cantidad: next[i].cantidad + cantidad };
+        next[i] = { ...next[i], cantidad: nueva };
         return next;
       }
       return [...prev, {
         productoId: producto.id, nombre: producto.nombre, marcaId: producto.marcaId, marca: producto.marca,
-        precio: producto.precio, unidad: producto.unidad, unidadesMinimas: producto.unidadesMinimas, cantidad,
+        precio: producto.precio, unidad: producto.unidad, unidadesMinimas: producto.unidadesMinimas,
+        cantidad: nueva,
       }];
     });
-  }, []);
+  }, [disponibleDe]);
 
   const quitar = useCallback((productoId: number) => {
     setItems((prev) => prev.filter((x) => x.productoId !== productoId));
   }, []);
 
   const setCantidad = useCallback((productoId: number, cantidad: number) => {
-    setItems((prev) => (cantidad <= 0
-      ? prev.filter((x) => x.productoId !== productoId)
-      : prev.map((x) => (x.productoId === productoId ? { ...x, cantidad } : x))));
-  }, []);
+    setItems((prev) => {
+      if (cantidad <= 0) return prev.filter((x) => x.productoId !== productoId);
+      const tope = disponibleDe(productoId);
+      /* Se topea SUBIENDO, nunca bajando: si el carrito quedó guardado con más
+       * de lo que hay hoy, se avisa en pantalla y el cliente lo corrige — no se
+       * le toca el carrito por atrás. */
+      return prev.map((x) => {
+        if (x.productoId !== productoId) return x;
+        const sube = cantidad > x.cantidad;
+        return { ...x, cantidad: sube ? Math.min(r3(cantidad), Math.max(tope, x.cantidad)) : r3(cantidad) };
+      });
+    });
+  }, [disponibleDe]);
 
   const vaciar = useCallback(() => setItems([]), []);
 
@@ -143,7 +191,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   }, [items, total, config]);
 
   const value: CartContextValue = {
-    items, cantidadTotal, total, agregar, quitar, setCantidad, vaciar, config, catalogo, gate,
+    items, cantidadTotal, total, agregar, quitar, setCantidad, vaciar,
+    enCarrito, disponibleDe, config, catalogo, gate,
   };
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;

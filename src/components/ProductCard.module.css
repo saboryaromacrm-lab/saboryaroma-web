@@ -104,12 +104,47 @@
 }
 .addBtn:hover { background: var(--color-primary-dark); }
 .addBtn:active { transform: scale(0.97); }
+/* Sin stock para sumar: se ve apagado y no responde al hover ni al click. */
+.addBtn:disabled {
+  background: var(--color-gray-200);
+  color: var(--color-gray-500);
+  cursor: not-allowed;
+  transform: none;
+}
 .addBtn[data-added='true'] { background: var(--color-success); animation: addPop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1); }
 @keyframes addPop {
   0% { transform: scale(0.94); }
   60% { transform: scale(1.03); }
   100% { transform: scale(1); }
 }
+
+/* Lo que ya está en el carrito, sobre la foto (abajo a la izquierda: arriba
+   viven las etiquetas de dieta y el cartel de oferta). */
+.enCarritoBadge {
+  position: absolute; bottom: 8px; left: 8px; z-index: 1;
+  display: inline-flex; align-items: center; gap: 3px;
+  max-width: calc(100% - 16px);
+  background: var(--color-primary); color: var(--color-white);
+  font-size: 10.5px; font-weight: 800; letter-spacing: 0.01em;
+  padding: 4px 9px; border-radius: var(--radius-full);
+  box-shadow: 0 1px 4px rgb(0 0 0 / 18%);
+  animation: enCarritoPop 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@keyframes enCarritoPop {
+  0% { transform: scale(0.8); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* El aviso del tope de stock. Ámbar cuando corta la compra, gris cuando solo
+   confirma que se llegó al último: el color acompaña la gravedad. */
+.stockAviso, .stockAvisoSuave {
+  font-size: var(--font-size-xs);
+  line-height: 1.35;
+  text-align: center;
+  font-weight: 600;
+}
+.stockAviso { color: var(--color-warning-dark); }
+.stockAvisoSuave { color: var(--color-gray-500); font-weight: 500; }
 
 .disabled {
   margin-top: auto;
