@@ -94,7 +94,11 @@ export function flyToCart(sourceEl: HTMLElement | null) {
     'transition:none',
   ].join(';');
   if (img && img.src) {
-    flyer.innerHTML = `<img src="${img.src}" style="width:100%;height:100%;object-fit:cover;display:block;" alt="">`;
+    const clone = document.createElement('img');
+    clone.src = img.src;
+    clone.alt = '';
+    clone.style.cssText = 'width:100%;height:100%;object-fit:cover;display:block;';
+    flyer.appendChild(clone);
   } else {
     flyer.style.background = 'linear-gradient(135deg, #086633, #3ed1a1)';
   }

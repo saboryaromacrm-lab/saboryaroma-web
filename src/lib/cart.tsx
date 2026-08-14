@@ -67,24 +67,39 @@ function leerCarrito(): ItemCarrito[] {
   } catch { return []; }
 }
 
-export function CartProvider({ children }: { children: React.ReactNode }) {
+function configDeCatalogo(c: Catalogo | null): Config {
+  return c
+    ? {
+      montoMinimo: c.montoMinimo, montoMinimoCamioneta: c.montoMinimoCamioneta,
+      reglasMarca: c.reglasMarca, presupuestoValidezDias: c.presupuestoValidezDias,
+    }
+    : { montoMinimo: 0, montoMinimoCamioneta: 0, reglasMarca: [], presupuestoValidezDias: 7 };
+}
+
+/**
+ * `initialCatalogo`: lo trae el layout del servidor (un solo pedido, ya
+ * hecho para el HTML) para que el carrito no tenga que volver a pedirlo
+ * desde el navegador — evita el fetch duplicado y el parpadeo de mega-menú
+ * y buscador vacíos mientras carga. Si no llegó (falló en el servidor), se
+ * pide igual del lado del cliente como respaldo.
+ */
+export function CartProvider({ children, initialCatalogo = null }: {
+  children: React.ReactNode;
+  initialCatalogo?: Catalogo | null;
+}) {
   const [items, setItems] = useState<ItemCarrito[]>([]);
-  const [config, setConfig] = useState<Config>({ montoMinimo: 0, montoMinimoCamioneta: 0, reglasMarca: [], presupuestoValidezDias: 7 });
-  const [catalogo, setCatalogo] = useState<Catalogo | null>(null);
+  const [config, setConfig] = useState<Config>(() => configDeCatalogo(initialCatalogo));
+  const [catalogo, setCatalogo] = useState<Catalogo | null>(initialCatalogo);
   const [cargado, setCargado] = useState(false);
 
   useEffect(() => {
     setItems(leerCarrito());
     setCargado(true);
+    if (initialCatalogo) return;
     getCatalogo()
-      .then((c) => {
-        setConfig({
-          montoMinimo: c.montoMinimo, montoMinimoCamioneta: c.montoMinimoCamioneta,
-          reglasMarca: c.reglasMarca, presupuestoValidezDias: c.presupuestoValidezDias,
-        });
-        setCatalogo(c);
-      })
+      .then((c) => { setConfig(configDeCatalogo(c)); setCatalogo(c); })
       .catch(() => { /* el carrito funciona igual sin esto; el checkout revalida */ });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {

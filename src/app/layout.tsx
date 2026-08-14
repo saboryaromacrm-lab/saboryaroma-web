@@ -1,5 +1,7 @@
 import type { Metadata, Viewport } from 'next';
+import { getCatalogo } from '@/lib/api';
 import { CartProvider } from '@/lib/cart';
+import { jsonLdString } from '@/lib/jsonLd';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { WelcomePopup } from '@/components/WelcomePopup';
@@ -61,16 +63,22 @@ const JSON_LD = {
   ],
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  // Un solo pedido del catálogo para todo el árbol: Next dedupea automáticamente
+  // el fetch idéntico que cada página vuelve a hacer para su propio contenido
+  // (Request Memoization), y este resultado se lo pasamos al carrito para que
+  // no tenga que volver a pedirlo desde el navegador.
+  const catalogoInicial = await getCatalogo().catch(() => null);
+
   return (
     <html lang="es-AR">
       <body>
         <script
           type="application/ld+json"
           // eslint-disable-next-line react/no-danger
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(JSON_LD) }}
+          dangerouslySetInnerHTML={{ __html: jsonLdString(JSON_LD) }}
         />
-        <CartProvider>
+        <CartProvider initialCatalogo={catalogoInicial}>
           <Header />
           <main>{children}</main>
           <Footer />

@@ -107,11 +107,11 @@ export default function CheckoutPage() {
           <div className={styles.row}>
             <div className={styles.field}>
               <label htmlFor="nombre">Nombre *</label>
-              <input id="nombre" required value={nombre} onChange={(e) => setNombre(e.target.value)} placeholder="Tu nombre" />
+              <input id="nombre" required maxLength={60} value={nombre} onChange={(e) => setNombre(e.target.value)} placeholder="Tu nombre" />
             </div>
             <div className={styles.field}>
               <label htmlFor="apellido">Apellido *</label>
-              <input id="apellido" required value={apellido} onChange={(e) => setApellido(e.target.value)} placeholder="Tu apellido" />
+              <input id="apellido" required maxLength={60} value={apellido} onChange={(e) => setApellido(e.target.value)} placeholder="Tu apellido" />
             </div>
           </div>
 
@@ -181,7 +181,7 @@ export default function CheckoutPage() {
           <div className={styles.field}>
             <label htmlFor="obs">Notas del pedido</label>
             <textarea
-              id="obs" rows={3} value={observaciones} onChange={(e) => setObservaciones(e.target.value)}
+              id="obs" rows={3} maxLength={500} value={observaciones} onChange={(e) => setObservaciones(e.target.value)}
               placeholder="Horario de entrega preferido, indicaciones especiales, etc."
             />
           </div>

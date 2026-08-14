@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { getCatalogo, imgSrc } from '@/lib/api';
 import { norm } from '@/lib/format';
+import { jsonLdString } from '@/lib/jsonLd';
 import { ProductCard } from '@/components/ProductCard';
 import { ShopFilters } from '@/components/ShopFilters';
 import type { ItemCatalogo } from '@/lib/types';
@@ -96,7 +97,7 @@ export default async function TiendaPage({
       <script
         type="application/ld+json"
         // eslint-disable-next-line react/no-danger
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdProductos(items)) }}
+        dangerouslySetInnerHTML={{ __html: jsonLdString(jsonLdProductos(items)) }}
       />
       <div className={styles.breadcrumbBar}>
         <div className={`container ${styles.breadcrumbInner}`}>
