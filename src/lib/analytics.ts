@@ -16,7 +16,9 @@
  * descartan — la telemetría jamás rompe la compra.
  */
 
-const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001/api';
+// `||` y no `??` por lo mismo que en `api.ts`: la cadena vacía que deja un
+// argumento de build sin pasar tiene que caer al default, no ganarle.
+const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
 const FLUSH_MS = 15000;
 /** Menos de esto no es "mirar": es scrollear por encima. */
 const MIN_SEGUNDOS = 1;

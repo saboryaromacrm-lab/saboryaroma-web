@@ -1,0 +1,26 @@
+# Lo que NUNCA tiene que entrar al build.
+#
+# LA PRIMERA LÍNEA ES LA IMPORTANTE. El `.env.local` tiene
+#   NEXT_PUBLIC_API_URL=http://localhost:3001/api
+# y las `NEXT_PUBLIC_*` se hornean adentro del JavaScript al compilar. Si ese
+# archivo entrara, el sitio publicado le pediría la API a la máquina de quien
+# construyó la imagen. No falla en el build: falla en el navegador del
+# visitante, con la tienda vacía y sin un solo error en los logs del servidor.
+.env
+.env.*
+!.env.example
+
+node_modules
+.next
+.git
+.gitignore
+
+# Basura y material de trabajo que no hace falta para construir.
+*.log
+.DS_Store
+.vscode
+.idea
+_tema_extraido
+*.zip
+*.md
+!README.md

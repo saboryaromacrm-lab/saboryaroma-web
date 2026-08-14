@@ -1,6 +1,13 @@
 import type { Catalogo, Entrega } from './types';
 
-const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001/api';
+/*
+ * `||` y NO `??`: una cadena VACÍA tiene que contar como "no configurada".
+ * Al construir la imagen de producción el valor entra como argumento de build,
+ * y un argumento declarado pero sin pasar llega como `''`, que con `??` gana.
+ * El resultado sería un sitio pidiéndole la API a la raíz: la tienda carga y no
+ * aparece un solo producto, sin ningún error en los logs del servidor.
+ */
+const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
 
 export class ApiError extends Error {
   constructor(message: string) { super(message); this.name = 'ApiError'; }
