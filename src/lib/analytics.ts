@@ -25,7 +25,7 @@ const MIN_SEGUNDOS = 1;
 
 type Evento = { tipo: string; ruta?: string; productoId?: number; segundos?: number };
 
-let cola: Evento[] = [];
+const cola: Evento[] = [];
 const dwellAcumulado = new Map<number, number>(); // productoId → segundos ya juntados
 const dwellActivo = new Map<number, number>();    // productoId → timestamp en que se hizo visible
 let iniciado = false;
@@ -59,8 +59,11 @@ function volcarDwell() {
 function flush(alSalir = false) {
   volcarDwell();
   if (!cola.length) return;
-  const payload = JSON.stringify({ sesion: sesionId(), eventos: cola.splice(0, 200) });
-  cola = [];
+  // `splice` saca del frente lo que viaja (el tope de la API son 200 por
+  // request); si quedó más, espera al próximo flush. Antes había un `cola = []`
+  // acá que tiraba a la basura todo lo que pasaba de 200.
+  const lote = cola.splice(0, 200);
+  const payload = JSON.stringify({ sesion: sesionId(), eventos: lote });
   try {
     if (alSalir && navigator.sendBeacon) {
       navigator.sendBeacon(`${API}/tienda/eventos`, new Blob([payload], { type: 'application/json' }));

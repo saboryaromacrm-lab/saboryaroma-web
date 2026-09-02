@@ -30,8 +30,9 @@ El sitio consume **solo los endpoints públicos de tienda** de la API:
 | `POST /tienda/eventos` | Estadísticas propias (visitas, producto visto, carrito, checkout) — se ven en CRM › Web › Estadísticas |
 | `GET /tienda/imagenes/...` | Imágenes del catálogo subidas desde el módulo Web |
 
-Son los **únicos** endpoints pensados para quedar sin token cuando la API
-tenga autenticación (requisito previo al deploy).
+Son los **únicos** endpoints de la API que no piden sesión: el resto está
+cerrado por el guard global de `crm-api` (`Authorization: Bearer`). Tienen
+rate-limit por IP del lado de la API.
 
 ## Puesta en marcha
 
@@ -45,7 +46,7 @@ npm run build    # build de producción
 npm run start    # sirve el build (puerto 3002)
 ```
 
-### Variables de entorno (`.env.local`, no se sube)
+### Variables de entorno (`.env.local`, no se sube — copiar de `.env.example`)
 
 | Variable | Para qué | Valor en desarrollo |
 |----------|----------|---------------------|
@@ -91,9 +92,11 @@ src/
 - **Catálogo real**: migrar los ~550 productos de WooCommerce (importador
   masivo del lado del CRM; las fotos entran a disco comprimidas a WebP).
 - **Iconos reales de la PWA** (`public/icons/` sigue con placeholders).
-- **Deploy (Hostinger)**: publicar detrás de nginx, con la API autenticada
-  salvo los 4 endpoints de tienda — checklist completo en la guía del CRM
-  (Info de sistema › Pendientes).
+- **Deploy**: sumar el sitio como tercer servicio del Dokploy donde ya corren
+  la API y el CRM (`crm-api/deploy/DEPLOY.md` §9) — verificando que el proxy
+  no concatene `X-Forwarded-For`, o el rate-limit de la API deja de ser fiable.
+- **Dirección de entrega en el checkout**: hoy el pedido con envío (`cadete`,
+  `camioneta`) no pide domicilio; depende de las notas o del WhatsApp posterior.
 
 ## Documentación
 

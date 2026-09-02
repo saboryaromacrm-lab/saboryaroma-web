@@ -1,0 +1,53 @@
+/* Pantallas de estado del sitio: error inesperado y página no encontrada. */
+
+.estado {
+  padding: var(--space-12) 0;
+  text-align: center;
+  max-width: 560px;
+}
+
+.titulo {
+  font-size: var(--font-size-2xl);
+  font-weight: 800;
+  color: var(--color-primary-dark);
+  margin: 0 0 var(--space-3);
+}
+
+.texto {
+  color: var(--color-gray-600);
+  margin: 0 0 var(--space-6);
+  line-height: 1.6;
+}
+
+.acciones {
+  display: flex;
+  gap: var(--space-3);
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.boton {
+  display: inline-block;
+  padding: var(--space-3) var(--space-6);
+  border-radius: var(--radius-full);
+  background: var(--color-primary);
+  color: var(--color-white);
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+  font-size: var(--font-size-base);
+}
+
+.boton:hover {
+  background: var(--color-primary-dark);
+}
+
+.secundario {
+  background: var(--color-gray-150);
+  color: var(--color-gray-750);
+}
+
+.secundario:hover {
+  background: var(--color-gray-250);
+}

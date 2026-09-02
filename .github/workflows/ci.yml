@@ -1,0 +1,32 @@
+# CI mínima: en cada push a dev/main y en cada pull request, el sitio tiene que
+# compilar (`next build` incluye el type-check). No despliega nada.
+name: CI
+
+on:
+  push:
+    branches: [main, dev]
+  pull_request:
+
+jobs:
+  verificar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          # La misma versión que la imagen de producción (node:22-alpine).
+          node-version: 22
+          cache: npm
+
+      - name: Instalar dependencias (lockfile exacto)
+        run: npm ci
+
+      # Runner nativo de Node (≥ 22.18 entiende TypeScript sin compilar).
+      - name: Tests
+        run: npm test
+
+      # Todas las páginas son dinámicas (catálogo sin caché), así que el build
+      # no necesita la API levantada. Las NEXT_PUBLIC_* quedan en su default.
+      - name: Build (incluye type-check)
+        run: npm run build

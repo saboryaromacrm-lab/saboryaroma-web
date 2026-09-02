@@ -21,6 +21,11 @@ export default function CheckoutPage() {
   const [telefono, setTelefono] = useState('');
   const [dni, setDni] = useState('');
   const [entrega, setEntrega] = useState<Entrega>('retiro');
+  // La dirección solo existe si hay envío. Se conserva al cambiar de opción
+  // para que ir y volver entre "retiro" y "cadete" no borre lo escrito.
+  const [calle, setCalle] = useState('');
+  const [localidad, setLocalidad] = useState('');
+  const [referencia, setReferencia] = useState('');
   const [observaciones, setObservaciones] = useState('');
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState('');
@@ -66,6 +71,7 @@ export default function CheckoutPage() {
    */
   const minCamioneta = config.montoMinimoCamioneta;
   const camionetaOk = !minCamioneta || total >= minCamioneta;
+  const conEnvio = entrega !== 'retiro';
 
   const enviar = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -77,8 +83,19 @@ export default function CheckoutPage() {
       setError('Revisá el WhatsApp: escribilo con el código de área, sin el 15 — por ejemplo 370 4123456 (10 dígitos en total).');
       return;
     }
+    // Misma regla que el servidor (7 u 8 dígitos): avisar acá ahorra el viaje.
+    if (dni.length < 7) {
+      setError('El DNI tiene que tener 7 u 8 dígitos.');
+      return;
+    }
     if (entrega === 'camioneta' && !camionetaOk) {
       setError(`El envío con la camioneta necesita un pedido de al menos ${money(minCamioneta)}. Elegí otra forma de entrega o sumá productos.`);
+      return;
+    }
+    // Sin dirección no hay a dónde llevar el pedido: antes dependía de que el
+    // cliente la escribiera en las notas, o de pedírsela después por WhatsApp.
+    if (conEnvio && (!calle.trim() || !localidad.trim())) {
+      setError('Para el envío necesitamos la dirección: calle y número, y el barrio o localidad.');
       return;
     }
     setEnviando(true);
@@ -87,6 +104,9 @@ export default function CheckoutPage() {
         entrega,
         observaciones,
         cliente: { nombre, apellido, telefono, dni },
+        direccion: conEnvio
+          ? { calle: calle.trim(), localidad: localidad.trim(), referencia: referencia.trim() || undefined }
+          : undefined,
         items: items.map((it) => ({ productoId: it.productoId, cantidad: it.cantidad })),
       });
       setResultado({ codigo: r.codigo, total: r.total });
@@ -177,6 +197,39 @@ export default function CheckoutPage() {
               })}
             </div>
           </div>
+
+          {conEnvio && (
+            <>
+              <div className={styles.field}>
+                <label htmlFor="calle">
+                  Dirección de entrega *
+                  <span className={styles.hint}>Calle y número. Si es un edificio, piso y departamento.</span>
+                </label>
+                <input
+                  id="calle" required={conEnvio} maxLength={120} value={calle}
+                  onChange={(e) => setCalle(e.target.value)} placeholder="Ej: Av. 25 de Mayo 1234, 2º B"
+                  autoComplete="street-address"
+                />
+              </div>
+              <div className={styles.row}>
+                <div className={styles.field}>
+                  <label htmlFor="localidad">Barrio / localidad *</label>
+                  <input
+                    id="localidad" required={conEnvio} maxLength={80} value={localidad}
+                    onChange={(e) => setLocalidad(e.target.value)} placeholder="Ej: Formosa, barrio San Martín"
+                    autoComplete="address-level2"
+                  />
+                </div>
+                <div className={styles.field}>
+                  <label htmlFor="referencia">Referencia</label>
+                  <input
+                    id="referencia" maxLength={200} value={referencia}
+                    onChange={(e) => setReferencia(e.target.value)} placeholder="Entre calles, portón verde, tocar timbre…"
+                  />
+                </div>
+              </div>
+            </>
+          )}
 
           <div className={styles.field}>
             <label htmlFor="obs">Notas del pedido</label>
