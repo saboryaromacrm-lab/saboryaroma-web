@@ -4,6 +4,7 @@ import { CartProvider } from '@/lib/cart';
 import { jsonLdString } from '@/lib/jsonLd';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
+import { FirmaCoftech } from '@/components/FirmaCoftech';
 import { WelcomePopup } from '@/components/WelcomePopup';
 import { PwaRegister } from '@/components/PwaRegister';
 import { AnalyticsTracker } from '@/components/AnalyticsTracker';
@@ -82,6 +83,10 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           <Header />
           <main>{children}</main>
           <Footer />
+          {/* Hermana del footer y no hija: un <footer> dentro de otro no es
+              HTML válido, y acá afuera queda FUERA del árbol de cliente del
+              carrito — o sea, renderizada en el servidor y sin mandar JS. */}
+          <FirmaCoftech />
           <WelcomePopup />
           <FaviconSetter />
         </CartProvider>

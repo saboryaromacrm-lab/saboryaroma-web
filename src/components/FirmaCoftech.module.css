@@ -1,0 +1,76 @@
+/*
+ * FIRMA DE COFTECH — los valores son los del diseño original, uno a uno.
+ * La franja está partida al medio a propósito: dos grises que se tocan en el
+ * 50% exacto, sin degradado entre ellos.
+ *
+ * LA FUENTE VIAJA CON EL SITIO, no se le pide a Google. El diseño original la
+ * traía de fonts.googleapis.com: dos dominios nuevos en el camino crítico, en
+ * la página que Google mira para posicionar la tienda. Acá está el archivo que
+ * hace falta y nada más — el subconjunto latino, variable de 400 a 700, 31 KB
+ * desde este mismo dominio. `font-display: swap` es lo que garantiza que no
+ * frene nada: el texto se pinta al instante con la del sistema y cambia sola.
+ */
+@font-face {
+  font-family: 'Nunito Sans Firma';
+  src: url('../assets/fonts/nunito-sans-latin.woff2') format('woff2-variations');
+  font-weight: 400 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+.firma {
+  width: 100%;
+  font-family: 'Nunito Sans Firma', var(--font-family);
+  background: linear-gradient(90deg, #232d3a 0%, #232d3a 50%, #1c2530 50%, #1c2530 100%);
+  padding: 20px 40px;
+  box-sizing: border-box;
+  margin-top: auto;
+}
+
+.inner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.izq {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+}
+
+/*
+ * El hover del original —escala y resplandor— hecho con CSS en vez de con
+ * estado de React: mismo efecto, sin un re-render por cada paso del mouse.
+ */
+.marca {
+  text-decoration: none;
+  display: inline-block;
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  transition: transform 0.3s ease, filter 0.3s ease;
+}
+.marca:hover,
+.marca:focus-visible {
+  transform: scale(1.05);
+  filter: drop-shadow(0 0 8px rgba(92, 184, 228, 0.6));
+}
+
+.cof { color: #5cb8e4; }
+.tech { color: #b8c5d4; }
+
+.sep { color: #5a6875; font-size: 0.8rem; }
+.lema { margin: 0; color: #7a8a9a; font-size: 0.85rem; }
+.anio { color: #4a5565; font-size: 0.8rem; }
+
+/* En el teléfono la franja se aprieta: 40 px de costado se comen el ancho. */
+@media (max-width: 600px) {
+  .firma { padding: 16px 20px; }
+  .inner { justify-content: center; text-align: center; }
+}

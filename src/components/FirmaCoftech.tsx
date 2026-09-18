@@ -1,25 +1,32 @@
-import styles from './Footer.module.css';
+import styles from './FirmaCoftech.module.css';
 
 /**
- * FIRMA DE COFTECH — cierre del pie de la tienda.
+ * FIRMA DE COFTECH — la barra de cierre del sitio.
  * ============================================================================
- * NO se integra como decía el instructivo original (un `<script type="text/babel">`
- * traído de saboryaroma.com y compilado en el navegador). Eso, en un sitio que
- * Next entrega ya renderizado, habría significado traer **Babel standalone**
- * —~1,5 MB cuyo único trabajo sería compilar estas veinte líneas—, una petición
- * a otro dominio en el camino crítico y la familia Nunito Sans entera para
- * escribir una palabra. Tres costos nuevos en la métrica que Google mira para
- * posicionar la tienda, a cambio de nada.
+ * Réplica exacta del diseño original: la franja oscura partida al medio, el
+ * "Coftech" en 1,5 rem con el celeste en "Cof", el separador, "Soluciones
+ * digitales" y el año a la derecha.
  *
- * Acá va con el resto del sitio: se renderiza en el servidor, viaja dentro del
- * HTML que ya se estaba mandando y usa la tipografía que la página ya cargó.
+ * LO QUE CAMBIA ES CÓMO LLEGA, no cómo se ve. El instructivo montaba un
+ * `<script type="text/babel">` traído de saboryaroma.com, y eso en un sitio que
+ * Next entrega ya renderizado habría costado, en cada visita: Babel standalone
+ * (~1,5 MB) para compilar veinte líneas, una petición a otro dominio en el
+ * camino crítico, y la fuente pedida a fonts.googleapis.com — tres cosas que
+ * pegan justo en la métrica con la que Google posiciona la tienda.
  *
- * SIN HOOKS Y SIN HANDLERS, a propósito: el hover es CSS. El componente
- * original guardaba el hover en un `useState`, y eso lo habría obligado a ser
- * un componente de cliente — o sea, JavaScript enviado y ejecutado para un
- * efecto que el navegador ya sabe hacer solo.
+ * LA FUENTE ES LA MISMA, y viaja con el repositorio. El archivo está en
+ * `src/assets/fonts`: el subconjunto LATINO de Nunito Sans en una sola fuente
+ * variable que cubre del peso 400 al 700, 31 KB servidos desde este mismo
+ * dominio. Se descartó `next/font/google` —que es lo idiomático— por una razón
+ * de despliegue: baja la fuente EN CADA BUILD, o sea que un deploy pasaría a
+ * depender de que fonts.gstatic.com conteste. Un tipo de letra no es motivo
+ * para que no salga una versión.
+ *
+ * SIN HOOKS Y SIN HANDLERS: el hover es CSS. El original lo guardaba en un
+ * `useState`, y eso habría obligado a mandar JavaScript al navegador para un
+ * efecto que el navegador ya sabe hacer. Así, esto se renderiza en el servidor
+ * y viaja dentro del HTML que ya se estaba mandando.
  */
-
 /** Una vez por render del servidor, no una por interacción. */
 const ANIO = new Date().getFullYear();
 
@@ -27,18 +34,23 @@ const WHATSAPP = 'https://wa.me/5493704819019?text=Hola,%20me%20contacto%20desde
 
 export function FirmaCoftech() {
   return (
-    <a
-      className={styles.firma}
-      href={WHATSAPP}
-      target="_blank"
-      rel="noopener noreferrer"
-      title="Coftech · Soluciones digitales — escribinos por WhatsApp"
-    >
-      <span className={styles.firmaMarca}>
-        <span className={styles.firmaCof}>Cof</span><span className={styles.firmaTech}>tech</span>
-      </span>
-      <span className={styles.firmaSep} aria-hidden="true">|</span>
-      <span className={styles.firmaTexto}>Soluciones digitales · © {ANIO}</span>
-    </a>
+    <footer className={styles.firma}>
+      <div className={styles.inner}>
+        <div className={styles.izq}>
+          <a
+            className={styles.marca}
+            href={WHATSAPP}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Coftech — escribinos por WhatsApp"
+          >
+            <span className={styles.cof}>Cof</span><span className={styles.tech}>tech</span>
+          </a>
+          <span className={styles.sep} aria-hidden="true">|</span>
+          <p className={styles.lema}>Soluciones digitales</p>
+        </div>
+        <span className={styles.anio}>© {ANIO}</span>
+      </div>
+    </footer>
   );
 }
