@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useCart } from '@/lib/cart';
 import { linkRed, linkWhatsApp, telefonoArgentino } from '@/lib/format';
+import { FirmaCoftech } from './FirmaCoftech';
 import styles from './Footer.module.css';
 
 const MAPS_EMBED = 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3540.8!2d-58.2000899!3d-26.1822997!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x945caf223a1ea145%3A0x365c1d5dfc3f40af!2sSABOR%20Y%20AROMA%20Distribuidora!5e0!3m2!1ses!2sar!4v1700000000000';
@@ -148,6 +149,7 @@ export function Footer() {
 
       <div className={styles.bottom}>
         <p>© {new Date().getFullYear()} Sabor y Aroma. Todos los derechos reservados.</p>
+        <FirmaCoftech />
       </div>
 
       <a

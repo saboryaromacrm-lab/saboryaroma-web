@@ -138,6 +138,31 @@
 }
 .bottom p { margin: 0; font-size: var(--font-size-xs); color: rgba(255, 255, 255, 0.85); }
 
+/*
+ * FIRMA DE COFTECH. Una línea discreta debajo del copyright. El hover es CSS
+ * puro —sin estado ni JavaScript— y la tipografía es la que la página ya
+ * cargó: la firma no agrega ni una petición al sitio.
+ */
+.firma {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 6px;
+  text-decoration: none;
+  opacity: 0.78;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+.firma:hover,
+.firma:focus-visible { opacity: 1; transform: translateY(-1px); }
+.firmaMarca { font-size: var(--font-size-sm); font-weight: 700; letter-spacing: 0.01em; }
+.firmaCof { color: #5cb8e4; }
+.firmaTech { color: #b8c5d4; }
+.firma:hover .firmaCof { text-shadow: 0 0 10px rgba(92, 184, 228, 0.55); }
+.firmaSep { color: rgba(255, 255, 255, 0.3); font-size: var(--font-size-xs); }
+.firmaTexto { font-size: var(--font-size-xs); color: rgba(255, 255, 255, 0.62); }
+
 .whatsapp {
   position: fixed;
   bottom: 20px;
