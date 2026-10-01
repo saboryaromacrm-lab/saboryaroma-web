@@ -38,7 +38,7 @@ export interface ItemCatalogo {
    * ya descontado. Es el tope del carrito: no se muestra como "quedan pocos",
    * solo se avisa al llegar a él.
    */
-  disponible: number;
+  disponible: number | null;
   imagenUrl: string;
   /** Marcado en el módulo Web: arma el carrusel "Destacados" de la portada. */
   destacado: boolean;

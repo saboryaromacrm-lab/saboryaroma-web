@@ -121,7 +121,8 @@ export function CartProvider({ children, initialCatalogo = null }: {
    */
   const disponibleDe = useCallback((productoId: number) => {
     const it = catalogo?.items.find((x) => x.id === productoId);
-    return it ? it.disponible : Infinity;
+    // `null` = sin tope: el granel con el control de stock apagado (1/10/2026).
+    return it && it.disponible != null ? it.disponible : Infinity;
   }, [catalogo]);
 
   const enCarrito = useCallback(
