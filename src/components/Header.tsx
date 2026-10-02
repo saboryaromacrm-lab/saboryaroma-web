@@ -31,6 +31,7 @@ export function Header() {
   const [accordion, setAccordion] = useState<Accordion>(null);
   const [filtroMarca, setFiltroMarca] = useState('');
   const [filtroCategoria, setFiltroCategoria] = useState('');
+  const [filtroDieta, setFiltroDieta] = useState('');
   /** En el celular: qué categoría tiene abiertas sus subcategorías. */
   const [catAbierta, setCatAbierta] = useState<number | null>(null);
   const [busqueda, setBusqueda] = useState('');
@@ -130,12 +131,20 @@ export function Header() {
       : todas;
     const mapa = new Map<string, typeof todas>();
     for (const m of filtradas) {
-      const letra = norm(m.nombre)[0]?.toUpperCase() ?? '#';
+      // Las que empiezan con un número o un signo van juntas en «#», al final: antes desaparecían del menú.
+      const inicial = norm(m.nombre)[0]?.toUpperCase() ?? '#';
+      const letra = LETRAS.includes(inicial) ? inicial : '#';
       const arr = mapa.get(letra);
       if (arr) arr.push(m); else mapa.set(letra, [m]);
     }
-    return mapa;
+    return [...LETRAS, '#'].filter((l) => mapa.has(l)).map((letra) => ({ letra, marcas: mapa.get(letra)! }));
   }, [catalogo, filtroMarca]);
+
+  /** Las dietas, con el mismo buscador que Categorías y Marcas. */
+  const dietas = useMemo(() => {
+    const q = norm(filtroDieta.trim());
+    return (catalogo?.etiquetas ?? []).filter((t) => !q || norm(t.nombre).includes(q));
+  }, [catalogo, filtroDieta]);
 
   /**
    * EL ÁRBOL DE CATEGORÍAS (2/10/2026): cada categoría con sus subcategorías,
@@ -172,6 +181,7 @@ export function Header() {
     setMenuAbierto(false);
     setFiltroMarca('');
     setFiltroCategoria('');
+    setFiltroDieta('');
     router.push(`/tienda?${clave}=${id}`);
   };
 
@@ -197,23 +207,6 @@ export function Header() {
   const megaMenuStyle: React.CSSProperties = menuPos
     ? { top: menuPos.top, left: menuPos.left, visibility: 'visible' }
     : { top: -9999, left: -9999, visibility: 'hidden' };
-
-  const renderMegaMenuSimple = (terminos: Termino[], clave: 'cat' | 'tag') => (
-    <div ref={megaMenuRef} className={styles.megaMenu} style={megaMenuStyle}>
-      {terminos.length === 0 ? (
-        <p className={styles.megaMenuVacio}>No hay opciones disponibles.</p>
-      ) : (
-        <div className={styles.megaMenuGridSimple}>
-          {terminos.map((t) => (
-            <button key={t.id} type="button" onClick={() => irAFiltro(clave, t.id)} className={styles.megaMenuChip}>
-              <span>{t.nombre}</span>
-              <span className={styles.megaMenuChipCount}>({t.count})</span>
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
-  );
 
   return (
     <header className={styles.header}>
@@ -297,7 +290,7 @@ export function Header() {
                 Marcas <span className={styles.navArrow}>▾</span>
               </button>
               {fly === 'marcas' && (
-                <div ref={megaMenuRef} className={`${styles.megaMenu} ${styles.megaMenuBrands}`} style={megaMenuStyle}>
+                <div ref={megaMenuRef} className={`${styles.megaMenu} ${styles.megaMenuCats}`} style={megaMenuStyle}>
                   <input
                     type="text"
                     autoFocus
@@ -305,21 +298,29 @@ export function Header() {
                     value={filtroMarca}
                     onChange={(e) => setFiltroMarca(e.target.value)}
                     className={styles.megaMenuSearch}
+                    aria-label="Buscar una marca"
                   />
-                  {marcasPorLetra.size === 0 ? (
+                  {marcasPorLetra.length === 0 ? (
                     <p className={styles.megaMenuVacio}>No encontramos marcas con ese nombre.</p>
                   ) : (
-                    <div className={styles.megaMenuGrid}>
-                      {LETRAS.filter((l) => marcasPorLetra.has(l)).map((letra) => (
-                        <div key={letra} className={styles.megaMenuCol}>
-                          <span className={styles.megaMenuLetra}>{letra}</span>
-                          {marcasPorLetra.get(letra)!.map((m) => (
-                            <button key={m.id} type="button" onClick={() => irAFiltro('marca', m.id)} className={styles.megaMenuMarca}>
-                              {m.nombre}
-                            </button>
-                          ))}
-                        </div>
-                      ))}
+                    /* El mismo panel que Categorías: cada letra es un bloque con su título, en columnas. */
+                    <div className={styles.catsScroll}>
+                      <div className={styles.catsGrid}>
+                        {marcasPorLetra.map(({ letra, marcas }) => (
+                          <div key={letra} className={styles.catBloque}>
+                            <div className={`${styles.catTitulo} ${styles.catTituloFijo}`}>
+                              <span>{letra}</span>
+                              <span className={styles.catCount}>{marcas.length} {marcas.length === 1 ? 'marca' : 'marcas'}</span>
+                            </div>
+                            {marcas.map((m) => (
+                              <button key={m.id} type="button" onClick={() => irAFiltro('marca', m.id)} className={styles.catSub}>
+                                <span>{m.nombre}</span>
+                                <span className={styles.catCount}>{m.count}</span>
+                              </button>
+                            ))}
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   )}
                 </div>
@@ -339,7 +340,41 @@ export function Header() {
               >
                 Dieta <span className={styles.navArrow}>▾</span>
               </button>
-              {fly === 'dieta' && renderMegaMenuSimple(catalogo?.etiquetas ?? [], 'tag')}
+              {fly === 'dieta' && (
+                <div ref={megaMenuRef} className={`${styles.megaMenu} ${styles.megaMenuDieta}`} style={megaMenuStyle}>
+                  {(catalogo?.etiquetas ?? []).length > 8 && (
+                    <input
+                      type="text"
+                      autoFocus
+                      placeholder="Buscar una dieta..."
+                      value={filtroDieta}
+                      onChange={(e) => setFiltroDieta(e.target.value)}
+                      className={styles.megaMenuSearch}
+                      aria-label="Buscar una dieta"
+                    />
+                  )}
+                  {dietas.length === 0 ? (
+                    <p className={styles.megaMenuVacio}>{filtroDieta.trim() ? 'No encontramos dietas con ese nombre.' : 'No hay opciones disponibles.'}</p>
+                  ) : (
+                    <div className={styles.catsScroll}>
+                      <div className={styles.catBloque}>
+                        <div className={`${styles.catTitulo} ${styles.catTituloFijo}`}>
+                          <span>Dieta</span>
+                          <span className={styles.catCount}>{dietas.length} {dietas.length === 1 ? 'opción' : 'opciones'}</span>
+                        </div>
+                        <div className={styles.catsGridChico}>
+                          {dietas.map((t) => (
+                            <button key={t.id} type="button" onClick={() => irAFiltro('tag', t.id)} className={styles.catSub}>
+                              <span>{t.nombre}</span>
+                              <span className={styles.catCount}>{t.count}</span>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           </nav>
 
@@ -507,21 +542,27 @@ export function Header() {
                 Marcas <span className={`${styles.navArrow} ${accordion === 'marcas' ? styles.navArrowOpen : ''}`}>▾</span>
               </button>
               {accordion === 'marcas' && (
-                <div className={styles.mobileAccordionContent}>
+                <div className={`${styles.mobileAccordionContent} ${styles.mobileCats}`}>
                   <input
                     type="text"
                     placeholder="Buscar marca..."
                     value={filtroMarca}
                     onChange={(e) => setFiltroMarca(e.target.value)}
                     className={styles.mobileBrandsSearch}
+                    aria-label="Buscar marca"
                   />
-                  {(catalogo?.marcas ?? [])
-                    .filter((m) => !filtroMarca.trim() || norm(m.nombre).includes(norm(filtroMarca.trim())))
-                    .map((m) => (
-                      <button key={m.id} type="button" className={styles.mobileAccordionLink} onClick={() => irAFiltro('marca', m.id)}>
-                        {m.nombre}
-                      </button>
-                    ))}
+                  {marcasPorLetra.length === 0 && <p className={styles.megaMenuVacio}>No encontramos marcas con ese nombre.</p>}
+                  {/* Igual que Categorías: la letra como título y las marcas debajo, con cuántos productos tiene cada una. */}
+                  {marcasPorLetra.map(({ letra, marcas }) => (
+                    <div key={letra} className={styles.mobileGrupo}>
+                      <div className={styles.mobileLetra}>{letra}</div>
+                      {marcas.map((m) => (
+                        <button key={m.id} type="button" className={styles.mobileSub} onClick={() => irAFiltro('marca', m.id)}>
+                          {m.nombre} <span className={styles.catCount}>{m.count}</span>
+                        </button>
+                      ))}
+                    </div>
+                  ))}
                 </div>
               )}
             </div>
@@ -536,10 +577,21 @@ export function Header() {
                 Dieta <span className={`${styles.navArrow} ${accordion === 'dieta' ? styles.navArrowOpen : ''}`}>▾</span>
               </button>
               {accordion === 'dieta' && (
-                <div className={styles.mobileAccordionContent}>
-                  {(catalogo?.etiquetas ?? []).map((t) => (
-                    <button key={t.id} type="button" className={styles.mobileAccordionLink} onClick={() => irAFiltro('tag', t.id)}>
-                      {t.nombre}
+                <div className={`${styles.mobileAccordionContent} ${styles.mobileCats}`}>
+                  {(catalogo?.etiquetas ?? []).length > 8 && (
+                    <input
+                      type="text"
+                      placeholder="Buscar dieta..."
+                      value={filtroDieta}
+                      onChange={(e) => setFiltroDieta(e.target.value)}
+                      className={styles.mobileBrandsSearch}
+                      aria-label="Buscar dieta"
+                    />
+                  )}
+                  {dietas.length === 0 && <p className={styles.megaMenuVacio}>No encontramos dietas con ese nombre.</p>}
+                  {dietas.map((t) => (
+                    <button key={t.id} type="button" className={styles.mobileSub} onClick={() => irAFiltro('tag', t.id)}>
+                      {t.nombre} <span className={styles.catCount}>{t.count}</span>
                     </button>
                   ))}
                 </div>
