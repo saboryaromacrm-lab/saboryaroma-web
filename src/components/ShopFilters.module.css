@@ -76,7 +76,7 @@
 .grupo { margin-bottom: 24px; }
 .grupo:last-child { margin-bottom: 0; }
 .titulo { font-size: 14px; font-weight: 700; color: var(--color-black); margin: 0 0 14px; }
-.lista { display: flex; flex-direction: column; gap: 4px; max-height: 260px; overflow-y: auto; }
+.lista { display: flex; flex-direction: column; gap: 4px; max-height: 340px; overflow-y: auto; }
 
 .item {
   display: flex;
@@ -117,6 +117,18 @@
 
 .label { flex: 1; font-size: 14px; color: var(--color-gray-750); }
 .count { font-size: 13px; color: var(--color-gray-400); }
+
+/* Subcategorías: cuelgan de la categoría marcada, con una línea a la izquierda que dice «son de esta». */
+.sublista {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 2px 0 6px 8px;
+  padding-left: 12px;
+  border-left: 2px solid var(--color-accent);
+}
+.subitem { padding-top: 6px; padding-bottom: 6px; }
+.subitem .label { font-size: 13px; color: var(--color-gray-700); }
 
 @media (min-width: 769px) {
   .sidebar { position: sticky; top: 96px; max-height: calc(100vh - 112px); overflow-y: auto; }

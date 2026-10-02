@@ -8,6 +8,11 @@ export interface Termino {
   imagenUrl?: string;
 }
 
+/** Una subcategoría con productos publicados: cuelga de su categoría en el menú y en los filtros. */
+export interface Subtermino extends Termino {
+  categoriaId: number | null;
+}
+
 export interface OfertaItem {
   id: number;
   nombre: string;
@@ -25,6 +30,9 @@ export interface ItemCatalogo {
   marca: string;
   categoriaId: number | null;
   categoria: string;
+  /** Solo si cuelga de la categoría del producto (si no, null). */
+  subcategoriaId?: number | null;
+  subcategoria?: string;
   etiquetas: { id: number; nombre: string }[];
   tipo: 'granel' | 'entero';
   unidad: 'kg' | 'u';
@@ -97,6 +105,8 @@ export interface Catalogo {
   montoMinimoCamioneta: number;
   presupuestoValidezDias: number;
   categorias: Termino[];
+  /** Opcional: una API anterior al 2/10/2026 no las manda. */
+  subcategorias?: Subtermino[];
   marcas: Termino[];
   etiquetas: Termino[];
   reglasMarca: ReglaMarca[];

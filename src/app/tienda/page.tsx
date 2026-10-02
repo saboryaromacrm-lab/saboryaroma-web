@@ -62,12 +62,14 @@ export default async function TiendaPage({
   }
 
   const cats = idsDe(sp.cat);
+  const subs = idsDe(sp.sub);
   const marcasSel = idsDe(sp.marca);
   const tags = idsDe(sp.tag);
   const q = norm((sp.q ?? '').trim());
 
   const items = cat.items.filter((p: ItemCatalogo) => {
     if (cats.size && (!p.categoriaId || !cats.has(p.categoriaId))) return false;
+    if (subs.size && (!p.subcategoriaId || !subs.has(p.subcategoriaId))) return false;
     if (marcasSel.size && (!p.marcaId || !marcasSel.has(p.marcaId))) return false;
     if (tags.size && !p.etiquetas.some((e) => tags.has(e.id))) return false;
     if (q && !norm(p.nombre).includes(q) && !norm(p.marca).includes(q)) return false;
@@ -77,10 +79,17 @@ export default async function TiendaPage({
   // Igual que el tema original: si hay un único filtro de contexto activo, la página
   // "se convierte" en el archivo de ese término (breadcrumb + título propios).
   let miga: string | null = null;
+  /** Con una subcategoría, la categoría va en la miga como enlace: un toque y se ve la categoría entera. */
+  let migaPadre: { texto: string; href: string } | null = null;
   let titulo = 'Tienda';
+  const subUnica = subs.size === 1 ? (cat.subcategorias ?? []).find((s) => subs.has(s.id)) : undefined;
   if (sp.q?.trim()) {
     miga = `Resultados para "${sp.q.trim()}"`;
     titulo = miga;
+  } else if (subUnica && cats.size <= 1 && !marcasSel.size && !tags.size) {
+    const padre = cat.categorias.find((c) => c.id === subUnica.categoriaId);
+    if (padre) migaPadre = { texto: padre.nombre, href: `/tienda?cat=${padre.id}` };
+    miga = subUnica.nombre; titulo = subUnica.nombre;
   } else if (cats.size === 1) {
     const t = cat.categorias.find((c) => cats.has(c.id));
     if (t) { miga = t.nombre; titulo = t.nombre; }
@@ -104,6 +113,12 @@ export default async function TiendaPage({
           <Link href="/">Inicio</Link>
           <span className={styles.sep}>›</span>
           <Link href="/tienda">Tienda</Link>
+          {migaPadre && (
+            <>
+              <span className={styles.sep}>›</span>
+              <Link href={migaPadre.href}>{migaPadre.texto}</Link>
+            </>
+          )}
           {miga && (
             <>
               <span className={styles.sep}>›</span>
@@ -121,7 +136,7 @@ export default async function TiendaPage({
       </div>
 
       <div className={`container ${styles.layout}`}>
-        <ShopFilters categorias={cat.categorias} marcas={cat.marcas} etiquetas={cat.etiquetas} productos={cat.items} />
+        <ShopFilters categorias={cat.categorias} subcategorias={cat.subcategorias ?? []} marcas={cat.marcas} etiquetas={cat.etiquetas} productos={cat.items} />
 
         <section>
           {items.length === 0 ? (

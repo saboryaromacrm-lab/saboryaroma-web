@@ -30,6 +30,9 @@ export function Header() {
   const [menuPos, setMenuPos] = useState<{ top: number; left: number } | null>(null);
   const [accordion, setAccordion] = useState<Accordion>(null);
   const [filtroMarca, setFiltroMarca] = useState('');
+  const [filtroCategoria, setFiltroCategoria] = useState('');
+  /** En el celular: qué categoría tiene abiertas sus subcategorías. */
+  const [catAbierta, setCatAbierta] = useState<number | null>(null);
   const [busqueda, setBusqueda] = useState('');
   const [buscadorAbierto, setBuscadorAbierto] = useState(false);
   const searchWrapRef = useRef<HTMLDivElement>(null);
@@ -134,6 +137,28 @@ export function Header() {
     return mapa;
   }, [catalogo, filtroMarca]);
 
+  /**
+   * EL ÁRBOL DE CATEGORÍAS (2/10/2026): cada categoría con sus subcategorías,
+   * y el buscador del menú. Si el texto coincide con la categoría, se ve entera;
+   * si solo coincide con alguna subcategoría, la categoría queda con esas nada
+   * más — así «yerba» encuentra «Infusiones › Yerbas» sin saber dónde está.
+   */
+  const arbolCategorias = useMemo(() => {
+    const subsDe = new Map<number, Termino[]>();
+    for (const s of catalogo?.subcategorias ?? []) {
+      if (s.categoriaId == null) continue;
+      const arr = subsDe.get(s.categoriaId);
+      if (arr) arr.push(s); else subsDe.set(s.categoriaId, [s]);
+    }
+    const q = norm(filtroCategoria.trim());
+    return (catalogo?.categorias ?? []).flatMap((c) => {
+      const subs = subsDe.get(c.id) ?? [];
+      if (!q || norm(c.nombre).includes(q)) return [{ ...c, subs, coincidenSubs: false }];
+      const coinciden = subs.filter((s) => norm(s.nombre).includes(q));
+      return coinciden.length ? [{ ...c, subs: coinciden, coincidenSubs: true }] : [];
+    });
+  }, [catalogo, filtroCategoria]);
+
   const sugerencias = useMemo(() => {
     const q = norm(busqueda.trim());
     if (!q || !catalogo) return [];
@@ -146,7 +171,16 @@ export function Header() {
     setFly(null);
     setMenuAbierto(false);
     setFiltroMarca('');
+    setFiltroCategoria('');
     router.push(`/tienda?${clave}=${id}`);
+  };
+
+  /** Una subcategoría: va con su categoría, así la página arma la miga «Categoría › Subcategoría». */
+  const irASub = (catId: number, subId: number) => {
+    setFly(null);
+    setMenuAbierto(false);
+    setFiltroCategoria('');
+    router.push(`/tienda?cat=${catId}&sub=${subId}`);
   };
 
   const buscar = (e: React.FormEvent) => {
@@ -212,7 +246,41 @@ export function Header() {
               >
                 Categorías <span className={styles.navArrow}>▾</span>
               </button>
-              {fly === 'categorias' && renderMegaMenuSimple(catalogo?.categorias ?? [], 'cat')}
+              {fly === 'categorias' && (
+                <div ref={megaMenuRef} className={`${styles.megaMenu} ${styles.megaMenuCats}`} style={megaMenuStyle}>
+                  <input
+                    type="text"
+                    autoFocus
+                    placeholder="Buscar una categoría o subcategoría..."
+                    value={filtroCategoria}
+                    onChange={(e) => setFiltroCategoria(e.target.value)}
+                    className={styles.megaMenuSearch}
+                    aria-label="Buscar una categoría o subcategoría"
+                  />
+                  {arbolCategorias.length === 0 ? (
+                    <p className={styles.megaMenuVacio}>No encontramos categorías con ese nombre.</p>
+                  ) : (
+                    <div className={styles.catsScroll}>
+                    <div className={styles.catsGrid}>
+                      {arbolCategorias.map((c) => (
+                        <div key={c.id} className={styles.catBloque}>
+                          <button type="button" onClick={() => irAFiltro('cat', c.id)} className={styles.catTitulo} title={`Ver todo ${c.nombre}`}>
+                            <span>{c.nombre}</span>
+                            <span className={styles.catCount}>{c.count}</span>
+                          </button>
+                          {c.subs.map((s) => (
+                            <button key={s.id} type="button" onClick={() => irASub(c.id, s.id)} className={styles.catSub}>
+                              <span>{s.nombre}</span>
+                              <span className={styles.catCount}>{s.count}</span>
+                            </button>
+                          ))}
+                        </div>
+                      ))}
+                    </div>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
             <div
@@ -379,12 +447,52 @@ export function Header() {
                 Categorías <span className={`${styles.navArrow} ${accordion === 'categorias' ? styles.navArrowOpen : ''}`}>▾</span>
               </button>
               {accordion === 'categorias' && (
-                <div className={styles.mobileAccordionContent}>
-                  {(catalogo?.categorias ?? []).map((c) => (
-                    <button key={c.id} type="button" className={styles.mobileAccordionLink} onClick={() => irAFiltro('cat', c.id)}>
-                      {c.nombre}
-                    </button>
-                  ))}
+                <div className={`${styles.mobileAccordionContent} ${styles.mobileCats}`}>
+                  <input
+                    type="text"
+                    placeholder="Buscar categoría o subcategoría..."
+                    value={filtroCategoria}
+                    onChange={(e) => setFiltroCategoria(e.target.value)}
+                    className={styles.mobileBrandsSearch}
+                    aria-label="Buscar categoría o subcategoría"
+                  />
+                  {arbolCategorias.length === 0 && <p className={styles.megaMenuVacio}>No encontramos categorías con ese nombre.</p>}
+                  {arbolCategorias.map((c) => {
+                    /* Con búsqueda, las que coinciden por una subcategoría se abren solas: lo buscado queda a la vista. */
+                    const abierta = c.subs.length > 0 && (catAbierta === c.id || (c.coincidenSubs && !!filtroCategoria.trim()));
+                    return (
+                      <div key={c.id} className={styles.mobileCat}>
+                        <div className={styles.mobileCatFila}>
+                          <button type="button" className={styles.mobileCatNombre} onClick={() => irAFiltro('cat', c.id)}>
+                            {c.nombre} <span className={styles.catCount}>{c.count}</span>
+                          </button>
+                          {c.subs.length > 0 && (
+                            <button
+                              type="button"
+                              className={styles.mobileCatAbrir}
+                              onClick={() => setCatAbierta((v) => (v === c.id ? null : c.id))}
+                              aria-expanded={abierta}
+                              aria-label={`${abierta ? 'Ocultar' : 'Ver'} las subcategorías de ${c.nombre}`}
+                            >
+                              <span className={`${styles.navArrow} ${abierta ? styles.navArrowOpen : ''}`}>▾</span>
+                            </button>
+                          )}
+                        </div>
+                        {abierta && (
+                          <div className={styles.mobileSubs}>
+                            <button type="button" className={styles.mobileSub} onClick={() => irAFiltro('cat', c.id)}>
+                              <strong>Todo {c.nombre}</strong>
+                            </button>
+                            {c.subs.map((s) => (
+                              <button key={s.id} type="button" className={styles.mobileSub} onClick={() => irASub(c.id, s.id)}>
+                                {s.nombre} <span className={styles.catCount}>{s.count}</span>
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               )}
             </div>
