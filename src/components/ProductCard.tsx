@@ -231,7 +231,7 @@ export function ProductCard({ producto }: { producto: ItemCatalogo }) {
                 {sobran > 0 && ` Los otros ${sobran} los podés agregar sueltos.`}
               </span>
               <button type="button" className={styles.convieneBtn} onClick={() => elegir(cajaQueConviene.clave, cajas)}>
-                Pasar a {cajas} caja{cajas === 1 ? '' : 's'}
+                Pasar a {cajas} bolsa{cajas === 1 ? '' : 's'}
               </button>
             </div>
           );
