@@ -175,7 +175,7 @@ export function ProductCard({ producto }: { producto: ItemCatalogo }) {
             })}
           </div>
         )}
-        {grupos.length === 1 && <span className={styles.opcionUnica}>{grupos[0].etiqueta}</span>}
+        {grupos.length === 1 && grupos[0].etiqueta && <span className={styles.opcionUnica}>{grupos[0].etiqueta}</span>}
         {/* Paso 2, CÓMO lo lleva: solo si el tamaño se vende de más de una forma. */}
         {grupo && grupo.formas.length > 1 && (
           <div className={styles.formas} role="radiogroup" aria-label={`Cómo llevar ${producto.nombre} ${grupo.etiqueta}`}>
@@ -197,7 +197,7 @@ export function ProductCard({ producto }: { producto: ItemCatalogo }) {
                     <span className={styles.formaNombre}>{v.forma ?? v.etiqueta}</span>
                     <span className={styles.formaCu}>
                       {v.enStock
-                        ? n > 1 ? `${n} paquetes · ${money(precioDe(v) / n)} c/u` : `${money(precioDe(v))} c/u`
+                        ? n > 1 ? `${n} ${producto.tipo === 'granel' ? 'paquetes' : 'unidades'} · ${money(precioDe(v) / n)} c/u` : `${money(precioDe(v))} c/u`
                         : 'Sin stock'}
                     </span>
                   </span>
@@ -236,11 +236,11 @@ export function ProductCard({ producto }: { producto: ItemCatalogo }) {
             <div className={styles.conviene}>
               <span>
                 Llevando {cantidad}, te conviene la <strong>{(cajaQueConviene.forma ?? cajaQueConviene.etiqueta).toLowerCase()}</strong>:
-                {' '}cada paquete a {money(precioDe(cajaQueConviene) / n)}.
+                {' '}cada {producto.tipo === 'granel' ? 'paquete' : 'unidad'} a {money(precioDe(cajaQueConviene) / n)}.
                 {sobran > 0 && ` Los otros ${sobran} los podés agregar sueltos.`}
               </span>
               <button type="button" className={styles.convieneBtn} onClick={() => elegir(cajaQueConviene.clave, cajas)}>
-                Pasar a {cajas} bolsa{cajas === 1 ? '' : 's'}
+                Pasar a {cajas} {producto.tipo === 'granel' ? 'bolsa' : 'caja'}{cajas === 1 ? '' : 's'}
               </button>
             </div>
           );

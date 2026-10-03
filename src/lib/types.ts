@@ -56,6 +56,8 @@ export interface Variante {
   ahorroMinorista?: { pct: number; precioKg: number; pesos: number } | null;
   kgPorUnidad: number;
   paquetesPorUnidad?: number;
+  /** Cuántas unidades del stock lleva una unidad de compra (la caja x12 de un entero: 12). */
+  unidadesStock?: number;
   precio: number;
   /** El kilo, de referencia. */
   precioKg: number;
@@ -184,6 +186,8 @@ export interface ItemCarrito {
   unidad: 'kg' | 'u';
   unidadesMinimas: number;
   cantidad: number;
+  /** Un entero en caja: cuántas unidades trae (los mínimos por marca cuentan unidades). */
+  unidadesPorCompra?: number;
 }
 
 export type Entrega = 'retiro' | 'cadete' | 'camioneta';

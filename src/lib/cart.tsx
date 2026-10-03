@@ -127,6 +127,20 @@ export function CartProvider({ children, initialCatalogo = null }: {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  /*
+   * UN PRODUCTO QUE AHORA SE ELIGE POR OPCIONES (3/10/2026: los enteros con
+   * unidad y caja): un renglón guardado sin opción no se puede leer. Se saca
+   * y se avisa, igual que el granel en kilos.
+   */
+  useEffect(() => {
+    if (!cargado || !catalogo) return;
+    const conOpciones = new Set(catalogo.items.filter((x) => x.variantes?.length).map((x) => x.id));
+    const viejos = items.filter((x) => !x.variante && conOpciones.has(x.productoId));
+    if (!viejos.length) return;
+    setItems((prev) => prev.filter((x) => !(!x.variante && conOpciones.has(x.productoId))));
+    setQuitadosViejos((q) => [...new Set([...q, ...viejos.map((x) => x.nombre)])]);
+  }, [cargado, catalogo, items]);
+
   useEffect(() => {
     if (!cargado) return; // no pisar localStorage con el [] inicial antes de leerlo
     try { localStorage.setItem(CART_KEY, JSON.stringify(items)); } catch { /* modo privado */ }
@@ -186,6 +200,7 @@ export function CartProvider({ children, initialCatalogo = null }: {
         unidadesMinimas: variante ? variante.unidadesMinimas : producto.unidadesMinimas,
         cantidad: nueva,
         ...(variante ? { variante: variante.clave, etiqueta: variante.etiqueta } : {}),
+        ...(variante && producto.tipo !== 'granel' && (variante.unidadesStock ?? 1) > 1 ? { unidadesPorCompra: variante.unidadesStock } : {}),
       }];
     });
   }, [disponibleDe]);
@@ -222,7 +237,8 @@ export function CartProvider({ children, initialCatalogo = null }: {
     const porMarca = new Map<number, number>();
     for (const it of items) {
       if (!it.marcaId) continue;
-      porMarca.set(it.marcaId, (porMarca.get(it.marcaId) ?? 0) + it.cantidad);
+      // Una caja x12 de un entero son 12 unidades para la regla de marca (igual que el servidor).
+      porMarca.set(it.marcaId, (porMarca.get(it.marcaId) ?? 0) + it.cantidad * (it.unidadesPorCompra ?? 1));
     }
     const marcas = config.reglasMarca
       .filter((rm) => porMarca.has(rm.marcaId))

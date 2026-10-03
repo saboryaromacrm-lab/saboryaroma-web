@@ -11,7 +11,7 @@ export default function CarritoPage() {
   /* El granel antes se pedía en kilos: esos renglones se sacaron al abrir y se dice cuáles. */
   const avisoViejos = quitadosViejos.length > 0 && (
     <p className={styles.stockAviso} style={{ marginBottom: 16 }}>
-      Cambió la forma de comprar {quitadosViejos.join(', ')}: ahora se elige el tamaño (paquete o bolsa).
+      Cambió la forma de comprar {quitadosViejos.join(', ')}: ahora se elige cómo llevarlo (unidad, caja, paquete o bolsa).
       Lo sacamos del carrito para que lo vuelvas a agregar.
     </p>
   );
