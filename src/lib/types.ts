@@ -93,6 +93,18 @@ export interface SitioConfig {
   /** Ícono de la pestaña del navegador ('' = el de siempre). */
   faviconUrl: string;
   contacto: ContactoSitio;
+  /** El cartel de bienvenida, editable en el ERP (3/10/2026). Opcional: una API anterior no lo manda. */
+  popup?: PopupSitio;
+}
+
+export interface PopupSitio {
+  /** Si aparece solo al entrar. El botón «Info de compra» lo abre igual. */
+  activo: boolean;
+  /** '' = sin etiqueta. */
+  etiqueta: string;
+  titulo: string;
+  /** '' = sin párrafo. */
+  texto: string;
 }
 
 export interface Catalogo {

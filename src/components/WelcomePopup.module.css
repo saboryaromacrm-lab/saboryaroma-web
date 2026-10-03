@@ -34,7 +34,8 @@
   margin-bottom: var(--space-3);
 }
 .title { font-size: var(--font-size-xl); font-weight: 800; margin: 0 0 var(--space-3); }
-.text { font-size: var(--font-size-sm); color: var(--color-gray-600); line-height: 1.6; margin: 0 0 var(--space-6); }
+.text { font-size: var(--font-size-sm); color: var(--color-gray-600); line-height: 1.6; margin: 0 0 var(--space-6); white-space: pre-line; overflow-wrap: anywhere; }
+.title { overflow-wrap: anywhere; }
 
 .actions { display: flex; flex-direction: column; gap: 10px; }
 .cta {
