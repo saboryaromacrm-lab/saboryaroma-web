@@ -181,3 +181,57 @@
 .opcionSinStock { text-decoration: line-through; opacity: 0.6; }
 .opcion:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
 .opcionUnica { align-self: flex-start; margin: 4px 0 6px; font-size: 12px; font-weight: 700; color: var(--color-gray-600); }
+
+/* Las formas de compra de un tamaño (3/10/2026): por unidad o en caja, con lo que sale
+   cada paquete y cuánto se ahorra. Filas enteras, cómodas con el dedo. */
+.formas { display: flex; flex-direction: column; gap: 6px; margin: 2px 0 8px; }
+.formasTitulo { font-size: 11px; font-weight: 700; color: var(--color-gray-500); text-transform: uppercase; letter-spacing: 0.03em; }
+.forma {
+  display: grid;
+  grid-template-columns: 16px 1fr auto;
+  align-items: center;
+  column-gap: 8px;
+  min-height: 44px;
+  padding: 6px 10px;
+  border: 1.5px solid var(--color-gray-250);
+  border-radius: var(--radius-md);
+  background: var(--color-white);
+  color: var(--color-gray-700);
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+.forma:hover { border-color: var(--color-primary); }
+.forma:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+.formaActiva, .formaActiva:hover { border-color: var(--color-primary); background: #f0f8f3; }
+.formaSinStock { opacity: 0.55; }
+.formaPunto {
+  width: 16px; height: 16px; border-radius: 50%;
+  border: 2px solid var(--color-gray-300, #cbd5e1);
+  background: var(--color-white);
+}
+.formaActiva .formaPunto { border-color: var(--color-primary); box-shadow: inset 0 0 0 3px var(--color-white); background: var(--color-primary); }
+.formaTexto { display: flex; flex-direction: column; min-width: 0; line-height: 1.25; }
+.formaNombre { font-size: 13px; font-weight: 700; color: var(--color-black); }
+.formaCu { font-size: 11.5px; color: var(--color-gray-500); }
+.formaDerecha { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
+.formaPrecio { font-size: 13px; font-weight: 800; color: var(--color-primary); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.ahorro {
+  font-size: 10.5px; font-weight: 800; white-space: nowrap;
+  padding: 1px 6px; border-radius: var(--radius-full);
+  background: #dcfce7; color: #166534;
+}
+.conviene {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 6px;
+  margin: -2px 0 8px; padding: 8px 10px;
+  border-radius: var(--radius-md);
+  background: #fff7e6; color: #92400e;
+  font-size: 12px; line-height: 1.35;
+}
+.convieneBtn {
+  min-height: 32px; padding: 4px 10px;
+  border: 0; border-radius: var(--radius-full);
+  background: var(--color-accent); color: var(--color-white);
+  font-size: 12px; font-weight: 800; cursor: pointer;
+}
+.convieneBtn:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }

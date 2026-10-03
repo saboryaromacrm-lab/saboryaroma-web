@@ -6,7 +6,7 @@ import { imgSrc } from '@/lib/api';
 import { carritoAgregado, productoOculto, productoVisible } from '@/lib/analytics';
 import { flyToCart } from '@/lib/flyToCart';
 import { money, cant } from '@/lib/format';
-import type { ItemCatalogo } from '@/lib/types';
+import type { ItemCatalogo, Variante } from '@/lib/types';
 import styles from './ProductCard.module.css';
 
 /** Mismos colores que el tema original para cada tag de dieta. */
@@ -34,7 +34,25 @@ export function ProductCard({ producto }: { producto: ItemCatalogo }) {
   const variantes = producto.variantes ?? null;
   const [clave, setClave] = useState(() => (variantes ? (variantes.find((v) => v.enStock) ?? variantes[0]).clave : ''));
   const variante = variantes ? (variantes.find((v) => v.clave === clave) ?? variantes[0]) : null;
-  const elegir = (c: string) => { setClave(c); setCantidad(1); };
+  const elegir = (c: string, cant = 1) => { setClave(c); setCantidad(cant); };
+  /*
+   * DOS PASOS (3/10/2026): primero el TAMAÑO (1 kg, Bolsa de 10 kg) y, si ese
+   * tamaño se vende de más de una forma —suelto en una lista mayorista, en
+   * caja de 5 en otra—, CÓMO lo lleva, con lo que sale cada paquete y el ahorro.
+   */
+  const grupoDe = (v: Variante) => v.grupo ?? v.clave;
+  const grupos: { clave: string; etiqueta: string; formas: Variante[] }[] = [];
+  for (const v of variantes ?? []) {
+    const g = grupos.find((x) => x.clave === grupoDe(v));
+    if (g) g.formas.push(v);
+    else grupos.push({ clave: grupoDe(v), etiqueta: v.grupoEtiqueta ?? v.etiqueta, formas: [v] });
+  }
+  const grupo = variante ? grupos.find((g) => g.clave === grupoDe(variante)) ?? null : null;
+  const elegirGrupo = (g: (typeof grupos)[number]) => {
+    if (g.clave === grupo?.clave) return;
+    elegir((g.formas.find((v) => v.enStock) ?? g.formas[0]).clave);
+  };
+  const precioDe = (v: Variante) => v.oferta?.precioOferta ?? v.precio;
   const [agregado, setAgregado] = useState(false);
   const imgRef = useRef<HTMLImageElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
@@ -73,6 +91,18 @@ export function ProductCard({ producto }: { producto: ItemCatalogo }) {
   const sinMargen = puedoSumar <= 0;
   /** Se pidió más de lo que entra: el botón agrega lo que queda, no lo elegido. */
   const recortado = conTope && !sinMargen && cantidad > puedoSumar;
+
+  /*
+   * EL EMPUJÓN: eligió paquetes sueltos y ya lleva tantos como trae una caja
+   * del mismo tamaño que sale más barata. Se le avisa con la cuenta hecha y un
+   * botón que lo pasa a cajas (las enteras que entran en lo que había elegido).
+   */
+  const nSuelto = variante?.paquetesPorUnidad ?? 1;
+  const cajaQueConviene = variante && grupo && nSuelto === 1
+    ? grupo.formas
+      .filter((v) => (v.paquetesPorUnidad ?? 1) > 1 && v.enStock && (v.ahorroPct ?? 0) > 0 && cantidad >= (v.paquetesPorUnidad ?? 1))
+      .sort((a, b) => (b.paquetesPorUnidad ?? 1) - (a.paquetesPorUnidad ?? 1))[0] ?? null
+    : null;
 
   const click = () => {
     if (sinMargen) return;
@@ -123,32 +153,89 @@ export function ProductCard({ producto }: { producto: ItemCatalogo }) {
       <div className={styles.content}>
         {producto.marca && <span className={styles.brand}>{producto.marca}</span>}
         <h3 className={styles.name}>{producto.nombre}</h3>
-        {/* El selector de tamaño: un botón por opción (cómodo con el dedo), el elegido marcado. */}
-        {variantes && variantes.length > 1 && (
+        {/* Paso 1, el TAMAÑO: un botón por tamaño (cómodo con el dedo), el elegido marcado. */}
+        {grupos.length > 1 && (
           <div className={styles.opciones} role="radiogroup" aria-label={`Tamaño de ${producto.nombre}`}>
-            {variantes.map((v) => (
-              <button
-                key={v.clave}
-                type="button"
-                role="radio"
-                aria-checked={v.clave === variante?.clave}
-                className={`${styles.opcion} ${v.clave === variante?.clave ? styles.opcionActiva : ''} ${v.enStock ? '' : styles.opcionSinStock}`}
-                onClick={() => elegir(v.clave)}
-                title={v.enStock ? undefined : 'Sin stock'}
-              >
-                {v.etiqueta}
-              </button>
-            ))}
+            {grupos.map((g) => {
+              const activo = g.clave === grupo?.clave;
+              const hay = g.formas.some((v) => v.enStock);
+              return (
+                <button
+                  key={g.clave}
+                  type="button"
+                  role="radio"
+                  aria-checked={activo}
+                  className={`${styles.opcion} ${activo ? styles.opcionActiva : ''} ${hay ? '' : styles.opcionSinStock}`}
+                  onClick={() => elegirGrupo(g)}
+                  title={hay ? undefined : 'Sin stock'}
+                >
+                  {g.etiqueta}
+                </button>
+              );
+            })}
           </div>
         )}
-        {variantes && variantes.length === 1 && <span className={styles.opcionUnica}>{variantes[0].etiqueta}</span>}
+        {grupos.length === 1 && <span className={styles.opcionUnica}>{grupos[0].etiqueta}</span>}
+        {/* Paso 2, CÓMO lo lleva: solo si el tamaño se vende de más de una forma. */}
+        {grupo && grupo.formas.length > 1 && (
+          <div className={styles.formas} role="radiogroup" aria-label={`Cómo llevar ${producto.nombre} ${grupo.etiqueta}`}>
+            <span className={styles.formasTitulo}>¿Cómo lo llevás?</span>
+            {grupo.formas.map((v) => {
+              const activa = v.clave === variante?.clave;
+              const n = v.paquetesPorUnidad ?? 1;
+              return (
+                <button
+                  key={v.clave}
+                  type="button"
+                  role="radio"
+                  aria-checked={activa}
+                  className={`${styles.forma} ${activa ? styles.formaActiva : ''} ${v.enStock ? '' : styles.formaSinStock}`}
+                  onClick={() => elegir(v.clave)}
+                >
+                  <span className={styles.formaPunto} aria-hidden="true" />
+                  <span className={styles.formaTexto}>
+                    <span className={styles.formaNombre}>{v.forma ?? v.etiqueta}</span>
+                    <span className={styles.formaCu}>
+                      {v.enStock
+                        ? n > 1 ? `${n} paquetes · ${money(precioDe(v) / n)} c/u` : `${money(precioDe(v))} c/u`
+                        : 'Sin stock'}
+                    </span>
+                  </span>
+                  <span className={styles.formaDerecha}>
+                    <span className={styles.formaPrecio}>{money(precioDe(v))}</span>
+                    {(v.ahorroPct ?? 0) > 0 && <span className={styles.ahorro}>Ahorrás {v.ahorroPct}%</span>}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        )}
         <div className={styles.price}>
           {tieneDescuento && <span className={styles.priceOld}>{money(fuente.precio)}</span>}
           {money(precioEfectivo)}{unidad === 'kg' && <span className={styles.perKg}> /kg</span>}
-          {variante && variante.kgPorUnidad !== 1 && (
+          {variante && (variante.paquetesPorUnidad ?? 1) > 1 ? (
+            <span className={styles.perKg}> · {money(precioEfectivo / (variante.paquetesPorUnidad ?? 1))} c/u</span>
+          ) : variante && variante.kgPorUnidad !== 1 && (
             <span className={styles.perKg}> · {money((precioEfectivo) / variante.kgPorUnidad)} /kg</span>
           )}
         </div>
+        {cajaQueConviene && (() => {
+          const n = cajaQueConviene.paquetesPorUnidad ?? 1;
+          const cajas = Math.floor(cantidad / n);
+          const sobran = cantidad - cajas * n;
+          return (
+            <div className={styles.conviene}>
+              <span>
+                Llevando {cantidad}, te conviene la <strong>{(cajaQueConviene.forma ?? cajaQueConviene.etiqueta).toLowerCase()}</strong>:
+                {' '}cada paquete a {money(precioDe(cajaQueConviene) / n)}.
+                {sobran > 0 && ` Los otros ${sobran} los podés agregar sueltos.`}
+              </span>
+              <button type="button" className={styles.convieneBtn} onClick={() => elegir(cajaQueConviene.clave, cajas)}>
+                Pasar a {cajas} caja{cajas === 1 ? '' : 's'}
+              </button>
+            </div>
+          );
+        })()}
 
         {enStock ? (
           <div className={styles.actions}>

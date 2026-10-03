@@ -49,7 +49,9 @@ export default function CarritoPage() {
                 <div className={styles.itemInfo}>
                   <span className={styles.itemBrand}>{it.marca}</span>
                   <span className={styles.itemName}>{it.nombre}{it.etiqueta ? ` · ${it.etiqueta}` : ''}</span>
-                  <span className={styles.itemPrice}>{money(it.precio)} {it.unidad === 'kg' ? '/kg' : 'c/u'}</span>
+                  <span className={styles.itemPrice}>
+                    {money(it.precio)} {it.unidad === 'kg' ? '/kg' : /^Caja/.test(it.etiqueta ?? '') ? 'por caja' : /^Bolsa/.test(it.etiqueta ?? '') ? 'por bolsa' : 'c/u'}
+                  </span>
                   {pasado ? (
                     <span className={styles.stockAviso}>
                       Quedan {cant(disponible, it.unidad)}: bajá la cantidad o lo revisamos al confirmar el pedido.

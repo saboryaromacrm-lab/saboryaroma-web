@@ -34,6 +34,20 @@ export interface Variante {
   presentacionId: number | null;
   /** «500 g», «Bolsa de 10 kg», «Caja de 6 × 500 g». */
   etiqueta: string;
+  /**
+   * El TAMAÑO al que pertenece (3/10/2026): «1 kg» suelto y «Caja de 5 × 1 kg»
+   * son el mismo tamaño vendido de dos formas (pueden salir de dos listas
+   * mayoristas). Sin `grupo` (API anterior), cada opción es su propio tamaño.
+   */
+  grupo?: string;
+  /** El nombre del tamaño: «1 kg», «Bolsa de 10 kg». */
+  grupoEtiqueta?: string;
+  /** La forma de compra dentro del tamaño: «Por unidad», «Caja de 5». */
+  forma?: string;
+  /** Lo que sale cada paquete en esta forma (en la bolsa, la bolsa). */
+  precioPaquete?: number;
+  /** Cuánto más barato sale cada paquete que en la forma más cara del mismo tamaño (0 = nada). */
+  ahorroPct?: number;
   kgPorUnidad: number;
   paquetesPorUnidad?: number;
   precio: number;
