@@ -235,3 +235,12 @@
   font-size: 12px; font-weight: 800; cursor: pointer;
 }
 .convieneBtn:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+
+/* El ahorro frente al minorista (3/10/2026): verde, debajo del precio. */
+.ahorroMin {
+  margin: -4px 0 8px; padding: 6px 10px;
+  border-radius: var(--radius-md);
+  background: #ecfdf3; color: #166534;
+  font-size: 12px; line-height: 1.35;
+}
+.ahorroMinDet { display: block; font-size: 11px; color: #3f6f52; margin-top: 2px; }

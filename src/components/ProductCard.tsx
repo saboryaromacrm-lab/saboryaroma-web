@@ -219,6 +219,15 @@ export function ProductCard({ producto }: { producto: ItemCatalogo }) {
             <span className={styles.perKg}> · {money((precioEfectivo) / variante.kgPorUnidad)} /kg</span>
           )}
         </div>
+        {/* Cuánto se ahorra frente al minorista (el precio de mostrador), con la cantidad elegida. */}
+        {variante?.ahorroMinorista && (
+          <div className={styles.ahorroMin}>
+            <strong>Ahorrás {money(variante.ahorroMinorista.pesos * cantidad)} ({variante.ahorroMinorista.pct}%)</strong> frente al precio minorista
+            <span className={styles.ahorroMinDet}>
+              Minorista: {money(variante.ahorroMinorista.precioKg)} el kilo · acá: {money(precioEfectivo / variante.kgPorUnidad)} el kilo
+            </span>
+          </div>
+        )}
         {cajaQueConviene && (() => {
           const n = cajaQueConviene.paquetesPorUnidad ?? 1;
           const cajas = Math.floor(cantidad / n);

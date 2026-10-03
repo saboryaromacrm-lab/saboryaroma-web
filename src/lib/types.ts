@@ -48,6 +48,12 @@ export interface Variante {
   precioPaquete?: number;
   /** Cuánto más barato sale cada paquete que en la forma más cara del mismo tamaño (0 = nada). */
   ahorroPct?: number;
+  /**
+   * Lo que se ahorra frente al precio MINORISTA (el de mostrador): el kilo
+   * minorista más barato del producto contra el kilo de esta opción. `pesos`
+   * es por unidad de compra (una bolsa, un paquete). null = no hay con qué comparar.
+   */
+  ahorroMinorista?: { pct: number; precioKg: number; pesos: number } | null;
   kgPorUnidad: number;
   paquetesPorUnidad?: number;
   precio: number;
