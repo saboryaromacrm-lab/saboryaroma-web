@@ -106,7 +106,8 @@ export interface PedidoDto {
   observaciones?: string;
   cliente: DatosCliente;
   direccion?: DireccionEntrega;
-  items: { productoId: number; cantidad: number }[];
+  /** `variante`: la opción de un granel (bolsa o paquete), 3/10/2026. */
+  items: { productoId: number; cantidad: number; variante?: string }[];
 }
 
 export async function crearPedido(dto: PedidoDto): Promise<{ ok: true; codigo: string; total: number }> {

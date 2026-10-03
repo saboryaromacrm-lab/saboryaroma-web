@@ -23,6 +23,29 @@ export interface OfertaItem {
   precioOferta: number | null;
 }
 
+/**
+ * UNA OPCIÓN DE UN GRANEL (3/10/2026): el granel no se vende suelto, se elige
+ * el tamaño. `p` = la bolsa cerrada del producto; `s<id>` = un paquete (o una
+ * caja de paquetes). Precio, mínimo y stock son de LA OPCIÓN, por unidad de
+ * compra (una bolsa, un paquete, una caja).
+ */
+export interface Variante {
+  clave: string;
+  presentacionId: number | null;
+  /** «500 g», «Bolsa de 10 kg», «Caja de 6 × 500 g». */
+  etiqueta: string;
+  kgPorUnidad: number;
+  paquetesPorUnidad?: number;
+  precio: number;
+  /** El kilo, de referencia. */
+  precioKg: number;
+  unidadesMinimas: number;
+  enStock: boolean;
+  /** Unidades de compra que puede vender el sitio; `null` = sin tope. */
+  disponible: number | null;
+  oferta: OfertaItem | null;
+}
+
 export interface ItemCatalogo {
   id: number;
   nombre: string;
@@ -53,6 +76,8 @@ export interface ItemCatalogo {
   oferta: OfertaItem | null;
   /** Tuvo un ingreso de stock (compra) en los últimos 14 días. */
   reingreso: boolean;
+  /** Solo el granel: las opciones del selector (bolsa del producto y paquetes con lista mayorista). */
+  variantes?: Variante[];
 }
 
 export interface ReglaMarca {
@@ -128,6 +153,10 @@ export interface Catalogo {
 
 export interface ItemCarrito {
   productoId: number;
+  /** La opción elegida de un granel (`Variante.clave`); sin opción = un entero. */
+  variante?: string;
+  /** El tamaño elegido, para mostrar: «500 g», «Bolsa de 10 kg». */
+  etiqueta?: string;
   nombre: string;
   marcaId: number | null;
   marca: string;

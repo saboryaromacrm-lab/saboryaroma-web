@@ -40,9 +40,9 @@ export function MiniCart({ onNavigate }: { onNavigate: () => void }) {
 
       <ul className={styles.items}>
         {visibles.map((it, i) => (
-          <li key={it.productoId} className={`${styles.item} ${i === 0 ? styles.itemLatest : ''}`}>
+          <li key={`${it.productoId}:${it.variante ?? ''}`} className={`${styles.item} ${i === 0 ? styles.itemLatest : ''}`}>
             <div className={styles.itemInfo}>
-              <span className={styles.itemName}>{it.nombre}</span>
+              <span className={styles.itemName}>{it.nombre}{it.etiqueta ? ` · ${it.etiqueta}` : ''}</span>
               <span className={styles.itemQty}>{it.cantidad} x {money(it.precio)}</span>
             </div>
             <div className={styles.itemTotal}>{money(it.precio * it.cantidad)}</div>

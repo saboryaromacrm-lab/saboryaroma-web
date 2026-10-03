@@ -26,6 +26,15 @@ const COLORES_TAG: Record<string, { bg: string; text: string }> = {
 export function ProductCard({ producto }: { producto: ItemCatalogo }) {
   const { agregar, enCarrito, disponibleDe } = useCart();
   const [cantidad, setCantidad] = useState(1);
+  /*
+   * EL GRANEL SE ELIGE POR TAMAÑO (3/10/2026): paquetes y bolsa cerrada, cada
+   * uno con su precio, mínimo y stock. Arranca en la primera opción con stock.
+   * Un entero no tiene opciones y la tarjeta queda como siempre.
+   */
+  const variantes = producto.variantes ?? null;
+  const [clave, setClave] = useState(() => (variantes ? (variantes.find((v) => v.enStock) ?? variantes[0]).clave : ''));
+  const variante = variantes ? (variantes.find((v) => v.clave === clave) ?? variantes[0]) : null;
+  const elegir = (c: string) => { setClave(c); setCantidad(1); };
   const [agregado, setAgregado] = useState(false);
   const imgRef = useRef<HTMLImageElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
@@ -44,17 +53,21 @@ export function ProductCard({ producto }: { producto: ItemCatalogo }) {
     return () => { productoOculto(id); obs.disconnect(); };
   }, [producto.id]);
 
-  const paso = producto.unidad === 'kg' ? 0.5 : 1;
-  const precioEfectivo = producto.oferta?.precioOferta ?? producto.precio;
-  const tieneDescuento = producto.oferta?.precioOferta != null;
+  /* Precio, oferta, unidad y stock: los de la opción elegida (granel) o los del producto. */
+  const fuente = variante ?? producto;
+  const unidad: 'kg' | 'u' = variante ? 'u' : producto.unidad;
+  const paso = unidad === 'kg' ? 0.5 : 1;
+  const precioEfectivo = fuente.oferta?.precioOferta ?? fuente.precio;
+  const tieneDescuento = fuente.oferta?.precioOferta != null;
+  const enStock = fuente.enStock;
 
   /*
    * Lo que ya está en el carrito y cuánto más entra. El tope sale del carrito
    * (que lo resuelve contra el catálogo vivo) y no de la prop: así la tarjeta
    * dice lo mismo que va a pasar cuando se apriete Agregar.
    */
-  const yaEnCarrito = enCarrito(producto.id);
-  const disponible = disponibleDe(producto.id);
+  const yaEnCarrito = enCarrito(producto.id, variante?.clave);
+  const disponible = disponibleDe(producto.id, variante?.clave);
   const conTope = Number.isFinite(disponible);
   const puedoSumar = conTope ? Math.max(0, Math.round((disponible - yaEnCarrito) * 1000) / 1000) : Infinity;
   const sinMargen = puedoSumar <= 0;
@@ -63,7 +76,8 @@ export function ProductCard({ producto }: { producto: ItemCatalogo }) {
 
   const click = () => {
     if (sinMargen) return;
-    agregar(tieneDescuento ? { ...producto, precio: precioEfectivo } : producto, cantidad);
+    if (variante) agregar(producto, cantidad, variante);
+    else agregar(tieneDescuento ? { ...producto, precio: precioEfectivo } : producto, cantidad);
     carritoAgregado(producto.id);
     flyToCart(imgRef.current);
     setAgregado(true);
@@ -82,13 +96,13 @@ export function ProductCard({ producto }: { producto: ItemCatalogo }) {
           className={styles.image}
           loading="lazy"
         />
-        {producto.oferta && <span className={styles.ofertaBadge}>{producto.oferta.badge}</span>}
-        {!producto.oferta && producto.reingreso && <span className={styles.reingresoBadge}>¡Volvió!</span>}
+        {fuente.oferta && <span className={styles.ofertaBadge}>{fuente.oferta.badge}</span>}
+        {!fuente.oferta && producto.reingreso && <span className={styles.reingresoBadge}>¡Volvió!</span>}
         {/* Lo que ya está en el carrito, sobre la foto: se ve de un pantallazo
             recorriendo la tienda, sin abrir el carrito para acordarse. */}
         {yaEnCarrito > 0 && (
           <span className={styles.enCarritoBadge}>
-            🛒 {cant(yaEnCarrito, producto.unidad)} en el carrito
+            🛒 {cant(yaEnCarrito, unidad)}{variante ? ` de ${variante.etiqueta}` : ''} en el carrito
           </span>
         )}
         {tagsAMostrar.length > 0 && (
@@ -109,12 +123,34 @@ export function ProductCard({ producto }: { producto: ItemCatalogo }) {
       <div className={styles.content}>
         {producto.marca && <span className={styles.brand}>{producto.marca}</span>}
         <h3 className={styles.name}>{producto.nombre}</h3>
+        {/* El selector de tamaño: un botón por opción (cómodo con el dedo), el elegido marcado. */}
+        {variantes && variantes.length > 1 && (
+          <div className={styles.opciones} role="radiogroup" aria-label={`Tamaño de ${producto.nombre}`}>
+            {variantes.map((v) => (
+              <button
+                key={v.clave}
+                type="button"
+                role="radio"
+                aria-checked={v.clave === variante?.clave}
+                className={`${styles.opcion} ${v.clave === variante?.clave ? styles.opcionActiva : ''} ${v.enStock ? '' : styles.opcionSinStock}`}
+                onClick={() => elegir(v.clave)}
+                title={v.enStock ? undefined : 'Sin stock'}
+              >
+                {v.etiqueta}
+              </button>
+            ))}
+          </div>
+        )}
+        {variantes && variantes.length === 1 && <span className={styles.opcionUnica}>{variantes[0].etiqueta}</span>}
         <div className={styles.price}>
-          {tieneDescuento && <span className={styles.priceOld}>{money(producto.precio)}</span>}
-          {money(precioEfectivo)}{producto.unidad === 'kg' && <span className={styles.perKg}> /kg</span>}
+          {tieneDescuento && <span className={styles.priceOld}>{money(fuente.precio)}</span>}
+          {money(precioEfectivo)}{unidad === 'kg' && <span className={styles.perKg}> /kg</span>}
+          {variante && variante.kgPorUnidad !== 1 && (
+            <span className={styles.perKg}> · {money((precioEfectivo) / variante.kgPorUnidad)} /kg</span>
+          )}
         </div>
 
-        {producto.enStock ? (
+        {enStock ? (
           <div className={styles.actions}>
             <div className={styles.qty}>
               <button type="button" onClick={() => setCantidad((c) => Math.max(paso, c - paso))} aria-label="Restar">−</button>
@@ -147,14 +183,14 @@ export function ProductCard({ producto }: { producto: ItemCatalogo }) {
             */}
             {sinMargen && (
               <span className={styles.stockAviso}>
-                Ya tenés todo el stock disponible en el carrito ({cant(disponible, producto.unidad)}).
+                Ya tenés todo el stock disponible en el carrito ({cant(disponible, unidad)}).
               </span>
             )}
             {recortado && (
               <span className={styles.stockAviso}>
-                Solo {puedoSumar === 1 && producto.unidad === 'u' ? 'queda' : 'quedan'}{' '}
-                {cant(puedoSumar, producto.unidad)}
-                {yaEnCarrito > 0 ? ` (ya tenés ${cant(yaEnCarrito, producto.unidad)})` : ''}.
+                Solo {puedoSumar === 1 && unidad === 'u' ? 'queda' : 'quedan'}{' '}
+                {cant(puedoSumar, unidad)}
+                {yaEnCarrito > 0 ? ` (ya tenés ${cant(yaEnCarrito, unidad)})` : ''}.
               </span>
             )}
             {!sinMargen && !recortado && conTope && cantidad >= puedoSumar && (

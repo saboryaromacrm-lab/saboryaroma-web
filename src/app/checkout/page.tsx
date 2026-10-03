@@ -107,7 +107,8 @@ export default function CheckoutPage() {
         direccion: conEnvio
           ? { calle: calle.trim(), localidad: localidad.trim(), referencia: referencia.trim() || undefined }
           : undefined,
-        items: items.map((it) => ({ productoId: it.productoId, cantidad: it.cantidad })),
+        // La opción del granel viaja: el servidor la necesita para saber si son bolsas o paquetes.
+        items: items.map((it) => ({ productoId: it.productoId, cantidad: it.cantidad, ...(it.variante ? { variante: it.variante } : {}) })),
       });
       setResultado({ codigo: r.codigo, total: r.total });
       vaciar();
@@ -252,8 +253,8 @@ export default function CheckoutPage() {
         <aside className={styles.summary}>
           <h2 className={styles.summaryTitle}>Tu pedido</h2>
           {items.map((it) => (
-            <div key={it.productoId} className={styles.summaryItem}>
-              <span>{it.cantidad} × {it.nombre}</span>
+            <div key={`${it.productoId}:${it.variante ?? ''}`} className={styles.summaryItem}>
+              <span>{it.cantidad} × {it.nombre}{it.etiqueta ? ` · ${it.etiqueta}` : ''}</span>
               <span>{money(it.precio * it.cantidad)}</span>
             </div>
           ))}

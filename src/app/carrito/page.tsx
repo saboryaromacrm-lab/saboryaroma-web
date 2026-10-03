@@ -6,11 +6,20 @@ import { money, cant } from '@/lib/format';
 import styles from './page.module.css';
 
 export default function CarritoPage() {
-  const { items, total, setCantidad, quitar, gate, config, disponibleDe } = useCart();
+  const { items, total, setCantidad, quitar, gate, config, disponibleDe, quitadosViejos } = useCart();
+
+  /* El granel antes se pedía en kilos: esos renglones se sacaron al abrir y se dice cuáles. */
+  const avisoViejos = quitadosViejos.length > 0 && (
+    <p className={styles.stockAviso} style={{ marginBottom: 16 }}>
+      Cambió la forma de comprar {quitadosViejos.join(', ')}: ahora se elige el tamaño (paquete o bolsa).
+      Lo sacamos del carrito para que lo vuelvas a agregar.
+    </p>
+  );
 
   if (items.length === 0) {
     return (
       <div className="container" style={{ padding: '60px 0', textAlign: 'center' }}>
+        {avisoViejos}
         <h1 className={styles.title}>Tu carrito está vacío</h1>
         <Link href="/tienda" className={styles.cta}>Ir a la tienda</Link>
       </div>
@@ -22,6 +31,7 @@ export default function CarritoPage() {
   return (
     <div className="container" style={{ padding: '32px 0 60px' }}>
       <h1 className={styles.title}>Tu carrito</h1>
+      {avisoViejos}
 
       <div className={styles.layout}>
         <div className={styles.items}>
@@ -30,15 +40,15 @@ export default function CarritoPage() {
             /* El mismo tope que la tarjeta, del mismo lugar. `enElTope` corta
              * el +; `pasado` es el carrito viejo que quedó con más de lo que
              * hay hoy — se avisa, no se corrige por atrás. */
-            const disponible = disponibleDe(it.productoId);
+            const disponible = disponibleDe(it.productoId, it.variante);
             const conTope = Number.isFinite(disponible);
             const enElTope = conTope && it.cantidad >= disponible;
             const pasado = conTope && it.cantidad > disponible;
             return (
-              <div key={it.productoId} className={styles.item}>
+              <div key={`${it.productoId}:${it.variante ?? ''}`} className={styles.item}>
                 <div className={styles.itemInfo}>
                   <span className={styles.itemBrand}>{it.marca}</span>
-                  <span className={styles.itemName}>{it.nombre}</span>
+                  <span className={styles.itemName}>{it.nombre}{it.etiqueta ? ` · ${it.etiqueta}` : ''}</span>
                   <span className={styles.itemPrice}>{money(it.precio)} {it.unidad === 'kg' ? '/kg' : 'c/u'}</span>
                   {pasado ? (
                     <span className={styles.stockAviso}>
@@ -49,18 +59,18 @@ export default function CarritoPage() {
                   ) : null}
                 </div>
                 <div className={styles.qty}>
-                  <button type="button" onClick={() => setCantidad(it.productoId, it.cantidad - paso)}>−</button>
+                  <button type="button" onClick={() => setCantidad(it.productoId, it.cantidad - paso, it.variante)}>−</button>
                   <span>{cant(it.cantidad, it.unidad)}</span>
                   <button
                     type="button"
-                    onClick={() => setCantidad(it.productoId, it.cantidad + paso)}
+                    onClick={() => setCantidad(it.productoId, it.cantidad + paso, it.variante)}
                     disabled={enElTope}
                   >
                     +
                   </button>
                 </div>
                 <div className={styles.itemTotal}>{money(it.precio * it.cantidad)}</div>
-                <button type="button" className={styles.remove} onClick={() => quitar(it.productoId)} aria-label="Quitar">×</button>
+                <button type="button" className={styles.remove} onClick={() => quitar(it.productoId, it.variante)} aria-label="Quitar">×</button>
               </div>
             );
           })}

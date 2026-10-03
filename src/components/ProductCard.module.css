@@ -156,3 +156,28 @@
   padding: 10px;
   border-radius: var(--radius-md);
 }
+
+/*
+ * EL SELECTOR DE TAMAÑO del granel (3/10/2026): un botón por opción, que se
+ * acomodan solos en filas (en el celular quedan dos o tres por renglón).
+ * El elegido va lleno; el que no tiene stock, tachado pero tocable (se ve el
+ * precio y el «Sin stock»).
+ */
+.opciones { display: flex; flex-wrap: wrap; gap: 6px; margin: 4px 0 6px; }
+.opcion {
+  min-height: 32px;
+  padding: 4px 10px;
+  border: 1.5px solid var(--color-gray-250);
+  border-radius: var(--radius-full);
+  background: var(--color-white);
+  color: var(--color-gray-700);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.opcion:hover { border-color: var(--color-primary); color: var(--color-primary); }
+.opcionActiva, .opcionActiva:hover { background: var(--color-primary); border-color: var(--color-primary); color: var(--color-white); }
+.opcionSinStock { text-decoration: line-through; opacity: 0.6; }
+.opcion:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+.opcionUnica { align-self: flex-start; margin: 4px 0 6px; font-size: 12px; font-weight: 700; color: var(--color-gray-600); }

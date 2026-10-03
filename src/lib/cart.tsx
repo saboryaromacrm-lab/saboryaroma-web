@@ -17,9 +17,16 @@ import {
   createContext, useCallback, useContext, useEffect, useMemo, useState,
 } from 'react';
 import { getCatalogo } from './api';
-import type { Catalogo, ItemCarrito, ItemCatalogo, ReglaMarca } from './types';
+import type { Catalogo, ItemCarrito, ItemCatalogo, ReglaMarca, Variante } from './types';
 
 const CART_KEY = 'sa_carrito';
+
+/**
+ * LA IDENTIDAD DE UN RENGLÓN: producto + opción (3/10/2026). «Albahaca 500 g» y
+ * «Albahaca bolsa de 10 kg» son dos renglones; un entero no tiene opción.
+ */
+export const claveLinea = (productoId: number, variante?: string | null) => `${productoId}:${variante ?? ''}`;
+const claveDe = (it: ItemCarrito) => claveLinea(it.productoId, it.variante);
 
 interface Config {
   montoMinimo: number;
@@ -33,18 +40,21 @@ interface CartContextValue {
   items: ItemCarrito[];
   cantidadTotal: number;
   total: number;
-  agregar: (producto: ItemCatalogo, cantidad?: number) => void;
-  quitar: (productoId: number) => void;
-  setCantidad: (productoId: number, cantidad: number) => void;
+  /** `variante`: la opción elegida de un granel (obligatoria si el producto tiene opciones). */
+  agregar: (producto: ItemCatalogo, cantidad?: number, variante?: Variante | null) => void;
+  quitar: (productoId: number, variante?: string) => void;
+  setCantidad: (productoId: number, cantidad: number, variante?: string) => void;
   vaciar: () => void;
-  /** Cuánto hay de este producto en el carrito ahora mismo (0 = ninguno). */
-  enCarrito: (productoId: number) => number;
+  /** Cuánto hay de este producto (y opción) en el carrito ahora mismo (0 = ninguno). */
+  enCarrito: (productoId: number, variante?: string) => number;
+  /** Renglones viejos que se sacaron al abrir (el granel antes se pedía en kilos). */
+  quitadosViejos: string[];
   /**
    * El tope que el sitio puede vender de este producto, según el catálogo que
    * está cargado. `Infinity` cuando todavía no llegó: nunca frenar una compra
    * por no tener el dato — el pedido se revisa igual antes de aceptarse.
    */
-  disponibleDe: (productoId: number) => number;
+  disponibleDe: (productoId: number, variante?: string) => number;
   config: Config;
   /** Catálogo completo, cargado una vez del lado del cliente: lo reusan el mega-menú y la búsqueda en vivo. */
   catalogo: Catalogo | null;
@@ -63,8 +73,20 @@ const CartContext = createContext<CartContextValue | null>(null);
 function leerCarrito(): ItemCarrito[] {
   try {
     const raw = localStorage.getItem(CART_KEY);
-    return raw ? JSON.parse(raw) : [];
+    const v = raw ? JSON.parse(raw) : [];
+    return Array.isArray(v) ? v : [];
   } catch { return []; }
+}
+
+/**
+ * EL CARRITO GUARDADO DE ANTES DEL 3/10/2026: el granel se pedía EN KILOS
+ * (`unidad: 'kg'`, sin opción). Ahora se elige el tamaño y se cuenta en
+ * bolsas o paquetes: un «3» de antes no se puede leer como 3 bolsas. Esos
+ * renglones se sacan y se avisa cuáles, para volver a agregarlos.
+ */
+function separarViejos(items: ItemCarrito[]): { vigentes: ItemCarrito[]; viejos: string[] } {
+  const esViejo = (x: ItemCarrito) => x.unidad === 'kg' && !x.variante;
+  return { vigentes: items.filter((x) => !esViejo(x)), viejos: items.filter(esViejo).map((x) => x.nombre) };
 }
 
 function configDeCatalogo(c: Catalogo | null): Config {
@@ -91,9 +113,12 @@ export function CartProvider({ children, initialCatalogo = null }: {
   const [config, setConfig] = useState<Config>(() => configDeCatalogo(initialCatalogo));
   const [catalogo, setCatalogo] = useState<Catalogo | null>(initialCatalogo);
   const [cargado, setCargado] = useState(false);
+  const [quitadosViejos, setQuitadosViejos] = useState<string[]>([]);
 
   useEffect(() => {
-    setItems(leerCarrito());
+    const { vigentes, viejos } = separarViejos(leerCarrito());
+    setItems(vigentes);
+    setQuitadosViejos(viejos);
     setCargado(true);
     if (initialCatalogo) return;
     getCatalogo()
@@ -119,24 +144,31 @@ export function CartProvider({ children, initialCatalogo = null }: {
    * comprar que frenar la venta por un dato que no está (y el pedido web lo
    * revisa una persona antes de aceptarlo).
    */
-  const disponibleDe = useCallback((productoId: number) => {
+  const disponibleDe = useCallback((productoId: number, variante?: string) => {
     const it = catalogo?.items.find((x) => x.id === productoId);
-    // `null` = sin tope: el granel con el control de stock apagado (1/10/2026).
-    return it && it.disponible != null ? it.disponible : Infinity;
+    if (!it) return Infinity;
+    // Un granel: el tope es el de LA OPCIÓN (bolsas, paquetes o cajas que se pueden vender).
+    const fuente = it.variantes ? it.variantes.find((v) => v.clave === variante) : it;
+    // `null` = sin tope (sin control de stock). Una opción que ya no existe la rechaza el pedido.
+    return fuente && fuente.disponible != null ? fuente.disponible : Infinity;
   }, [catalogo]);
 
   const enCarrito = useCallback(
-    (productoId: number) => items.find((x) => x.productoId === productoId)?.cantidad ?? 0,
+    (productoId: number, variante?: string) => items.find((x) => claveDe(x) === claveLinea(productoId, variante))?.cantidad ?? 0,
     [items],
   );
 
   /** Redondeo a 3 decimales: el granel va en kilos y 0.1+0.2 no da 0.3. */
   const r3 = (n: number) => Math.round(n * 1000) / 1000;
 
-  const agregar = useCallback((producto: ItemCatalogo, cantidad = 1) => {
+  const agregar = useCallback((producto: ItemCatalogo, cantidad = 1, variante: Variante | null = null) => {
+    // Un granel se agrega SIEMPRE con su opción: sin ella no se sabe si son bolsas o paquetes.
+    if (producto.variantes && !variante) return;
+    const vClave = variante?.clave;
     setItems((prev) => {
-      const tope = disponibleDe(producto.id);
-      const i = prev.findIndex((x) => x.productoId === producto.id);
+      const tope = disponibleDe(producto.id, vClave);
+      const k = claveLinea(producto.id, vClave);
+      const i = prev.findIndex((x) => claveDe(x) === k);
       const yaHay = i >= 0 ? prev[i].cantidad : 0;
       const nueva = Math.min(r3(yaHay + cantidad), tope);
       // Ya estaba en el tope: no hay nada que sumar (la pantalla lo explica).
@@ -146,27 +178,33 @@ export function CartProvider({ children, initialCatalogo = null }: {
         next[i] = { ...next[i], cantidad: nueva };
         return next;
       }
+      // La FOTO de lo que el cliente vio: precio (con la promo) y mínimo de la opción.
       return [...prev, {
         productoId: producto.id, nombre: producto.nombre, marcaId: producto.marcaId, marca: producto.marca,
-        precio: producto.precio, unidad: producto.unidad, unidadesMinimas: producto.unidadesMinimas,
+        precio: variante ? (variante.oferta?.precioOferta ?? variante.precio) : producto.precio,
+        unidad: variante ? 'u' : producto.unidad,
+        unidadesMinimas: variante ? variante.unidadesMinimas : producto.unidadesMinimas,
         cantidad: nueva,
+        ...(variante ? { variante: variante.clave, etiqueta: variante.etiqueta } : {}),
       }];
     });
   }, [disponibleDe]);
 
-  const quitar = useCallback((productoId: number) => {
-    setItems((prev) => prev.filter((x) => x.productoId !== productoId));
+  const quitar = useCallback((productoId: number, variante?: string) => {
+    const k = claveLinea(productoId, variante);
+    setItems((prev) => prev.filter((x) => claveDe(x) !== k));
   }, []);
 
-  const setCantidad = useCallback((productoId: number, cantidad: number) => {
+  const setCantidad = useCallback((productoId: number, cantidad: number, variante?: string) => {
+    const k = claveLinea(productoId, variante);
     setItems((prev) => {
-      if (cantidad <= 0) return prev.filter((x) => x.productoId !== productoId);
-      const tope = disponibleDe(productoId);
+      if (cantidad <= 0) return prev.filter((x) => claveDe(x) !== k);
+      const tope = disponibleDe(productoId, variante);
       /* Se topea SUBIENDO, nunca bajando: si el carrito quedó guardado con más
        * de lo que hay hoy, se avisa en pantalla y el cliente lo corrige — no se
        * le toca el carrito por atrás. */
       return prev.map((x) => {
-        if (x.productoId !== productoId) return x;
+        if (claveDe(x) !== k) return x;
         const sube = cantidad > x.cantidad;
         return { ...x, cantidad: sube ? Math.min(r3(cantidad), Math.max(tope, x.cantidad)) : r3(cantidad) };
       });
@@ -194,7 +232,7 @@ export function CartProvider({ children, initialCatalogo = null }: {
       });
     const productos = items
       .filter((it) => it.unidadesMinimas > 0)
-      .map((it) => ({ nombre: it.nombre, enCarrito: it.cantidad, falta: Math.max(0, it.unidadesMinimas - it.cantidad), ok: it.cantidad >= it.unidadesMinimas }));
+      .map((it) => ({ nombre: it.etiqueta ? `${it.nombre} (${it.etiqueta})` : it.nombre, enCarrito: it.cantidad, falta: Math.max(0, it.unidadesMinimas - it.cantidad), ok: it.cantidad >= it.unidadesMinimas }));
 
     const cantidadOk = marcas.every((m) => m.ok) && productos.every((p) => p.ok);
     return {
@@ -208,7 +246,7 @@ export function CartProvider({ children, initialCatalogo = null }: {
 
   const value: CartContextValue = {
     items, cantidadTotal, total, agregar, quitar, setCantidad, vaciar,
-    enCarrito, disponibleDe, config, catalogo, gate,
+    enCarrito, quitadosViejos, disponibleDe, config, catalogo, gate,
   };
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
