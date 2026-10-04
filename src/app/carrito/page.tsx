@@ -54,7 +54,10 @@ export default function CarritoPage() {
     ...gate.marcas.map((m) => ({ clave: `m:${m.marca}`, nombre: m.marca, ...m })),
     ...gate.productos.map((p) => ({ clave: `p:${p.nombre}`, ...p })),
   ];
-  const hayCantidad = reglas.length > 0;
+  /* Con el monto cumplido, la Opción 2 (los mínimos por marca) ya no hace
+   * falta: se saca de la pantalla para no confundir (pedido del dueño, 4/10/2026).
+   * Los productos del carrito no se tocan. */
+  const hayCantidad = reglas.length > 0 && !(hayMonto && gate.montoOk);
   const dosOpciones = hayMonto && hayCantidad;
   const nArticulos = items.length;
 
