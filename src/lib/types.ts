@@ -164,6 +164,8 @@ export interface Catalogo {
   montoMinimoCamioneta: number;
   /** Si se ofrece el envío sin costo. Opcional: una API anterior al 4/10/2026 no lo manda (= sí). */
   envioCamionetaActivo?: boolean;
+  /** Catálogo sin fotos: la tienda lista los productos (renglones) en vez de tarjetas. Opcional (= no). */
+  vistaLista?: boolean;
   presupuestoValidezDias: number;
   categorias: Termino[];
   /** Opcional: una API anterior al 2/10/2026 no las manda. */

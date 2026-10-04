@@ -3,6 +3,7 @@ import { getCatalogo, imgSrc } from '@/lib/api';
 import { norm } from '@/lib/format';
 import { jsonLdString } from '@/lib/jsonLd';
 import { ProductCard } from '@/components/ProductCard';
+import { ListaProductos } from '@/components/ListaProductos';
 import { ShopFilters } from '@/components/ShopFilters';
 import type { ItemCatalogo } from '@/lib/types';
 import styles from './page.module.css';
@@ -141,6 +142,15 @@ export default async function TiendaPage({
         <section>
           {items.length === 0 ? (
             <p className={styles.vacio}>No se encontraron productos que coincidan con tu selección.</p>
+          ) : cat.vistaLista ? (
+            <div className={styles.lista}>
+              <div className={styles.listaCabecera} aria-hidden="true">
+                <span>Producto</span><span>Precio</span><span>Cantidad</span>
+              </div>
+              {/* CATÁLOGO SIN FOTOS (4/10/2026): con `vistaLista` encendido en el ERP, renglones en vez de
+                  tarjetas. El renglón es un archivo aparte que se descarga solo acá (ver ListaProductos). */}
+              <ListaProductos items={items} className={styles.listaItems} />
+            </div>
           ) : (
             <div className={styles.grid}>
               {items.map((p) => <ProductCard key={p.id} producto={p} />)}

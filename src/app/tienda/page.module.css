@@ -33,6 +33,17 @@
 .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
 .vacio { color: var(--color-gray-550); padding: var(--space-10) 0; text-align: center; }
 
+/* Catálogo sin fotos: una lista en una sola tarjeta, con sus títulos de columna en pantalla ancha. */
+.lista { background: var(--color-white); border-radius: var(--radius-lg); box-shadow: var(--shadow-card); overflow: hidden; }
+.listaCabecera {
+  display: grid; grid-template-columns: minmax(0, 1fr) 96px 200px; column-gap: 20px;
+  padding: 8px 18px; border-bottom: 1px solid var(--color-gray-200); background: var(--color-gray-50);
+  font-size: 10.5px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: var(--color-gray-500);
+}
+.listaCabecera span:nth-child(2) { text-align: right; }
+.listaCabecera span:nth-child(3) { text-align: right; }
+.listaItems { list-style: none; margin: 0; padding: 0; }
+
 @media (max-width: 1200px) {
   .grid { grid-template-columns: repeat(2, 1fr); }
 }
@@ -43,6 +54,9 @@
   .count { font-size: 12px; padding: 4px 10px; }
   .layout { grid-template-columns: 1fr; gap: 0; padding-top: 15px; }
   .grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+}
+@media (max-width: 640px) {
+  .listaCabecera { display: none; }
 }
 @media (max-width: 400px) {
   .grid { grid-template-columns: 1fr; }

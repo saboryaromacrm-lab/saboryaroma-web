@@ -1,118 +1,26 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
-import { useCart } from '@/lib/cart';
+import { useRef } from 'react';
 import { imgSrc } from '@/lib/api';
-import { carritoAgregado, productoOculto, productoVisible } from '@/lib/analytics';
-import { flyToCart } from '@/lib/flyToCart';
+import { useCompraProducto } from '@/lib/useCompraProducto';
+import { COLORES_TAG, COLOR_TAG_DEFAULT } from '@/lib/etiquetas';
 import { money, cant } from '@/lib/format';
-import type { ItemCatalogo, Variante } from '@/lib/types';
+import type { ItemCatalogo } from '@/lib/types';
 import styles from './ProductCard.module.css';
 
-/** Mismos colores que el tema original para cada tag de dieta. */
-const COLORES_TAG: Record<string, { bg: string; text: string }> = {
-  'SIN TACC': { bg: '#dcfce7', text: '#166534' },
-  'SIN AZUCAR': { bg: '#dbeafe', text: '#1e40af' },
-  'SIN AZÚCAR': { bg: '#dbeafe', text: '#1e40af' },
-  'SIN LACTOSA': { bg: '#fef3c7', text: '#92400e' },
-  VEGANO: { bg: '#d1fae5', text: '#065f46' },
-  KETO: { bg: '#ede9fe', text: '#5b21b6' },
-  'SIN GLUTEN': { bg: '#fce7f3', text: '#9d174d' },
-  ORGANICO: { bg: '#ecfccb', text: '#3f6212' },
-  'ORGÁNICO': { bg: '#ecfccb', text: '#3f6212' },
-  'SIN SAL': { bg: '#e0e7ff', text: '#3730a3' },
-};
-
+/**
+ * LA TARJETA CON FOTO. La regla de compra (tamaños, formas, tope de stock,
+ * empujón a la caja, alta al carrito) vive en `useCompraProducto`, compartida
+ * con la vista de lista sin foto (4/10/2026); acá solo se dibuja.
+ */
 export function ProductCard({ producto }: { producto: ItemCatalogo }) {
-  const { agregar, enCarrito, disponibleDe } = useCart();
-  const [cantidad, setCantidad] = useState(1);
-  /*
-   * EL GRANEL SE ELIGE POR TAMAÑO (3/10/2026): paquetes y bolsa cerrada, cada
-   * uno con su precio, mínimo y stock. Arranca en la primera opción con stock.
-   * Un entero no tiene opciones y la tarjeta queda como siempre.
-   */
-  const variantes = producto.variantes ?? null;
-  const [clave, setClave] = useState(() => (variantes ? (variantes.find((v) => v.enStock) ?? variantes[0]).clave : ''));
-  const variante = variantes ? (variantes.find((v) => v.clave === clave) ?? variantes[0]) : null;
-  const elegir = (c: string, cant = 1) => { setClave(c); setCantidad(cant); };
-  /*
-   * DOS PASOS (3/10/2026): primero el TAMAÑO (1 kg, Bolsa de 10 kg) y, si ese
-   * tamaño se vende de más de una forma —suelto en una lista mayorista, en
-   * caja de 5 en otra—, CÓMO lo lleva, con lo que sale cada paquete y el ahorro.
-   */
-  const grupoDe = (v: Variante) => v.grupo ?? v.clave;
-  const grupos: { clave: string; etiqueta: string; formas: Variante[] }[] = [];
-  for (const v of variantes ?? []) {
-    const g = grupos.find((x) => x.clave === grupoDe(v));
-    if (g) g.formas.push(v);
-    else grupos.push({ clave: grupoDe(v), etiqueta: v.grupoEtiqueta ?? v.etiqueta, formas: [v] });
-  }
-  const grupo = variante ? grupos.find((g) => g.clave === grupoDe(variante)) ?? null : null;
-  const elegirGrupo = (g: (typeof grupos)[number]) => {
-    if (g.clave === grupo?.clave) return;
-    elegir((g.formas.find((v) => v.enStock) ?? g.formas[0]).clave);
-  };
-  const precioDe = (v: Variante) => v.oferta?.precioOferta ?? v.precio;
-  const [agregado, setAgregado] = useState(false);
+  const {
+    cantidad, restar, sumar, sumarBloqueado, variante, grupos, grupo, elegir, elegirGrupo, precioDe,
+    fuente, unidad, precioEfectivo, tieneDescuento, enStock, yaEnCarrito, disponible, conTope, puedoSumar,
+    sinMargen, recortado, cajaQueConviene, agregado, agregarAlCarrito, raizRef: cardRef,
+  } = useCompraProducto<HTMLDivElement>(producto);
   const imgRef = useRef<HTMLImageElement>(null);
-  const cardRef = useRef<HTMLDivElement>(null);
-
-  /* Telemetría de interés: cuenta los segundos con la tarjeta REALMENTE en
-     pantalla (≥50% visible). Es la métrica "en qué se quedan mirando". */
-  useEffect(() => {
-    const el = cardRef.current;
-    if (!el || typeof IntersectionObserver === 'undefined') return undefined;
-    const id = producto.id;
-    const obs = new IntersectionObserver(
-      ([entrada]) => (entrada.isIntersecting ? productoVisible(id) : productoOculto(id)),
-      { threshold: 0.5 },
-    );
-    obs.observe(el);
-    return () => { productoOculto(id); obs.disconnect(); };
-  }, [producto.id]);
-
-  /* Precio, oferta, unidad y stock: los de la opción elegida (granel) o los del producto. */
-  const fuente = variante ?? producto;
-  const unidad: 'kg' | 'u' = variante ? 'u' : producto.unidad;
-  const paso = unidad === 'kg' ? 0.5 : 1;
-  const precioEfectivo = fuente.oferta?.precioOferta ?? fuente.precio;
-  const tieneDescuento = fuente.oferta?.precioOferta != null;
-  const enStock = fuente.enStock;
-
-  /*
-   * Lo que ya está en el carrito y cuánto más entra. El tope sale del carrito
-   * (que lo resuelve contra el catálogo vivo) y no de la prop: así la tarjeta
-   * dice lo mismo que va a pasar cuando se apriete Agregar.
-   */
-  const yaEnCarrito = enCarrito(producto.id, variante?.clave);
-  const disponible = disponibleDe(producto.id, variante?.clave);
-  const conTope = Number.isFinite(disponible);
-  const puedoSumar = conTope ? Math.max(0, Math.round((disponible - yaEnCarrito) * 1000) / 1000) : Infinity;
-  const sinMargen = puedoSumar <= 0;
-  /** Se pidió más de lo que entra: el botón agrega lo que queda, no lo elegido. */
-  const recortado = conTope && !sinMargen && cantidad > puedoSumar;
-
-  /*
-   * EL EMPUJÓN: eligió paquetes sueltos y ya lleva tantos como trae una caja
-   * del mismo tamaño que sale más barata. Se le avisa con la cuenta hecha y un
-   * botón que lo pasa a cajas (las enteras que entran en lo que había elegido).
-   */
-  const nSuelto = variante?.paquetesPorUnidad ?? 1;
-  const cajaQueConviene = variante && grupo && nSuelto === 1
-    ? grupo.formas
-      .filter((v) => (v.paquetesPorUnidad ?? 1) > 1 && v.enStock && (v.ahorroPct ?? 0) > 0 && cantidad >= (v.paquetesPorUnidad ?? 1))
-      .sort((a, b) => (b.paquetesPorUnidad ?? 1) - (a.paquetesPorUnidad ?? 1))[0] ?? null
-    : null;
-
-  const click = () => {
-    if (sinMargen) return;
-    if (variante) agregar(producto, cantidad, variante);
-    else agregar(tieneDescuento ? { ...producto, precio: precioEfectivo } : producto, cantidad);
-    carritoAgregado(producto.id);
-    flyToCart(imgRef.current);
-    setAgregado(true);
-    setTimeout(() => setAgregado(false), 1200);
-  };
+  const click = () => agregarAlCarrito(imgRef.current);
 
   const tagsAMostrar = producto.etiquetas.slice(0, 2);
 
@@ -138,7 +46,7 @@ export function ProductCard({ producto }: { producto: ItemCatalogo }) {
         {tagsAMostrar.length > 0 && (
           <div className={styles.tags}>
             {tagsAMostrar.map((t) => {
-              const c = COLORES_TAG[t.nombre.toUpperCase()] ?? { bg: '#f3f4f6', text: '#374151' };
+              const c = COLORES_TAG[t.nombre.toUpperCase()] ?? COLOR_TAG_DEFAULT;
               return (
                 <span key={t.id} className={styles.tag} style={{ background: c.bg, color: c.text }}>
                   {t.nombre.toUpperCase()}
@@ -249,15 +157,10 @@ export function ProductCard({ producto }: { producto: ItemCatalogo }) {
         {enStock ? (
           <div className={styles.actions}>
             <div className={styles.qty}>
-              <button type="button" onClick={() => setCantidad((c) => Math.max(paso, c - paso))} aria-label="Restar">−</button>
+              <button type="button" onClick={restar} aria-label="Restar">−</button>
               <span key={cantidad} className={styles.qtyValue}>{cantidad}</span>
               {/* El + no pasa de lo que queda: el aviso de abajo explica por qué. */}
-              <button
-                type="button"
-                onClick={() => setCantidad((c) => (conTope ? Math.min(c + paso, Math.max(paso, puedoSumar)) : c + paso))}
-                disabled={sinMargen || (conTope && cantidad >= puedoSumar)}
-                aria-label="Sumar"
-              >
+              <button type="button" onClick={sumar} disabled={sumarBloqueado} aria-label="Sumar">
                 +
               </button>
             </div>

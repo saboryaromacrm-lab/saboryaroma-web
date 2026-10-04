@@ -1,0 +1,148 @@
+/*
+ * EL RENGLÓN SIN FOTO. Tres columnas en pantalla ancha —datos | precio |
+ * compra— que en el celular se vuelven dos filas: los datos arriba a lo ancho,
+ * el precio y la compra abajo, uno a cada lado. Nada centrado suelto, nada
+ * estirado: cada cosa en su lugar fijo para que el ojo recorra la lista rápido.
+ */
+.row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  grid-template-areas: 'info precio compra';
+  align-items: center;
+  column-gap: 20px;
+  padding: 12px 18px;
+  background: var(--color-white);
+  transition: background 0.15s;
+}
+.row + .row { border-top: 1px solid var(--color-gray-150); }
+.row:hover { background: #fafcfb; }
+.row[data-sin-stock] .info { opacity: 0.6; }
+
+/* ---- Datos ---- */
+.info { grid-area: info; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.cabecera { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; min-height: 16px; }
+.marca { font-size: 10.5px; font-weight: 700; letter-spacing: 0.04em; color: var(--color-gray-500); text-transform: uppercase; }
+.nombre {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--color-black);
+  overflow-wrap: anywhere;
+}
+.chips { display: flex; flex-wrap: wrap; gap: 4px; }
+.chip, .chipMas, .chipTamano, .chipOferta, .chipVolvio {
+  font-size: 10px; font-weight: 800; letter-spacing: 0.02em; white-space: nowrap;
+  padding: 2px 7px; border-radius: var(--radius-full);
+}
+.chipMas { background: var(--color-gray-200); color: var(--color-gray-700); font-weight: 700; }
+.chipTamano { background: var(--color-gray-150); color: var(--color-gray-700); }
+.chipOferta { background: var(--color-error); color: var(--color-white); }
+.chipVolvio { background: var(--color-primary); color: var(--color-white); }
+
+/* Tamaños del granel: píldoras; la elegida llena. */
+.opciones { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+.opcion {
+  min-height: 30px; padding: 3px 10px;
+  border: 1.5px solid var(--color-gray-250); border-radius: var(--radius-full);
+  background: var(--color-white); color: var(--color-gray-700);
+  font-size: 12px; font-weight: 700; cursor: pointer; transition: all 0.15s;
+}
+.opcion:hover { border-color: var(--color-primary); color: var(--color-primary); }
+.opcionActiva, .opcionActiva:hover { background: var(--color-primary); border-color: var(--color-primary); color: var(--color-white); }
+.opcionSinStock { text-decoration: line-through; opacity: 0.6; }
+.opcion:focus-visible, .forma:focus-visible, .convieneBtn:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+
+/* Formas de compra del tamaño (por unidad / en caja): una píldora por forma, con el precio por paquete. */
+.formas { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 2px; }
+.forma {
+  display: inline-flex; align-items: center; gap: 4px;
+  min-height: 32px; padding: 4px 10px;
+  border: 1.5px solid var(--color-gray-250); border-radius: var(--radius-md);
+  background: var(--color-white); color: var(--color-gray-700);
+  font-size: 12px; cursor: pointer; transition: all 0.15s;
+}
+.forma strong { color: var(--color-black); }
+.forma:hover { border-color: var(--color-primary); }
+.formaActiva, .formaActiva:hover { border-color: var(--color-primary); background: #f0f8f3; }
+.ahorro { font-style: normal; font-size: 10.5px; font-weight: 800; padding: 1px 6px; border-radius: var(--radius-full); background: #dcfce7; color: #166534; }
+
+.ahorroMin { font-size: 12px; color: #166534; line-height: 1.35; }
+.conviene {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 6px;
+  margin-top: 2px; padding: 6px 10px; border-radius: var(--radius-md);
+  background: #fff7e6; color: #92400e; font-size: 12px; line-height: 1.35;
+}
+.convieneBtn {
+  min-height: 28px; padding: 3px 10px; border: 0; border-radius: var(--radius-full);
+  background: var(--color-accent); color: var(--color-white); font-size: 12px; font-weight: 800; cursor: pointer;
+}
+
+/* ---- Precio ---- */
+.precio { grid-area: precio; display: flex; flex-direction: column; align-items: flex-end; line-height: 1.2; min-width: 96px; }
+.precioViejo { font-size: 12px; font-weight: 600; color: var(--color-gray-500); }
+.precioValor { font-size: 19px; font-weight: 800; color: var(--color-primary); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.precioRef { font-size: 11.5px; color: var(--color-gray-500); white-space: nowrap; }
+
+/* ---- Compra ---- */
+.compra { grid-area: compra; display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+.linea { display: flex; align-items: center; gap: 8px; }
+.qty {
+  display: inline-flex; align-items: center; gap: 2px;
+  border: 1px solid var(--color-gray-250); border-radius: var(--radius-full); padding: 2px;
+}
+.qty button {
+  width: 32px; height: 32px; border: none; border-radius: var(--radius-full);
+  background: var(--color-gray-100); color: var(--color-gray-700);
+  font-size: 17px; font-weight: 700; line-height: 1; cursor: pointer; transition: background 0.15s, transform 0.15s;
+}
+.qty button:hover:not(:disabled) { background: var(--color-gray-200); }
+.qty button:active:not(:disabled) { transform: scale(0.88); }
+.qty button:disabled { color: var(--color-gray-400); cursor: not-allowed; }
+.qtyValor { min-width: 30px; text-align: center; font-weight: 700; font-size: 14px; font-variant-numeric: tabular-nums; animation: qtyPop 0.25s cubic-bezier(0.34, 1.56, 0.64, 1); }
+@keyframes qtyPop { 0% { transform: scale(1.35); color: var(--color-primary); } 100% { transform: scale(1); color: inherit; } }
+
+.agregar {
+  min-height: 38px; padding: 0 18px; border: none; border-radius: var(--radius-md);
+  background: var(--color-primary); color: var(--color-white);
+  font-weight: 700; font-size: 13.5px; white-space: nowrap; cursor: pointer; transition: background 0.15s, transform 0.15s;
+}
+.agregar:hover { background: var(--color-primary-dark); }
+.agregar:active { transform: scale(0.97); }
+.agregar:disabled { background: var(--color-gray-200); color: var(--color-gray-500); cursor: not-allowed; transform: none; }
+.agregar[data-added='true'] { background: var(--color-success); animation: addPop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1); }
+@keyframes addPop { 0% { transform: scale(0.94); } 60% { transform: scale(1.03); } 100% { transform: scale(1); } }
+
+.enCarrito {
+  font-size: 11px; font-weight: 800; white-space: nowrap;
+  padding: 2px 8px; border-radius: var(--radius-full);
+  background: #e8f7ee; color: var(--color-primary);
+}
+.aviso, .avisoSuave { font-size: 11.5px; line-height: 1.3; text-align: right; max-width: 220px; }
+.aviso { color: var(--color-warning-dark); font-weight: 600; }
+.avisoSuave { color: var(--color-gray-500); }
+.sinStock {
+  font-size: 12px; font-weight: 700; color: var(--color-gray-500);
+  background: var(--color-gray-150); padding: 8px 14px; border-radius: var(--radius-md); white-space: nowrap;
+}
+
+/* ---- Celular: datos arriba; precio a la izquierda y compra a la derecha abajo. ---- */
+@media (max-width: 640px) {
+  .row {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      'info info'
+      'precio compra';
+    row-gap: 10px;
+    column-gap: 10px;
+    padding: 12px 14px;
+  }
+  .precio { align-items: flex-start; min-width: 0; }
+  .precioValor { font-size: 18px; }
+  .qty button { width: 34px; height: 34px; }
+  .agregar { padding: 0 14px; }
+  .aviso, .avisoSuave { max-width: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .qtyValor, .agregar[data-added='true'] { animation: none; }
+}
