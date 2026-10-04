@@ -160,8 +160,10 @@ export interface Catalogo {
   listaNombre: string;
   /** 0 = sin mínimo por monto configurado. */
   montoMinimo: number;
-  /** Piso EXTRA del pedido si la entrega es con la camioneta de la empresa (0 = sin piso). */
+  /** Piso EXTRA del pedido si la entrega es el envío sin costo (0 = sin piso). */
   montoMinimoCamioneta: number;
+  /** Si se ofrece el envío sin costo. Opcional: una API anterior al 4/10/2026 no lo manda (= sí). */
+  envioCamionetaActivo?: boolean;
   presupuestoValidezDias: number;
   categorias: Termino[];
   /** Opcional: una API anterior al 2/10/2026 no las manda. */

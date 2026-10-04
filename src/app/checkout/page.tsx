@@ -8,10 +8,11 @@ import { money, telefonoArgentino } from '@/lib/format';
 import type { Entrega } from '@/lib/types';
 import styles from './page.module.css';
 
+/* `camioneta` es el id interno: el cliente lee «Envío sin costo» (4/10/2026). */
 const ENTREGAS: { id: Entrega; label: string }[] = [
   { id: 'retiro', label: 'Retiro en el local' },
   { id: 'cadete', label: 'Envío por cadete' },
-  { id: 'camioneta', label: 'Envío con la camioneta de la empresa' },
+  { id: 'camioneta', label: 'Envío sin costo' },
 ];
 
 export default function CheckoutPage() {
@@ -65,13 +66,17 @@ export default function CheckoutPage() {
   }
 
   /*
-   * La camioneta tiene su propio piso: mover el vehículo cuesta lo mismo
-   * lleve lo que lleve. Si el total no llega, la opción se muestra
-   * deshabilitada con cuánto falta (y el servidor lo revalida igual).
+   * El envío sin costo se puede apagar desde el ERP (entonces ni aparece) y
+   * tiene su propio piso: mover el vehículo cuesta lo mismo lleve lo que
+   * lleve. Si el total no llega, la opción se muestra deshabilitada con
+   * cuánto falta (y el servidor lo revalida igual).
    */
+  const entregas = config.envioCamionetaActivo ? ENTREGAS : ENTREGAS.filter((op) => op.id !== 'camioneta');
+  // Si se apagó con la página abierta, la elegida vuelve a retiro en vez de quedar en una opción que no está.
+  const entregaVigente: Entrega = entregas.some((op) => op.id === entrega) ? entrega : 'retiro';
   const minCamioneta = config.montoMinimoCamioneta;
   const camionetaOk = !minCamioneta || total >= minCamioneta;
-  const conEnvio = entrega !== 'retiro';
+  const conEnvio = entregaVigente !== 'retiro';
 
   const enviar = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -88,8 +93,8 @@ export default function CheckoutPage() {
       setError('El DNI tiene que tener 7 u 8 dígitos.');
       return;
     }
-    if (entrega === 'camioneta' && !camionetaOk) {
-      setError(`El envío con la camioneta necesita un pedido de al menos ${money(minCamioneta)}. Elegí otra forma de entrega o sumá productos.`);
+    if (entregaVigente === 'camioneta' && !camionetaOk) {
+      setError(`El envío sin costo necesita un pedido de al menos ${money(minCamioneta)}. Elegí otra forma de entrega o sumá productos.`);
       return;
     }
     // Sin dirección no hay a dónde llevar el pedido: antes dependía de que el
@@ -101,7 +106,7 @@ export default function CheckoutPage() {
     setEnviando(true);
     try {
       const r = await crearPedido({
-        entrega,
+        entrega: entregaVigente,
         observaciones,
         cliente: { nombre, apellido, telefono, dni },
         direccion: conEnvio
@@ -168,18 +173,18 @@ export default function CheckoutPage() {
           <div className={styles.field}>
             <label>Entrega *</label>
             <div className={styles.entregas}>
-              {ENTREGAS.map((op) => {
+              {entregas.map((op) => {
                 const esCamionetaBloqueada = op.id === 'camioneta' && !camionetaOk;
                 return (
                   <label
                     key={op.id}
                     className={styles.entregaOpt}
-                    data-selected={entrega === op.id}
+                    data-selected={entregaVigente === op.id}
                     style={esCamionetaBloqueada ? { opacity: 0.55, cursor: 'not-allowed' } : undefined}
                   >
                     <input
                       type="radio" name="entrega"
-                      checked={entrega === op.id}
+                      checked={entregaVigente === op.id}
                       disabled={esCamionetaBloqueada}
                       onChange={() => setEntrega(op.id)}
                     />

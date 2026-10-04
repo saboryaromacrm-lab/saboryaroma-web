@@ -30,8 +30,10 @@ const claveDe = (it: ItemCarrito) => claveLinea(it.productoId, it.variante);
 
 interface Config {
   montoMinimo: number;
-  /** Piso extra si la entrega elegida es la camioneta de la empresa. */
+  /** Piso extra si la entrega elegida es el envío sin costo (la camioneta de la empresa). */
   montoMinimoCamioneta: number;
+  /** El envío sin costo se ofrece (se apaga desde el ERP). */
+  envioCamionetaActivo: boolean;
   reglasMarca: ReglaMarca[];
   presupuestoValidezDias: number;
 }
@@ -93,9 +95,10 @@ function configDeCatalogo(c: Catalogo | null): Config {
   return c
     ? {
       montoMinimo: c.montoMinimo, montoMinimoCamioneta: c.montoMinimoCamioneta,
+      envioCamionetaActivo: c.envioCamionetaActivo !== false,
       reglasMarca: c.reglasMarca, presupuestoValidezDias: c.presupuestoValidezDias,
     }
-    : { montoMinimo: 0, montoMinimoCamioneta: 0, reglasMarca: [], presupuestoValidezDias: 7 };
+    : { montoMinimo: 0, montoMinimoCamioneta: 0, envioCamionetaActivo: true, reglasMarca: [], presupuestoValidezDias: 7 };
 }
 
 /**
