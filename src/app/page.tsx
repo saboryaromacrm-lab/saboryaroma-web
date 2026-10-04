@@ -11,7 +11,7 @@ export default async function HomePage() {
 
   if (!cat) {
     return (
-      <div className="container" style={{ padding: '60px 0', textAlign: 'center' }}>
+      <div className="container" style={{ paddingBlock: '60px', textAlign: 'center' }}>
         <p>No pudimos conectar con la tienda. Probá de nuevo en un momento.</p>
       </div>
     );

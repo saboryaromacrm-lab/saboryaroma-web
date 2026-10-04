@@ -34,7 +34,7 @@ export default function CheckoutPage() {
 
   if (resultado) {
     return (
-      <div className="container" style={{ padding: '60px 0', textAlign: 'center' }}>
+      <div className="container" style={{ paddingBlock: '60px', textAlign: 'center' }}>
         <div className={styles.okIcon}>✓</div>
         <h1 className={styles.title}>¡Pedido recibido!</h1>
         <p className={styles.okText}>
@@ -48,7 +48,7 @@ export default function CheckoutPage() {
 
   if (items.length === 0) {
     return (
-      <div className="container" style={{ padding: '60px 0', textAlign: 'center' }}>
+      <div className="container" style={{ paddingBlock: '60px', textAlign: 'center' }}>
         <h1 className={styles.title}>Tu carrito está vacío</h1>
         <Link href="/tienda" className={styles.cta}>Ir a la tienda</Link>
       </div>
@@ -57,7 +57,7 @@ export default function CheckoutPage() {
 
   if (!gate.habilitado) {
     return (
-      <div className="container" style={{ padding: '60px 0', textAlign: 'center' }}>
+      <div className="container" style={{ paddingBlock: '60px', textAlign: 'center' }}>
         <h1 className={styles.title}>Todavía no llegaste al mínimo de compra</h1>
         <p className={styles.okText}>Volvé al carrito para ver qué falta.</p>
         <Link href="/carrito" className={styles.cta}>Volver al carrito</Link>
@@ -125,7 +125,7 @@ export default function CheckoutPage() {
   };
 
   return (
-    <div className="container" style={{ padding: '32px 0 60px' }}>
+    <div className="container" style={{ paddingTop: '32px', paddingBottom: '60px' }}>
       <h1 className={styles.title}>Finalizar pedido</h1>
 
       <div className={styles.layout}>

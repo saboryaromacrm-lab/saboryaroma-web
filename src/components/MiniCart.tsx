@@ -74,12 +74,15 @@ export function MiniCart({ onNavigate }: { onNavigate: () => void }) {
         ) : (
           <div className={styles.progress}>
             <div className={styles.progressRow}>
-              <span>Faltan <strong>{money(gate.faltaMonto)}</strong></span>
+              <span>Te faltan <strong>{money(gate.faltaMonto)}</strong> para la compra mínima</span>
               <span className={styles.progressMuted}>{money(total)} / {money(config.montoMinimo)}</span>
             </div>
             <div className={styles.progressBar}>
               <div className={styles.progressFill} style={{ width: `${progresoPct}%` }} />
             </div>
+            {(gate.marcas.length > 0 || gate.productos.length > 0) && (
+              <p className={styles.progressHint}>O completá el mínimo de cada marca de tu carrito: el detalle está en «Ver carrito».</p>
+            )}
           </div>
         )
       )}
