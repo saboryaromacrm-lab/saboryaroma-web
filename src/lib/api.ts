@@ -110,6 +110,35 @@ export interface PedidoDto {
   items: { productoId: number; cantidad: number; variante?: string }[];
 }
 
+/** Lo que el checkout recibe al poner un DNI ya registrado (nada de crédito ni correo). */
+export interface ClienteTienda {
+  encontrado: boolean;
+  nombre?: string;
+  apellido?: string;
+  telefono?: string;
+  direccion?: string;
+  localidad?: string;
+}
+
+/**
+ * Busca al cliente por DNI para completar el checkout. POST para que el DNI no
+ * quede en la dirección. Si falla (red, cupo agotado) devuelve «no encontrado»:
+ * el cliente sigue completando a mano, nunca se traba la compra por esto.
+ */
+export async function buscarCliente(dni: string): Promise<ClienteTienda> {
+  try {
+    const r = await pedir(
+      `${API}/tienda/cliente`,
+      { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ dni }) },
+      TIMEOUT_CATALOGO_MS,
+      'No se pudo buscar el cliente.',
+    );
+    return r.ok ? await manejar<ClienteTienda>(r) : { encontrado: false };
+  } catch {
+    return { encontrado: false };
+  }
+}
+
 export async function crearPedido(dto: PedidoDto): Promise<{ ok: true; codigo: string; total: number }> {
   const r = await pedir(
     `${API}/tienda/pedidos`,
