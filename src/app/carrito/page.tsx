@@ -59,6 +59,9 @@ export default function CarritoPage() {
    * Los productos del carrito no se tocan. */
   const hayCantidad = reglas.length > 0 && !(hayMonto && gate.montoOk);
   const dosOpciones = hayMonto && hayCantidad;
+  /* Cumplida UNA de las dos opciones (cualquiera), queda solo el «¡Listo!»:
+   * las tarjetas de las opciones se sacan (pedido del dueño, 7/10/2026). */
+  const verOpciones = !gate.habilitado;
   const nArticulos = items.length;
 
   return (
@@ -160,7 +163,7 @@ export default function CarritoPage() {
             )
           )}
 
-          {hayMonto && (
+          {verOpciones && hayMonto && (
             <section className={styles.opcion} data-ok={gate.montoOk}>
               {dosOpciones && <span className={styles.opcionTag}>Opción 1</span>}
               <div className={styles.opcionHead}>
@@ -174,9 +177,9 @@ export default function CarritoPage() {
             </section>
           )}
 
-          {dosOpciones && <div className={styles.o} aria-hidden><span>o</span></div>}
+          {verOpciones && dosOpciones && <div className={styles.o} aria-hidden><span>o</span></div>}
 
-          {hayCantidad && (
+          {verOpciones && hayCantidad && (
             <section className={styles.opcion} data-ok={reglas.every((r) => r.ok)}>
               {dosOpciones && <span className={styles.opcionTag}>Opción 2</span>}
               <div className={styles.opcionHead}>
