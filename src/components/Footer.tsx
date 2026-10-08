@@ -5,8 +5,21 @@ import { useCart } from '@/lib/cart';
 import { linkRed, linkWhatsApp, telefonoArgentino } from '@/lib/format';
 import styles from './Footer.module.css';
 
-const MAPS_EMBED = 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3540.8!2d-58.2000899!3d-26.1822997!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x945caf223a1ea145%3A0x365c1d5dfc3f40af!2sSABOR%20Y%20AROMA%20Distribuidora!5e0!3m2!1ses!2sar!4v1700000000000';
-const MAPS_LINK = 'https://maps.app.goo.gl/kyRZxCA5vNLZBpeR9';
+/*
+ * EL MAPA SIGUE A LA DIRECCIÓN (8/10/2026). Antes era un mapa fijo armado a
+ * mano con la ubicación vieja: el dueño cambió la dirección en el ERP
+ * (Configuración › Tienda online) a «Sarmiento 1314», el texto cambió y el mapa
+ * no. Ahora el mapa y «Abrir en Google Maps» se arman con la MISMA dirección
+ * que se muestra arriba. Una dirección sin ciudad («Sarmiento 1314») se busca
+ * en Formosa: si no, Google la puede encontrar en cualquier provincia.
+ */
+function direccionParaMapa(ubicacion: string) {
+  const d = ubicacion.trim();
+  if (!d) return 'Formosa, Argentina';
+  return /formosa/i.test(d) ? d : `${d}, Formosa, Argentina`;
+}
+const mapaEmbed = (dir: string) => `https://www.google.com/maps?q=${encodeURIComponent(dir)}&hl=es&z=16&output=embed`;
+const mapaLink = (dir: string) => `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(dir)}`;
 
 /** Mientras el catálogo carga se muestra la info real de siempre: sin saltos. */
 const CONTACTO_DEFAULT = {
@@ -24,6 +37,7 @@ export function Footer() {
   const waNum = telefonoArgentino(contacto.whatsapp);
   const waLegible = waNum ? `+54 9 ${waNum.slice(0, 4)} ${waNum.slice(4)}` : contacto.whatsapp;
   const instagram = linkRed(contacto.instagram, 'instagram.com');
+  const dirMapa = direccionParaMapa(String(contacto.ubicacion || ''));
   const facebook = linkRed(contacto.facebook, 'facebook.com');
 
   return (
@@ -129,7 +143,7 @@ export function Footer() {
           </h4>
           <div className={styles.mapWrapper}>
             <iframe
-              src={MAPS_EMBED}
+              src={mapaEmbed(dirMapa)}
               width="100%"
               height="100%"
               style={{ border: 0 }}
@@ -139,7 +153,7 @@ export function Footer() {
               title="Ubicación de Sabor y Aroma Distribuidora"
             />
           </div>
-          <a href={MAPS_LINK} target="_blank" rel="noopener noreferrer" className={styles.mapLink}>
+          <a href={mapaLink(dirMapa)} target="_blank" rel="noopener noreferrer" className={styles.mapLink}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" /><polyline points="15 3 21 3 21 9" /><line x1="10" y1="14" x2="21" y2="3" /></svg>
             Abrir en Google Maps
           </a>
