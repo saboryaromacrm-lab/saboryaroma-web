@@ -5,6 +5,7 @@ import { imgSrc } from '@/lib/api';
 import { useCompraProducto } from '@/lib/useCompraProducto';
 import { COLORES_TAG, COLOR_TAG_DEFAULT } from '@/lib/etiquetas';
 import { money, cant } from '@/lib/format';
+import { PrecioOculto } from './Ingreso';
 import type { ItemCatalogo } from '@/lib/types';
 import styles from './ProductCard.module.css';
 
@@ -15,7 +16,7 @@ import styles from './ProductCard.module.css';
  */
 export function ProductCard({ producto }: { producto: ItemCatalogo }) {
   const {
-    cantidad, restar, sumar, sumarBloqueado, variante, grupos, grupo, elegir, elegirGrupo, precioDe,
+    conPrecios, cantidad, restar, sumar, sumarBloqueado, variante, grupos, grupo, elegir, elegirGrupo, precioDe,
     fuente, unidad, precioEfectivo, tieneDescuento, enStock, yaEnCarrito, disponible, conTope, puedoSumar,
     sinMargen, recortado, cajaQueConviene, agregado, agregarAlCarrito, raizRef: cardRef,
   } = useCompraProducto<HTMLDivElement>(producto);
@@ -104,21 +105,24 @@ export function ProductCard({ producto }: { producto: ItemCatalogo }) {
                   <span className={styles.formaTexto}>
                     <span className={styles.formaNombre}>{v.forma ?? v.etiqueta}</span>
                     <span className={styles.formaCu}>
-                      {v.enStock
-                        ? n > 1 ? `${n} ${producto.tipo === 'granel' ? 'paquetes' : 'unidades'} · ${money(precioDe(v) / n)} c/u` : `${money(precioDe(v))} c/u`
-                        : 'Sin stock'}
+                      {!v.enStock ? 'Sin stock'
+                        : !conPrecios ? (n > 1 ? `${n} ${producto.tipo === 'granel' ? 'paquetes' : 'unidades'}` : 'Por unidad')
+                          : n > 1 ? `${n} ${producto.tipo === 'granel' ? 'paquetes' : 'unidades'} · ${money(precioDe(v) / n)} c/u` : `${money(precioDe(v))} c/u`}
                     </span>
                   </span>
-                  <span className={styles.formaDerecha}>
-                    <span className={styles.formaPrecio}>{money(precioDe(v))}</span>
-                    {(v.ahorroPct ?? 0) > 0 && <span className={styles.ahorro}>Ahorrás {v.ahorroPct}%</span>}
-                  </span>
+                  {conPrecios && (
+                    <span className={styles.formaDerecha}>
+                      <span className={styles.formaPrecio}>{money(precioDe(v))}</span>
+                      {(v.ahorroPct ?? 0) > 0 && <span className={styles.ahorro}>Ahorrás {v.ahorroPct}%</span>}
+                    </span>
+                  )}
                 </button>
               );
             })}
           </div>
         )}
-        <div className={styles.price}>
+        {/* Sin haber ingresado, en lugar del precio, el botón para ingresar (0155). */}
+        {!conPrecios ? <PrecioOculto /> : <div className={styles.price}>
           {tieneDescuento && <span className={styles.priceOld}>{money(fuente.precio)}</span>}
           {money(precioEfectivo)}{unidad === 'kg' && <span className={styles.perKg}> /kg</span>}
           {variante && (variante.paquetesPorUnidad ?? 1) > 1 ? (
@@ -126,7 +130,7 @@ export function ProductCard({ producto }: { producto: ItemCatalogo }) {
           ) : variante && variante.kgPorUnidad !== 1 && (
             <span className={styles.perKg}> · {money((precioEfectivo) / variante.kgPorUnidad)} /kg</span>
           )}
-        </div>
+        </div>}
         {/* Cuánto se ahorra frente al minorista (el precio de mostrador), con la cantidad elegida. */}
         {variante?.ahorroMinorista && (
           <div className={styles.ahorroMin}>
@@ -154,7 +158,7 @@ export function ProductCard({ producto }: { producto: ItemCatalogo }) {
           );
         })()}
 
-        {enStock ? (
+        {enStock && conPrecios ? (
           <div className={styles.actions}>
             <div className={styles.qty}>
               <button type="button" onClick={restar} aria-label="Restar">−</button>
@@ -198,9 +202,9 @@ export function ProductCard({ producto }: { producto: ItemCatalogo }) {
               </span>
             )}
           </div>
-        ) : (
+        ) : !enStock ? (
           <span className={styles.disabled}>Sin stock</span>
-        )}
+        ) : null}
       </div>
     </div>
   );

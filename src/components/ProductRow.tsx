@@ -4,6 +4,7 @@ import { useRef } from 'react';
 import { useCompraProducto } from '@/lib/useCompraProducto';
 import { COLORES_TAG, COLOR_TAG_DEFAULT } from '@/lib/etiquetas';
 import { money, cant } from '@/lib/format';
+import { PrecioOculto } from './Ingreso';
 import type { ItemCatalogo } from '@/lib/types';
 import styles from './ProductRow.module.css';
 
@@ -84,8 +85,8 @@ export function ProductRow({ producto }: { producto: ItemCatalogo }) {
                   onClick={() => c.elegir(v.clave)}
                 >
                   <strong>{v.forma ?? v.etiqueta}</strong>
-                  <span>{v.enStock ? ` · ${money(c.precioDe(v) / n)} c/u` : ' · Sin stock'}</span>
-                  {(v.ahorroPct ?? 0) > 0 && v.enStock && <em className={styles.ahorro}>−{v.ahorroPct}%</em>}
+                  {!v.enStock ? <span> · Sin stock</span> : c.conPrecios && <span>{` · ${money(c.precioDe(v) / n)} c/u`}</span>}
+                  {c.conPrecios && (v.ahorroPct ?? 0) > 0 && v.enStock && <em className={styles.ahorro}>−{v.ahorroPct}%</em>}
                 </button>
               );
             })}
@@ -111,6 +112,12 @@ export function ProductRow({ producto }: { producto: ItemCatalogo }) {
         })()}
       </div>
 
+      {/* Sin haber ingresado, precio y compra son un solo botón: ingresar (0155). */}
+      {!c.conPrecios ? (
+        <div className={styles.compra}>
+          {c.enStock ? <PrecioOculto /> : <span className={styles.sinStock}>Sin stock</span>}
+        </div>
+      ) : (<>
       <div className={styles.precio}>
         {c.tieneDescuento && <s className={styles.precioViejo}>{money(fuente.precio)}</s>}
         <span className={styles.precioValor}>{money(precioEfectivo)}</span>
@@ -148,6 +155,7 @@ export function ProductRow({ producto }: { producto: ItemCatalogo }) {
           <span className={styles.sinStock}>Sin stock</span>
         )}
       </div>
+      </>)}
     </li>
   );
 }

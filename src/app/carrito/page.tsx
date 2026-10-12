@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useCart } from '@/lib/cart';
 import { money, cant } from '@/lib/format';
+import { IngresarParaComprar } from '@/components/Ingreso';
 import styles from './page.module.css';
 
 /** Barra de avance de una condición: verde cuando se cumple. */
@@ -21,7 +22,16 @@ function cantidadTexto(n: number, unidad: 'kg' | 'u', etiqueta?: string | null):
 }
 
 export default function CarritoPage() {
-  const { items, total, setCantidad, quitar, gate, config, disponibleDe, quitadosViejos } = useCart();
+  const { items, total, setCantidad, quitar, gate, config, disponibleDe, quitadosViejos, conPrecios } = useCart();
+
+  if (!conPrecios) {
+    return (
+      <div className="container" style={{ paddingBlock: '60px' }}>
+        <h1 className={styles.title} style={{ textAlign: 'center' }}>Tu carrito</h1>
+        <IngresarParaComprar />
+      </div>
+    );
+  }
 
   /* El granel antes se pedía en kilos: esos renglones se sacaron al abrir y se dice cuáles. */
   const avisoViejos = quitadosViejos.length > 0 && (

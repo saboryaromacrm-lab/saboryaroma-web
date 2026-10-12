@@ -282,6 +282,12 @@
 
 .cartWrap { position: relative; flex-shrink: 0; }
 
+/* La cuenta (0155): en el encabezado desde 480px; en un celular angosto vive en el menú. */
+/* Con el contenedor adelante: pesa más que la regla base del botón (otro archivo de estilos, orden incierto). */
+.actions .cuentaEscritorio { display: none; flex-shrink: 0; }
+@media (min-width: 480px) { .actions .cuentaEscritorio { display: inline-flex; } }
+.mobileMenu .cuentaMovil { display: flex; justify-content: center; width: 100%; margin-top: 8px; padding: 12px 16px; font-size: 15px; }
+
 .cartDropdown {
   position: absolute;
   top: calc(100% + 8px);

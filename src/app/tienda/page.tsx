@@ -1,5 +1,6 @@
 import Link from 'next/link';
-import { getCatalogo, imgSrc } from '@/lib/api';
+import { imgSrc } from '@/lib/api';
+import { catalogoConSesion } from '@/lib/catalogoServidor';
 import { norm } from '@/lib/format';
 import { jsonLdString } from '@/lib/jsonLd';
 import { ProductCard } from '@/components/ProductCard';
@@ -20,7 +21,8 @@ const idsDe = (v?: string) => new Set((v ?? '').split(',').filter(Boolean).map(N
 /**
  * JSON-LD de la grilla (ItemList de Product): los buscadores entienden qué se
  * vende y a cuánto sin scrapear el HTML. No hay página por producto todavía,
- * así que cada uno apunta a la tienda.
+ * así que cada uno apunta a la tienda. Sin precio (el que no ingresó, 0155)
+ * no se publica la oferta: el precio mayorista no sale ni para los buscadores.
  */
 function jsonLdProductos(items: ItemCatalogo[]) {
   return {
@@ -35,12 +37,12 @@ function jsonLdProductos(items: ItemCatalogo[]) {
         brand: p.marca ? { '@type': 'Brand', name: p.marca } : undefined,
         image: imgSrc(p.imagenUrl) || undefined,
         url: `${SITE_URL}/tienda`,
-        offers: {
+        offers: p.precio > 0 ? {
           '@type': 'Offer',
           price: (p.oferta?.precioOferta ?? p.precio).toFixed(2),
           priceCurrency: 'ARS',
           availability: p.enStock ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
-        },
+        } : undefined,
       },
     })),
   };
@@ -52,7 +54,7 @@ export default async function TiendaPage({
   searchParams: Promise<Record<string, string | undefined>>;
 }) {
   const sp = await searchParams;
-  const cat = await getCatalogo().catch(() => null);
+  const cat = await catalogoConSesion().catch(() => null);
 
   if (!cat) {
     return (

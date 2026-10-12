@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useCart } from '@/lib/cart';
 import { carritoAgregado, productoOculto, productoVisible } from '@/lib/analytics';
 import { flyToCart } from '@/lib/flyToCart';
+import { abrirIngreso } from '@/lib/sesion';
 import type { ItemCatalogo, Variante } from '@/lib/types';
 
 export type GrupoTamano = { clave: string; etiqueta: string; formas: Variante[] };
@@ -19,7 +20,7 @@ export type GrupoTamano = { clave: string; etiqueta: string; formas: Variante[] 
  * se le cuelga la telemetría de «cuánto tiempo estuvo a la vista».
  */
 export function useCompraProducto<T extends HTMLElement = HTMLDivElement>(producto: ItemCatalogo) {
-  const { agregar, enCarrito, disponibleDe } = useCart();
+  const { agregar, enCarrito, disponibleDe, conPrecios } = useCart();
   const [cantidad, setCantidad] = useState(1);
   /*
    * EL GRANEL SE ELIGE POR TAMAÑO (3/10/2026): paquetes y bolsa cerrada, cada
@@ -105,6 +106,8 @@ export function useCompraProducto<T extends HTMLElement = HTMLDivElement>(produc
 
   /** Agrega al carrito; `desde` es el elemento que «vuela» hasta el ícono (la foto, o el botón). */
   const agregarAlCarrito = (desde: HTMLElement | null) => {
+    /* Sin haber ingresado no se compra (0155): el botón abre el ingreso. */
+    if (!conPrecios) { abrirIngreso(); return; }
     if (sinMargen) return;
     if (variante) agregar(producto, cantidad, variante);
     else agregar(tieneDescuento ? { ...producto, precio: precioEfectivo } : producto, cantidad);
@@ -115,7 +118,7 @@ export function useCompraProducto<T extends HTMLElement = HTMLDivElement>(produc
   };
 
   return {
-    cantidad, setCantidad, paso, restar, sumar, sumarBloqueado,
+    conPrecios, cantidad, setCantidad, paso, restar, sumar, sumarBloqueado,
     variante, grupos, grupo, elegir, elegirGrupo, precioDe,
     fuente, unidad, precioEfectivo, tieneDescuento, enStock,
     yaEnCarrito, disponible, conTope, puedoSumar, sinMargen, recortado,

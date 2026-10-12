@@ -1,5 +1,5 @@
 .backdrop {
-  position: fixed; inset: 0; z-index: 100;
+  position: fixed; inset: 0; z-index: 1100; /* sobre el encabezado fijo (1000) */
   background: rgba(0, 0, 0, 0.5);
   display: flex; align-items: center; justify-content: center;
   padding: var(--space-4);
@@ -12,6 +12,7 @@
   box-shadow: var(--shadow-card-hover);
   max-width: 440px;
   width: 100%;
+  max-height: calc(100dvh - 32px); overflow-y: auto;
   padding: var(--space-8) var(--space-6) var(--space-6);
   text-align: center;
   animation: popIn 0.25s ease-out;
@@ -33,9 +34,41 @@
   border-radius: var(--radius-full);
   margin-bottom: var(--space-3);
 }
-.title { font-size: var(--font-size-xl); font-weight: 800; margin: 0 0 var(--space-3); }
+/* El título, protagonista (10/10/2026): grande, apretado, con el porcentaje resaltado. */
+.title {
+  font-size: clamp(1.45rem, 5.2vw, 1.85rem); font-weight: 900; line-height: 1.12; letter-spacing: -0.02em;
+  margin: 0 0 var(--space-4); color: var(--color-gray-900); text-wrap: balance;
+}
+.resalte {
+  background: linear-gradient(90deg, var(--color-primary-light), var(--color-secondary-dark));
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+
+/* La compra mínima destacada. */
+.minimo {
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  margin: 0 0 var(--space-4); padding: var(--space-4) var(--space-4) var(--space-3);
+  border-radius: var(--radius-lg); color: var(--color-white);
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-light) 100%);
+  box-shadow: 0 8px 22px rgba(8, 102, 51, 0.25);
+}
+.minimoEtiqueta { font-size: var(--font-size-xs); font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.85; }
+.minimoMonto { font-size: 2.1rem; font-weight: 900; line-height: 1; letter-spacing: -0.02em; }
+.minimoAlt { font-size: var(--font-size-sm); line-height: 1.4; opacity: 0.95; max-width: 34ch; }
+.minimoAlt strong { font-weight: 800; }
 .text { font-size: var(--font-size-sm); color: var(--color-gray-600); line-height: 1.6; margin: 0 0 var(--space-6); white-space: pre-line; overflow-wrap: anywhere; }
 .title { overflow-wrap: anywhere; }
+
+/* Las condiciones de compra (10/10/2026): resumen, alineado a la izquierda para leerse de corrido. */
+.condiciones {
+  text-align: left; margin: 0 0 var(--space-5);
+  background: var(--color-gray-50); border: 1px solid var(--color-gray-250); border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+}
+.condicionesTitulo { display: block; font-size: var(--font-size-xs); font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; color: var(--color-primary); margin-bottom: 6px; }
+.condiciones ul { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 5px; }
+.condiciones li { font-size: var(--font-size-sm); color: var(--color-gray-700); line-height: 1.45; }
+.condiciones strong { color: var(--color-gray-900); }
 
 .actions { display: flex; flex-direction: column; gap: 10px; }
 .cta {

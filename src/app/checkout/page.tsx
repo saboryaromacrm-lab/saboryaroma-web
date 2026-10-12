@@ -3,8 +3,10 @@
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useCart } from '@/lib/cart';
-import { buscarCliente, crearPedido } from '@/lib/api';
+import { crearPedido } from '@/lib/api';
+import { leerToken } from '@/lib/sesion';
 import { money, telefonoArgentino } from '@/lib/format';
+import { IngresarParaComprar } from '@/components/Ingreso';
 import type { Entrega } from '@/lib/types';
 import styles from './page.module.css';
 
@@ -16,11 +18,8 @@ const ENTREGAS: { id: Entrega; label: string }[] = [
 ];
 
 export default function CheckoutPage() {
-  const { items, total, gate, config, vaciar } = useCart();
-  const [nombre, setNombre] = useState('');
-  const [apellido, setApellido] = useState('');
+  const { items, total, gate, config, vaciar, conPrecios, cliente } = useCart();
   const [telefono, setTelefono] = useState('');
-  const [dni, setDni] = useState('');
   const [entrega, setEntrega] = useState<Entrega>('retiro');
   // La dirección solo existe si hay envío. Se conserva al cambiar de opción
   // para que ir y volver entre "retiro" y "cadete" no borre lo escrito.
@@ -36,41 +35,16 @@ export default function CheckoutPage() {
   const enVuelo = useRef(false);
 
   /*
-   * EL DNI VA PRIMERO Y RECONOCE AL CLIENTE (4/10/2026, pedido del dueño). Con
-   * 7 u 8 dígitos se busca: si está registrado se completan nombre, apellido,
-   * WhatsApp y dirección (editables; la ficha del ERP no se toca); si no, es su
-   * primera compra y sus datos quedan guardados al enviar el pedido.
-   * Se pisa solo lo que está vacío o lo que había completado la búsqueda
-   * anterior: lo que el cliente escribió a mano no se borra.
+   * QUIÉN COMPRA YA SE SABE (0155): entró con su DNI. Su WhatsApp y su dirección
+   * vienen completos y se pueden cambiar para ESTE pedido (su ficha no se toca);
+   * se completa solo lo vacío, para no pisar lo que ya escribió.
    */
-  const [busqueda, setBusqueda] = useState<'idle' | 'buscando' | 'encontrado' | 'nuevo'>('idle');
-  const [saludo, setSaludo] = useState('');
-  const auto = useRef<Record<string, string>>({});
   useEffect(() => {
-    if (dni.length < 7) { setBusqueda('idle'); return undefined; }
-    let vigente = true;
-    setBusqueda('buscando');
-    const t = setTimeout(async () => {
-      const r = await buscarCliente(dni);
-      if (!vigente) return;
-      if (!r.encontrado) { setBusqueda('nuevo'); return; }
-      const nuevos: Record<string, string> = {
-        nombre: r.nombre ?? '', apellido: r.apellido ?? '', telefono: r.telefono ?? '',
-        calle: r.direccion ?? '', localidad: r.localidad ?? '',
-      };
-      const poner = (k: string, set: (f: (v: string) => string) => void) =>
-        set((v) => (!v.trim() || v === auto.current[k] ? nuevos[k] : v));
-      poner('nombre', setNombre);
-      poner('apellido', setApellido);
-      poner('telefono', setTelefono);
-      poner('calle', setCalle);
-      poner('localidad', setLocalidad);
-      auto.current = nuevos;
-      setSaludo(nuevos.nombre.split(' ')[0] ?? '');
-      setBusqueda('encontrado');
-    }, 450);
-    return () => { vigente = false; clearTimeout(t); };
-  }, [dni]);
+    if (!cliente) return;
+    setTelefono((v) => v || cliente.whatsapp);
+    setCalle((v) => v || cliente.direccion);
+    setLocalidad((v) => v || cliente.localidad);
+  }, [cliente]);
 
   if (resultado) {
     return (
@@ -85,6 +59,16 @@ export default function CheckoutPage() {
         </p>
         <p className={styles.okText}>Te escribimos por WhatsApp al <strong>{resultado.telefono}</strong>.</p>
         <Link href="/tienda" className={styles.cta}>Seguir comprando</Link>
+      </div>
+    );
+  }
+
+  /* Sin haber ingresado no se compra (0155). */
+  if (!conPrecios || !cliente) {
+    return (
+      <div className="container" style={{ paddingBlock: '60px' }}>
+        <h1 className={styles.title} style={{ textAlign: 'center' }}>Finalizar pedido</h1>
+        <IngresarParaComprar />
       </div>
     );
   }
@@ -125,10 +109,6 @@ export default function CheckoutPage() {
   const revisar = (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    if (dni.length < 7) {
-      setError('El DNI tiene que tener 7 u 8 dígitos.');
-      return;
-    }
     // El WhatsApp es el único canal de vuelta: un número incompleto deja el
     // pedido huérfano. Se valida acá para avisar ANTES de enviar (el servidor
     // aplica la misma regla igual).
@@ -159,13 +139,13 @@ export default function CheckoutPage() {
       const r = await crearPedido({
         entrega: entregaVigente,
         observaciones,
-        cliente: { nombre, apellido, telefono, dni },
+        cliente: { telefono },
         direccion: conEnvio
           ? { calle: calle.trim(), localidad: localidad.trim(), referencia: referencia.trim() || undefined }
           : undefined,
         // La opción del granel viaja: el servidor la necesita para saber si son bolsas o paquetes.
         items: items.map((it) => ({ productoId: it.productoId, cantidad: it.cantidad, ...(it.variante ? { variante: it.variante } : {}) })),
-      });
+      }, leerToken());
       setResultado({ codigo: r.codigo, total: r.total, telefono });
       vaciar();
       // El «¡Pedido recibido!» está arriba y el botón de enviar abajo: sin esto,
@@ -187,44 +167,15 @@ export default function CheckoutPage() {
 
       <div className={styles.layout}>
         <form onSubmit={revisar} className={styles.form}>
-          <div className={styles.field}>
-            <label htmlFor="dni">
-              DNI *
-              <span className={styles.hint}>Si ya compraste, completamos tus datos solos. No es para facturación.</span>
-            </label>
-            <input
-              id="dni" required inputMode="numeric" maxLength={8} autoFocus
-              value={dni} onChange={(e) => setDni(e.target.value.replace(/\D/g, ''))} placeholder="Ej: 35678242"
-            />
-            {busqueda === 'buscando' && <span className={styles.dniEstado}>Buscando tus datos…</span>}
-            {busqueda === 'encontrado' && (
-              <span className={styles.dniEstado} data-tipo="ok">
-                ¡Hola{saludo ? ` ${saludo}` : ''}! Completamos tus datos: revisá que estén bien.
-              </span>
-            )}
-            {busqueda === 'nuevo' && (
-              <span className={styles.dniEstado} data-tipo="nuevo">
-                Es tu primera compra: completá tus datos y los guardamos para la próxima.
-              </span>
-            )}
-          </div>
-
-          <div className={styles.row}>
-            <div className={styles.field}>
-              <label htmlFor="nombre">Nombre *</label>
-              <input id="nombre" required maxLength={60} value={nombre} onChange={(e) => setNombre(e.target.value)} placeholder="Tu nombre" />
-            </div>
-            <div className={styles.field}>
-              <label htmlFor="apellido">Apellido *</label>
-              <input id="apellido" required maxLength={60} value={apellido} onChange={(e) => setApellido(e.target.value)} placeholder="Tu apellido" />
-            </div>
-          </div>
+          <p className={styles.dniEstado} data-tipo="ok">
+            Comprás como <strong>{cliente.nombre}</strong> · DNI {cliente.dni}
+          </p>
 
           <div className={styles.field}>
             <div className={styles.field}>
               <label htmlFor="telefono">
-                WhatsApp *
-                <span className={styles.hint}>Con código de área, sin 0 ni 15. Ej: 370 4123456</span>
+                WhatsApp para este pedido *
+                <span className={styles.hint}>Por acá coordinamos el pago y la entrega. Con código de área, sin 0 ni 15.</span>
               </label>
               <input
                 id="telefono" required inputMode="tel" value={telefono}
@@ -320,7 +271,7 @@ export default function CheckoutPage() {
             {enviando ? 'Enviando…' : `Enviar pedido — ${money(total)}`}
           </button>
           <p className={styles.footNote}>
-            No se paga en este paso. Coordinamos el pago (transferencia o al recibir) por WhatsApp.
+            No se paga en este paso. Coordinamos el pago (transferencia o efectivo) por WhatsApp.
           </p>
         </form>
 
@@ -334,8 +285,8 @@ export default function CheckoutPage() {
               <h2 id="confirm-titulo" className={styles.confirmTitulo}>¿Están bien tus datos?</h2>
               <p className={styles.confirmSub}>Revisalos antes de enviar: con estos datos te contactamos.</p>
               <dl className={styles.confirmDatos}>
-                <dt>DNI</dt><dd>{dni}</dd>
-                <dt>Nombre</dt><dd>{`${nombre} ${apellido}`.trim()}</dd>
+                <dt>DNI</dt><dd>{cliente.dni}</dd>
+                <dt>Nombre</dt><dd>{cliente.nombre}</dd>
                 <dt>WhatsApp</dt><dd>{telefono}</dd>
                 <dt>Entrega</dt><dd>{etiquetaEntrega}</dd>
                 {conEnvio && (<><dt>Dirección</dt><dd>{[calle.trim(), localidad.trim(), referencia.trim()].filter(Boolean).join(' · ')}</dd></>)}

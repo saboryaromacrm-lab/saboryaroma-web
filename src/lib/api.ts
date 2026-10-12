@@ -59,11 +59,21 @@ async function manejar<T>(r: Response): Promise<T> {
   return data as T;
 }
 
-/** Catálogo completo de la tienda. Sin caché: precios y stock cambian seguido. */
-export async function getCatalogo(): Promise<Catalogo> {
+/** La cookie con el token del aparato que ingresó (0155). La leen el navegador (sesion.ts) y el servidor de Next. */
+export const COOKIE_SESION = 'sa_sesion';
+/** La cabecera con que viaja el token a la API. */
+const SESION = 'X-Tienda-Sesion';
+const conSesion = (token?: string): Record<string, string> => (token ? { [SESION]: token } : {});
+
+/**
+ * Catálogo completo de la tienda. Sin caché: precios y stock cambian seguido.
+ * Con el token de un cliente habilitado viene con precios y sus datos; sin él,
+ * sin nada de plata (`conPrecios: false`).
+ */
+export async function getCatalogo(token?: string): Promise<Catalogo> {
   const r = await pedir(
     `${API}/tienda/catalogo`,
-    { cache: 'no-store' },
+    { cache: 'no-store', headers: conSesion(token) },
     TIMEOUT_CATALOGO_MS,
     'No se pudo conectar con la tienda.',
   );
@@ -79,13 +89,6 @@ export async function getCatalogo(): Promise<Catalogo> {
 export function imgSrc(url: string | undefined): string {
   if (!url) return '';
   return /^https?:|^data:/.test(url) ? url : `${API}/${url}`;
-}
-
-export interface DatosCliente {
-  nombre: string;
-  apellido: string;
-  telefono: string;
-  dni: string;
 }
 
 /**
@@ -104,47 +107,46 @@ export interface DireccionEntrega {
 export interface PedidoDto {
   entrega: Entrega;
   observaciones?: string;
-  cliente: DatosCliente;
+  /** Quién compra lo sabe la API por la sesión; acá solo el WhatsApp de ESTE pedido, si lo cambió. */
+  cliente: { telefono: string };
   direccion?: DireccionEntrega;
   /** `variante`: la opción de un granel (bolsa o paquete), 3/10/2026. */
   items: { productoId: number; cantidad: number; variante?: string }[];
 }
 
-/** Lo que el checkout recibe al poner un DNI ya registrado (nada de crédito ni correo). */
-export interface ClienteTienda {
-  encontrado: boolean;
-  nombre?: string;
-  apellido?: string;
-  telefono?: string;
-  direccion?: string;
-  localidad?: string;
+/** Lo que contesta la API al ingresar o pedir ingreso (0155). */
+export type EstadoIngreso =
+  | { estado: 'habilitado'; token: string; nombre: string }
+  | { estado: 'pendiente' | 'bloqueado' | 'sin_registro' };
+
+export interface DatosRegistro {
+  nombre: string;
+  dni: string;
+  whatsapp: string;
+  localidad: string;
+  cuit?: string;
 }
 
-/**
- * Busca al cliente por DNI para completar el checkout. POST para que el DNI no
- * quede en la dirección. Si falla (red, cupo agotado) devuelve «no encontrado»:
- * el cliente sigue completando a mano, nunca se traba la compra por esto.
- */
-export async function buscarCliente(dni: string): Promise<ClienteTienda> {
-  try {
-    const r = await pedir(
-      `${API}/tienda/cliente`,
-      { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ dni }) },
-      TIMEOUT_CATALOGO_MS,
-      'No se pudo buscar el cliente.',
-    );
-    return r.ok ? await manejar<ClienteTienda>(r) : { encontrado: false };
-  } catch {
-    return { encontrado: false };
-  }
-}
+const postJson = async <T>(ruta: string, body: unknown, token?: string): Promise<T> => manejar<T>(await pedir(
+  `${API}${ruta}`,
+  { method: 'POST', headers: { 'Content-Type': 'application/json', ...conSesion(token) }, body: JSON.stringify(body ?? {}) },
+  TIMEOUT_CATALOGO_MS,
+  'No se pudo conectar con la tienda. Probá de nuevo en un momento.',
+));
 
-export async function crearPedido(dto: PedidoDto): Promise<{ ok: true; codigo: string; total: number }> {
+/** Entrar con el DNI. */
+export const ingresar = (dni: string) => postJson<EstadoIngreso>('/tienda/ingresar', { dni });
+/** Pedir ingreso a la tienda mayorista. */
+export const registrarse = (datos: DatosRegistro) => postJson<EstadoIngreso>('/tienda/registro', datos);
+/** Cerrar la sesión de este aparato (si falla, igual se borra la cookie: queda vencida sola). */
+export const salir = (token: string) => postJson<{ ok: boolean }>('/tienda/salir', {}, token).catch(() => null);
+
+export async function crearPedido(dto: PedidoDto, token: string): Promise<{ ok: true; codigo: string; total: number }> {
   const r = await pedir(
     `${API}/tienda/pedidos`,
     {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...conSesion(token) },
       body: JSON.stringify(dto),
     },
     TIMEOUT_PEDIDO_MS,

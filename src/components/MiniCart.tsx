@@ -3,12 +3,15 @@
 import Link from 'next/link';
 import { useCart } from '@/lib/cart';
 import { money } from '@/lib/format';
+import { IngresarParaComprar } from './Ingreso';
 import styles from './MiniCart.module.css';
 
 const MAX_VISIBLE = 5;
 
 export function MiniCart({ onNavigate }: { onNavigate: () => void }) {
-  const { items, total, config, gate } = useCart();
+  const { items, total, config, gate, conPrecios } = useCart();
+
+  if (!conPrecios) return <div className={styles.minicart}><IngresarParaComprar compacto /></div>;
 
   if (items.length === 0) {
     return (

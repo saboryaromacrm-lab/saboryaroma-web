@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * CARRITO — vive en el navegador (sin cuentas de cliente).
+ * CARRITO — vive en el navegador. Comprar exige haber ingresado (0155): ver `conPrecios`.
  * ============================================================================
  * Cada línea guarda una FOTO del producto al agregarlo (nombre, marca,
  * precio, mínimo propio): si el catálogo cambia después, el carrito sigue
@@ -17,7 +17,8 @@ import {
   createContext, useCallback, useContext, useEffect, useMemo, useState,
 } from 'react';
 import { getCatalogo } from './api';
-import type { Catalogo, ItemCarrito, ItemCatalogo, ReglaMarca, Variante } from './types';
+import { leerToken } from './sesion';
+import type { Catalogo, ClienteSesion, ItemCarrito, ItemCatalogo, ReglaMarca, Variante } from './types';
 
 const CART_KEY = 'sa_carrito';
 
@@ -60,6 +61,14 @@ interface CartContextValue {
   config: Config;
   /** Catálogo completo, cargado una vez del lado del cliente: lo reusan el mega-menú y la búsqueda en vivo. */
   catalogo: Catalogo | null;
+  /**
+   * Ingresó un cliente habilitado y hay precios (0155). Sin esto no se muestra
+   * plata ni se compra: el botón lleva a la ventana de ingreso. Una API anterior
+   * (sin `conPrecios`) cuenta como con precios.
+   */
+  conPrecios: boolean;
+  /** Quién ingresó (sus datos para el checkout), o null. */
+  cliente: ClienteSesion | null;
   /** Progreso hacia el mínimo de compra: si se cumple, y qué falta. */
   gate: {
     habilitado: boolean;
@@ -124,11 +133,19 @@ export function CartProvider({ children, initialCatalogo = null }: {
     setQuitadosViejos(viejos);
     setCargado(true);
     if (initialCatalogo) return;
-    getCatalogo()
+    getCatalogo(leerToken())
       .then((c) => { setConfig(configDeCatalogo(c)); setCatalogo(c); })
       .catch(() => { /* el carrito funciona igual sin esto; el checkout revalida */ });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  /* Al ingresar o salir la página se vuelve a pedir al servidor (`router.refresh`) y el
+   * layout trae OTRO catálogo (con o sin precios): el estado lo sigue. */
+  useEffect(() => {
+    if (!initialCatalogo) return;
+    setCatalogo(initialCatalogo);
+    setConfig(configDeCatalogo(initialCatalogo));
+  }, [initialCatalogo]);
 
   /*
    * UN PRODUCTO QUE AHORA SE ELIGE POR OPCIONES (3/10/2026: los enteros con
@@ -266,6 +283,8 @@ export function CartProvider({ children, initialCatalogo = null }: {
   const value: CartContextValue = {
     items, cantidadTotal, total, agregar, quitar, setCantidad, vaciar,
     enCarrito, quitadosViejos, disponibleDe, config, catalogo, gate,
+    conPrecios: !!catalogo && catalogo.conPrecios !== false,
+    cliente: catalogo?.cliente ?? null,
   };
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;

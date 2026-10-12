@@ -1,11 +1,12 @@
 import type { Metadata, Viewport } from 'next';
-import { getCatalogo } from '@/lib/api';
+import { catalogoConSesion } from '@/lib/catalogoServidor';
 import { CartProvider } from '@/lib/cart';
 import { jsonLdString } from '@/lib/jsonLd';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { FirmaCoftech } from '@/components/FirmaCoftech';
 import { WelcomePopup } from '@/components/WelcomePopup';
+import { Ingreso } from '@/components/Ingreso';
 import { PwaRegister } from '@/components/PwaRegister';
 import { AnalyticsTracker } from '@/components/AnalyticsTracker';
 import { FaviconSetter } from '@/components/FaviconSetter';
@@ -69,7 +70,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   // el fetch idéntico que cada página vuelve a hacer para su propio contenido
   // (Request Memoization), y este resultado se lo pasamos al carrito para que
   // no tenga que volver a pedirlo desde el navegador.
-  const catalogoInicial = await getCatalogo().catch(() => null);
+  const catalogoInicial = await catalogoConSesion().catch(() => null);
 
   return (
     <html lang="es-AR">
@@ -88,6 +89,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
               carrito — o sea, renderizada en el servidor y sin mandar JS. */}
           <FirmaCoftech />
           <WelcomePopup />
+          <Ingreso />
           <FaviconSetter />
         </CartProvider>
         <PwaRegister />

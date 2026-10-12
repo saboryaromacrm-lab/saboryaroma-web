@@ -8,6 +8,7 @@ import { imgSrc } from '@/lib/api';
 import { busquedaHecha } from '@/lib/analytics';
 import { money, norm } from '@/lib/format';
 import { MiniCart } from '@/components/MiniCart';
+import { BotonCuenta } from '@/components/Ingreso';
 import type { Termino } from '@/lib/types';
 import styles from './Header.module.css';
 
@@ -22,7 +23,7 @@ function abrirInfoCompra() {
 }
 
 export function Header() {
-  const { cantidadTotal, catalogo } = useCart();
+  const { cantidadTotal, catalogo, conPrecios } = useCart();
   const router = useRouter();
   const pathname = usePathname();
   const [menuAbierto, setMenuAbierto] = useState(false);
@@ -418,7 +419,7 @@ export function Header() {
                             <span className={styles.searchItemName}>{p.nombre}</span>
                             <span className={styles.searchItemBrand}>{p.marca}</span>
                           </span>
-                          <span className={styles.searchItemPrice}>{money(p.oferta?.precioOferta ?? p.precio)}</span>
+                          {conPrecios && <span className={styles.searchItemPrice}>{money(p.oferta?.precioOferta ?? p.precio)}</span>}
                         </button>
                       ))}
                       <button type="button" className={styles.searchVerTodo} onClick={buscar}>
@@ -429,6 +430,8 @@ export function Header() {
                 </div>
               )}
             </div>
+
+            <BotonCuenta className={styles.cuentaEscritorio} />
 
             <div ref={cartWrapRef} className={styles.cartWrap} onMouseEnter={abrirCarrito} onMouseLeave={programarCierreCarrito}>
               <Link id="header-cart-link" href="/carrito" className={styles.cartLink} aria-label="Ver carrito" aria-expanded={carritoAbierto}>
@@ -601,6 +604,7 @@ export function Header() {
             <button type="button" className={styles.mobileInfoBtn} onClick={() => { setMenuAbierto(false); abrirInfoCompra(); }}>
               <span aria-hidden>ⓘ</span> Info de compra
             </button>
+            <BotonCuenta className={styles.cuentaMovil} />
           </nav>
         </div>
       )}

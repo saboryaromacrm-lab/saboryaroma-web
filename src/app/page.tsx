@@ -1,5 +1,6 @@
 import Link from 'next/link';
-import { getCatalogo, imgSrc } from '@/lib/api';
+import { imgSrc } from '@/lib/api';
+import { catalogoConSesion } from '@/lib/catalogoServidor';
 import { ProductCard } from '@/components/ProductCard';
 import { ProductCarousel } from '@/components/ProductCarousel';
 import { HeroSlider } from '@/components/HeroSlider';
@@ -7,7 +8,7 @@ import { MarcasCarousel } from '@/components/MarcasCarousel';
 import styles from './page.module.css';
 
 export default async function HomePage() {
-  const cat = await getCatalogo().catch(() => null);
+  const cat = await catalogoConSesion().catch(() => null);
 
   if (!cat) {
     return (

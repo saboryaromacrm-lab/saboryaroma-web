@@ -154,7 +154,29 @@ export interface PopupSitio {
   texto: string;
 }
 
+/** Quien ingresó (0155): lo que el checkout muestra ya completo. */
+export interface ClienteSesion {
+  nombre: string;
+  dni: string;
+  /** 10 dígitos (área + abonado). */
+  whatsapp: string;
+  direccion: string;
+  localidad: string;
+}
+
 export interface Catalogo {
+  /**
+   * PRECIOS SOLO PARA LOS HABILITADOS (0155, 10/10/2026). `false`: el visitante
+   * no ingresó y la API mandó el catálogo SIN NADA DE PLATA — los precios,
+   * ofertas y ahorros de productos y opciones NO VIENEN (aunque el tipo los
+   * declare) y el piso del envío sin costo viene en 0 (la compra mínima sí viene:
+   * el cartel de bienvenida la anuncia a todos). Ausente = API anterior (con precios).
+   */
+  conPrecios?: boolean;
+  /** Con sesión, sus datos; sin ella, null. */
+  cliente?: ClienteSesion | null;
+  /** Sin ingreso el piso del envío sin costo viene en 0: esto dice SI hay uno (para el cartel de condiciones). */
+  hayMinimoEnvio?: boolean;
   sucursalId: number | null;
   listaId: number | null;
   listaNombre: string;
