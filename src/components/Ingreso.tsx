@@ -43,7 +43,8 @@ export function Ingreso() {
   const whatsappEmpresa = linkWhatsApp(catalogo?.sitio?.contacto?.whatsapp ?? '');
 
   useEffect(() => {
-    const abrir = () => { setPaso('dni'); setError(''); setAbierto(true); };
+    /* `abrirRegistro()` manda «registro»: abre directo en el pedido de ingreso. */
+    const abrir = (e: Event) => { setPaso((e as CustomEvent).detail === 'registro' ? 'registro' : 'dni'); setError(''); setAbierto(true); };
     window.addEventListener('sa:abrir-ingreso', abrir);
     return () => window.removeEventListener('sa:abrir-ingreso', abrir);
   }, []);

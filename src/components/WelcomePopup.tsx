@@ -3,7 +3,8 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useCart } from '@/lib/cart';
-import { linkWhatsApp, money } from '@/lib/format';
+import { money } from '@/lib/format';
+import { abrirIngreso, abrirRegistro } from '@/lib/sesion';
 import type { Catalogo } from '@/lib/types';
 import styles from './WelcomePopup.module.css';
 
@@ -128,15 +129,16 @@ export function WelcomePopup() {
         )}
         <div className={styles.actions}>
           <Link href="/tienda" className={styles.cta} onClick={cerrar}>Ir a la tienda</Link>
-          <a
-            href={linkWhatsApp(catalogo?.sitio?.contacto?.whatsapp ?? '')}
-            target="_blank"
-            rel="noopener noreferrer"
-            className={styles.ctaSecondary}
-            onClick={cerrar}
-          >
-            Consultar por WhatsApp
-          </a>
+          {/* Para el que todavía no ingresó (13/10/2026, pedido del dueño): registrarse o ingresar, en la misma fila. */}
+          {!conPrecios && (
+            <>
+              <div className={styles.acceso}>
+                <button type="button" className={styles.ctaSecondary} onClick={() => { cerrar(); abrirRegistro(); }}>Registrarme</button>
+                <button type="button" className={styles.ctaSecondary} onClick={() => { cerrar(); abrirIngreso(); }}>Ingresar</button>
+              </div>
+              <p className={styles.accesoNota}>Es fácil y práctico: solo con tu DNI.</p>
+            </>
+          )}
         </div>
       </div>
     </div>

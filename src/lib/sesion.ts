@@ -32,6 +32,8 @@ export function borrarToken() {
 
 /** Abre la ventana de ingreso desde cualquier lado (botón del encabezado, «Agregar», el carrito). */
 export const abrirIngreso = () => window.dispatchEvent(new Event('sa:abrir-ingreso'));
+/** Igual, pero directo en el pedido de ingreso (el «Registrarme» del cartel de bienvenida). */
+export const abrirRegistro = () => window.dispatchEvent(new CustomEvent('sa:abrir-ingreso', { detail: 'registro' }));
 
 export function leerSolicitud(): boolean {
   try { return localStorage.getItem(SOLICITUD) === '1'; } catch { return false; }

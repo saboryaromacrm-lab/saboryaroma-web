@@ -81,6 +81,11 @@
   font-weight: 600; font-size: var(--font-size-sm);
   padding: 12px; border-radius: var(--radius-md);
 }
+/* Registrarme | Ingresar, en la misma fila. */
+.acceso { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.acceso button { background: var(--color-white); font-family: inherit; cursor: pointer; }
+.acceso button:hover { border-color: var(--color-primary); color: var(--color-primary); }
+.accesoNota { margin: 0; text-align: center; font-size: var(--font-size-sm); color: var(--color-gray-600); }
 
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 @keyframes popIn { from { opacity: 0; transform: scale(0.94); } to { opacity: 1; transform: scale(1); } }
