@@ -58,6 +58,7 @@
 @media (max-width: 640px) {
   .listaCabecera { display: none; }
 }
+/* En el celular también van dos por fila (15/10/2026, pedido del dueño): la tarjeta se compacta sola (ProductCard.module.css). */
 @media (max-width: 400px) {
-  .grid { grid-template-columns: 1fr; }
+  .grid { gap: 8px; }
 }

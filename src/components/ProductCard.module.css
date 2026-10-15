@@ -6,6 +6,8 @@
   transition: box-shadow 0.2s, transform 0.2s;
   display: flex;
   flex-direction: column;
+  /* Se acomoda a SU ancho, no al de la pantalla: dos por fila en el celular, carrusel, etc. (ver el final). */
+  container-type: inline-size;
 }
 .card:hover { box-shadow: var(--shadow-card-hover); transform: translateY(-2px); }
 
@@ -244,3 +246,14 @@
   font-size: 12px; line-height: 1.35;
 }
 .ahorroMinDet { display: block; font-size: 11px; color: #3f6f52; margin-top: 2px; }
+
+/*
+ * TARJETA ANGOSTA (15/10/2026: dos por fila en el celular). Menos relleno y, en
+ * «¿Cómo lo llevás?», el precio baja debajo del nombre en vez de pisarlo.
+ */
+@container (max-width: 220px) {
+  .content { padding: var(--space-3); }
+  .forma { grid-template-columns: 16px minmax(0, 1fr); column-gap: 6px; row-gap: 2px; padding: 6px 8px; }
+  .formaDerecha { grid-column: 2; flex-direction: row; flex-wrap: wrap; align-items: center; gap: 2px 6px; }
+  .ahorroMin, .conviene { padding: 6px 8px; }
+}
