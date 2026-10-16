@@ -79,7 +79,7 @@
  * EL MODO MINORISTA SE VISTE DISTINTO (0173, 16/10/2026, pedido del dueño:
  * «más atractivo, disruptivo y moderno, con buena visibilidad para las
  * ofertas»). Mismos componentes, otra paleta: verde bosque profundo, lima para
- * resaltar, coral para las ofertas y un fondo cálido; esquinas más redondas y
+ * resaltar, el naranja de Coffit para las ofertas (16/10/2026, antes coral) y un fondo cálido; esquinas más redondas y
  * sombras más blandas. Lo decide `data-modo` en <html> (layout.tsx).
  */
 html[data-modo='minorista'] {
@@ -89,8 +89,8 @@ html[data-modo='minorista'] {
   --color-secondary: #d7f36b;
   --color-secondary-dark: #b8dd3c;
   --color-tertiary: #e9fbb0;
-  --color-accent: #ff4b2b;
-  --color-accent-dark: #e23a1c;
+  --color-accent: var(--color-oferta);
+  --color-accent-dark: var(--color-oferta-dark);
   --color-gray-50: #f7f4ee;
   --color-gray-100: #f1ede5;
   --radius-md: 12px;

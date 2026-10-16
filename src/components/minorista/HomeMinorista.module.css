@@ -33,7 +33,7 @@
   font-weight: 800; font-size: 15px;
   transition: transform 0.15s, box-shadow 0.15s;
 }
-.ctaOfertas { background: var(--color-accent); color: var(--color-white); box-shadow: 0 10px 24px rgba(255, 75, 43, 0.4); }
+.ctaOfertas { background: var(--color-accent); color: var(--color-white); box-shadow: 0 10px 24px rgba(229, 147, 60, 0.4); }
 .ctaTienda { background: var(--color-secondary); color: var(--color-primary-dark); }
 .ctaOfertas:hover, .ctaTienda:hover { transform: translateY(-2px); }
 
@@ -65,8 +65,8 @@
 .gridOfertas {
   padding: 18px;
   border-radius: var(--radius-2xl);
-  background: linear-gradient(135deg, #fff3ee 0%, #ffe9e1 100%);
-  border: 1px solid rgba(255, 75, 43, 0.16);
+  background: linear-gradient(135deg, #fdf6ec 0%, #fbead6 100%);
+  border: 1px solid rgba(229, 147, 60, 0.2);
 }
 
 .chips { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 6px; scrollbar-width: thin; }
