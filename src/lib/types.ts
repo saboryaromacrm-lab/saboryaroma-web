@@ -21,6 +21,12 @@ export interface OfertaItem {
   badge: string;
   /** Precio final con la promo, cuando la mecánica define un único precio por unidad (null en 3x2/pack/2ª unidad). */
   precioOferta: number | null;
+  /** Promos de varias unidades (16/10/2026): sus números, para cobrarlas en el carrito (`lib/oferta.ts`). */
+  lleva?: number;
+  paga?: number;
+  porcentaje?: number;
+  /** Pack: lo que vale el grupo de `lleva`. */
+  precioPack?: number;
 }
 
 /**
@@ -229,6 +235,10 @@ export interface ItemCarrito {
   cantidad: number;
   /** Un entero en caja: cuántas unidades trae (los mínimos por marca cuentan unidades). */
   unidadesPorCompra?: number;
+  /** Una promo de varias unidades (3×2, 2ª unidad, pack): el renglón se cobra con ella (`totalLinea`). */
+  oferta?: OfertaItem;
+  /** Cuántas unidades cuenta la promo por cada una de compra (una caja x6 son 6). */
+  unidadesOferta?: number;
 }
 
 export type Entrega = 'retiro' | 'cadete' | 'camioneta';

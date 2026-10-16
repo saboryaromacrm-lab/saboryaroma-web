@@ -17,6 +17,7 @@ import {
   createContext, useCallback, useContext, useEffect, useMemo, useState,
 } from 'react';
 import { getCatalogo } from './api';
+import { esMultiUnidad, totalConOferta } from './oferta';
 import { leerToken } from './sesion';
 import type { Modo } from './modo';
 import type { Catalogo, ClienteSesion, ItemCarrito, ItemCatalogo, ReglaMarca, Variante } from './types';
@@ -30,6 +31,13 @@ const cartKey = (modo: Modo) => (modo === 'minorista' ? 'sa_carrito_min' : 'sa_c
  */
 export const claveLinea = (productoId: number, variante?: string | null) => `${productoId}:${variante ?? ''}`;
 const claveDe = (it: ItemCarrito) => claveLinea(it.productoId, it.variante);
+
+/** Lo que vale un renglón del carrito: con su promo de varias unidades si la tiene (el 3×2 cobra 2 de cada 3). */
+export function totalLinea(it: ItemCarrito): number {
+  if (!it.oferta) return it.cantidad * it.precio;
+  const n = it.unidadesOferta ?? 1;
+  return totalConOferta(it.oferta, it.precio / n, it.cantidad * n);
+}
 
 interface Config {
   montoMinimo: number;
@@ -226,6 +234,7 @@ export function CartProvider({ children, modo, initialCatalogo = null }: {
         return next;
       }
       // La FOTO de lo que el cliente vio: precio (con la promo) y mínimo de la opción.
+      const oferta = (variante ?? producto).oferta;
       return [...prev, {
         productoId: producto.id, nombre: producto.nombre, marcaId: producto.marcaId, marca: producto.marca,
         precio: variante ? (variante.oferta?.precioOferta ?? variante.precio) : producto.precio,
@@ -234,6 +243,8 @@ export function CartProvider({ children, modo, initialCatalogo = null }: {
         cantidad: nueva,
         ...(variante ? { variante: variante.clave, etiqueta: variante.etiqueta } : {}),
         ...(variante && producto.tipo !== 'granel' && (variante.unidadesStock ?? 1) > 1 ? { unidadesPorCompra: variante.unidadesStock } : {}),
+        /* La promo de varias unidades viaja con el renglón: el total se cuenta con ella (`totalLinea`). */
+        ...(esMultiUnidad(oferta) ? { oferta, unidadesOferta: variante?.paquetesPorUnidad ?? 1 } : {}),
       }];
     });
   }, [disponibleDe]);
@@ -262,7 +273,7 @@ export function CartProvider({ children, modo, initialCatalogo = null }: {
   const vaciar = useCallback(() => setItems([]), []);
 
   const cantidadTotal = useMemo(() => items.reduce((a, i) => a + i.cantidad, 0), [items]);
-  const total = useMemo(() => items.reduce((a, i) => a + i.cantidad * i.precio, 0), [items]);
+  const total = useMemo(() => items.reduce((a, i) => a + totalLinea(i), 0), [items]);
 
   const gate = useMemo(() => {
     const montoOk = config.montoMinimo > 0 ? total >= config.montoMinimo : true;

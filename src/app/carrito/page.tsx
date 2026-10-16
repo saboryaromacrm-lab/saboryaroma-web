@@ -1,8 +1,9 @@
 'use client';
 
 import Link from 'next/link';
-import { useCart } from '@/lib/cart';
+import { totalLinea, useCart } from '@/lib/cart';
 import { money, cant } from '@/lib/format';
+import { faltanParaLote, textoPromo } from '@/lib/oferta';
 import { IngresarParaComprar } from '@/components/Ingreso';
 import styles from './page.module.css';
 
@@ -101,6 +102,15 @@ export default function CarritoPage() {
                   <span className={styles.itemName}>{it.nombre}</span>
                   {it.etiqueta && <span className={styles.itemTag}>{it.etiqueta}</span>}
                   <span className={styles.itemPrice}>{money(it.precio)} {porQue}</span>
+                  {/* La promo de varias unidades: qué es y, si el lote no está completo, cuánto falta. */}
+                  {it.oferta && (() => {
+                    const faltan = faltanParaLote(it.oferta, it.cantidad * (it.unidadesOferta ?? 1));
+                    return (
+                      <span className={styles.itemPromo}>
+                        {textoPromo(it.oferta, money)}{faltan > 0 && ` · sumá ${faltan} más para completarla`}
+                      </span>
+                    );
+                  })()}
                   {pasado ? (
                     <span className={styles.stockAviso}>
                       Quedan {cant(disponible, it.unidad)}: bajá la cantidad o lo revisamos al confirmar el pedido.
@@ -127,7 +137,7 @@ export default function CarritoPage() {
                     +
                   </button>
                 </div>
-                <div className={styles.itemTotal}>{money(it.precio * it.cantidad)}</div>
+                <div className={styles.itemTotal}>{money(totalLinea(it))}</div>
                 <button
                   type="button"
                   className={styles.remove}

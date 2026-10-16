@@ -5,6 +5,7 @@ import { useCompraProducto } from '@/lib/useCompraProducto';
 import { COLORES_TAG, COLOR_TAG_DEFAULT } from '@/lib/etiquetas';
 import { money, cant } from '@/lib/format';
 import { PrecioOculto } from './Ingreso';
+import PromoLote from './PromoLote';
 import type { ItemCatalogo } from '@/lib/types';
 import styles from './ProductRow.module.css';
 
@@ -92,6 +93,7 @@ export function ProductRow({ producto }: { producto: ItemCatalogo }) {
             })}
           </div>
         )}
+        {c.conPrecios && c.promo && <PromoLote promo={c.promo} />}
         {variante?.ahorroMinorista && (
           <span className={styles.ahorroMin}>
             Ahorrás <strong>{money(variante.ahorroMinorista.pesos * c.cantidad)} ({variante.ahorroMinorista.pct}%)</strong> frente al minorista

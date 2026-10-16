@@ -1,8 +1,9 @@
 'use client';
 
 import Link from 'next/link';
-import { useCart } from '@/lib/cart';
+import { totalLinea, useCart } from '@/lib/cart';
 import { money } from '@/lib/format';
+import { textoPromo } from '@/lib/oferta';
 import { IngresarParaComprar } from './Ingreso';
 import styles from './MiniCart.module.css';
 
@@ -46,9 +47,9 @@ export function MiniCart({ onNavigate }: { onNavigate: () => void }) {
           <li key={`${it.productoId}:${it.variante ?? ''}`} className={`${styles.item} ${i === 0 ? styles.itemLatest : ''}`}>
             <div className={styles.itemInfo}>
               <span className={styles.itemName}>{it.nombre}{it.etiqueta ? ` · ${it.etiqueta}` : ''}</span>
-              <span className={styles.itemQty}>{it.cantidad} x {money(it.precio)}</span>
+              <span className={styles.itemQty}>{it.cantidad} x {money(it.precio)}{it.oferta && ` · ${textoPromo(it.oferta, money)}`}</span>
             </div>
-            <div className={styles.itemTotal}>{money(it.precio * it.cantidad)}</div>
+            <div className={styles.itemTotal}>{money(totalLinea(it))}</div>
           </li>
         ))}
       </ul>

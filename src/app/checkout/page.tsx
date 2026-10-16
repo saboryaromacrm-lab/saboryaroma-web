@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { useCart } from '@/lib/cart';
+import { totalLinea, useCart } from '@/lib/cart';
 import { crearPedido } from '@/lib/api';
 import { leerToken } from '@/lib/sesion';
 import { money, telefonoArgentino } from '@/lib/format';
@@ -318,7 +318,7 @@ function CheckoutMayorista() {
           {items.map((it) => (
             <div key={`${it.productoId}:${it.variante ?? ''}`} className={styles.summaryItem}>
               <span>{it.cantidad} × {it.nombre}{it.etiqueta ? ` · ${it.etiqueta}` : ''}</span>
-              <span>{money(it.precio * it.cantidad)}</span>
+              <span>{money(totalLinea(it))}</span>
             </div>
           ))}
           <div className={styles.summaryTotal}>

@@ -5,7 +5,13 @@ import { useCart } from '@/lib/cart';
 import { carritoAgregado, productoOculto, productoVisible } from '@/lib/analytics';
 import { flyToCart } from '@/lib/flyToCart';
 import { abrirIngreso } from '@/lib/sesion';
-import type { ItemCatalogo, Variante } from '@/lib/types';
+import { money } from '@/lib/format';
+import { esMultiUnidad, faltanParaLote, loteDe, textoPromo, totalConOferta } from '@/lib/oferta';
+import type { ItemCatalogo, OfertaItem, Variante } from '@/lib/types';
+
+/** Con un 3×2 se arranca con el lote entero (en unidades de compra: una caja x6 ya lo cubre). */
+const cantidadInicial = (o: OfertaItem | null | undefined, porUnidad = 1) =>
+  esMultiUnidad(o) ? Math.max(1, Math.ceil(loteDe(o) / porUnidad)) : 1;
 
 export type GrupoTamano = { clave: string; etiqueta: string; formas: Variante[] };
 
@@ -21,7 +27,6 @@ export type GrupoTamano = { clave: string; etiqueta: string; formas: Variante[] 
  */
 export function useCompraProducto<T extends HTMLElement = HTMLDivElement>(producto: ItemCatalogo) {
   const { agregar, enCarrito, disponibleDe, conPrecios, modo } = useCart();
-  const [cantidad, setCantidad] = useState(1);
   /*
    * EL GRANEL SE ELIGE POR TAMAÑO (3/10/2026): paquetes y bolsa cerrada, cada
    * uno con su precio, mínimo y stock. Arranca en la primera opción con stock.
@@ -30,7 +35,12 @@ export function useCompraProducto<T extends HTMLElement = HTMLDivElement>(produc
   const variantes = producto.variantes ?? null;
   const [clave, setClave] = useState(() => (variantes ? (variantes.find((v) => v.enStock) ?? variantes[0]).clave : ''));
   const variante = variantes ? (variantes.find((v) => v.clave === clave) ?? variantes[0]) : null;
-  const elegir = (c: string, cant = 1) => { setClave(c); setCantidad(cant); };
+  const [cantidad, setCantidad] = useState(() => cantidadInicial((variante ?? producto).oferta, variante?.paquetesPorUnidad));
+  const elegir = (c: string, cant?: number) => {
+    const v = variantes?.find((x) => x.clave === c);
+    setClave(c);
+    setCantidad(cant ?? cantidadInicial(v?.oferta, v?.paquetesPorUnidad));
+  };
   /*
    * DOS PASOS (3/10/2026): primero el TAMAÑO (1 kg, Bolsa de 10 kg) y, si ese
    * tamaño se vende de más de una forma —suelto en una lista mayorista, en
@@ -73,6 +83,26 @@ export function useCompraProducto<T extends HTMLElement = HTMLDivElement>(produc
   const precioEfectivo = fuente.oferta?.precioOferta ?? fuente.precio;
   const tieneDescuento = fuente.oferta?.precioOferta != null;
   const enStock = fuente.enStock;
+
+  /*
+   * LA PROMO DE VARIAS UNIDADES (16/10/2026): 3×2, 2ª unidad, pack. No tiene un
+   * precio por unidad: se cuenta sobre lo elegido, igual que en el carrito y en
+   * el servidor. `faltan` = cuántas unidades completan el próximo lote.
+   */
+  const multi = esMultiUnidad(fuente.oferta) ? fuente.oferta : null;
+  const porUnidad = variante?.paquetesPorUnidad ?? 1;
+  const promo = multi && (() => {
+    const lote = loteDe(multi);
+    const unidades = cantidad * porUnidad;
+    const precioUnidad = fuente.precio / porUnidad;
+    return {
+      texto: textoPromo(multi, money),
+      cadaUna: totalConOferta(multi, precioUnidad, lote) / lote,
+      total: totalConOferta(multi, precioUnidad, unidades),
+      sinPromo: precioUnidad * unidades,
+      faltan: faltanParaLote(multi, unidades),
+    };
+  })();
 
   /*
    * Lo que ya está en el carrito y cuánto más entra. El tope sale del carrito
@@ -120,7 +150,7 @@ export function useCompraProducto<T extends HTMLElement = HTMLDivElement>(produc
   return {
     modo, conPrecios, cantidad, setCantidad, paso, restar, sumar, sumarBloqueado,
     variante, grupos, grupo, elegir, elegirGrupo, precioDe,
-    fuente, unidad, precioEfectivo, tieneDescuento, enStock,
+    fuente, unidad, precioEfectivo, tieneDescuento, enStock, promo,
     yaEnCarrito, disponible, conTope, puedoSumar, sinMargen, recortado,
     cajaQueConviene, agregado, agregarAlCarrito, raizRef,
   };

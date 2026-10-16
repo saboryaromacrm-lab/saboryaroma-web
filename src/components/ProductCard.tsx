@@ -6,6 +6,7 @@ import { useCompraProducto } from '@/lib/useCompraProducto';
 import { COLORES_TAG, COLOR_TAG_DEFAULT } from '@/lib/etiquetas';
 import { money, cant } from '@/lib/format';
 import { PrecioOculto } from './Ingreso';
+import PromoLote from './PromoLote';
 import type { ItemCatalogo } from '@/lib/types';
 import styles from './ProductCard.module.css';
 
@@ -17,7 +18,7 @@ import styles from './ProductCard.module.css';
 export function ProductCard({ producto }: { producto: ItemCatalogo }) {
   const {
     modo, conPrecios, cantidad, restar, sumar, sumarBloqueado, variante, grupos, grupo, elegir, elegirGrupo, precioDe,
-    fuente, unidad, precioEfectivo, tieneDescuento, enStock, yaEnCarrito, disponible, conTope, puedoSumar,
+    fuente, unidad, precioEfectivo, tieneDescuento, enStock, promo, yaEnCarrito, disponible, conTope, puedoSumar,
     sinMargen, recortado, cajaQueConviene, agregado, agregarAlCarrito, raizRef: cardRef,
   } = useCompraProducto<HTMLDivElement>(producto);
   const imgRef = useRef<HTMLImageElement>(null);
@@ -133,6 +134,7 @@ export function ProductCard({ producto }: { producto: ItemCatalogo }) {
             <span className={styles.perKg}> · {money((precioEfectivo) / variante.kgPorUnidad)} /kg</span>
           )}
         </div>}
+        {conPrecios && promo && <PromoLote promo={promo} />}
         {/* Cuánto se ahorra frente al minorista (el precio de mostrador), con la cantidad elegida. */}
         {variante?.ahorroMinorista && (
           <div className={styles.ahorroMin}>
