@@ -37,7 +37,7 @@
 }
 .chipMas { background: var(--color-gray-200); color: var(--color-gray-700); font-weight: 700; }
 .chipTamano { background: var(--color-gray-150); color: var(--color-gray-700); }
-.chipOferta { background: var(--color-error); color: var(--color-white); }
+.chipOferta { background: var(--color-oferta); color: var(--color-white); }
 .chipVolvio { background: var(--color-primary); color: var(--color-white); }
 
 /* Tamaños del granel: píldoras; la elegida llena. */

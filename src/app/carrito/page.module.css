@@ -87,7 +87,7 @@
 .stockAviso, .stockAvisoSuave { font-size: var(--font-size-xs); line-height: 1.35; margin-top: 2px; }
 .stockAviso { color: var(--color-warning-dark); font-weight: 600; }
 .stockAvisoSuave { color: var(--color-gray-500); }
-.itemPromo { font-size: var(--font-size-xs); font-weight: 700; color: #b42318; line-height: 1.35; margin-top: 2px; }
+.itemPromo { font-size: var(--font-size-xs); font-weight: 700; color: var(--color-oferta-dark); line-height: 1.35; margin-top: 2px; }
 
 .itemTotal { grid-area: total; font-weight: 800; font-size: 16px; color: var(--color-primary); white-space: nowrap; text-align: right; font-variant-numeric: tabular-nums; min-width: 92px; }
 .remove {

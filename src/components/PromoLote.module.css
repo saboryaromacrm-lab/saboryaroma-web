@@ -1,10 +1,11 @@
 .promo {
   margin: -2px 0 10px; padding: 10px 12px;
   border-radius: var(--radius-md);
-  background: linear-gradient(135deg, #e8380d, #b4231a);
+  background: linear-gradient(135deg, var(--color-oferta), var(--color-oferta-dark));
   color: #fff;
   line-height: 1.2;
-  box-shadow: 0 6px 14px rgba(180, 35, 26, 0.25);
+  box-shadow: 0 6px 14px rgba(229, 147, 60, 0.3);
+  text-shadow: 0 1px 1px rgba(94, 64, 51, 0.35);
 }
 .titulo { display: block; font-size: 16px; font-weight: 800; letter-spacing: -0.01em; }
 .precio { display: block; margin-top: 2px; font-size: 14px; font-weight: 600; opacity: 0.95; }
