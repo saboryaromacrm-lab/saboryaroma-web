@@ -6,7 +6,7 @@ import { carritoAgregado, productoOculto, productoVisible } from '@/lib/analytic
 import { flyToCart } from '@/lib/flyToCart';
 import { abrirIngreso } from '@/lib/sesion';
 import { money } from '@/lib/format';
-import { esMultiUnidad, faltanParaLote, loteDe, textoPromo, totalConOferta } from '@/lib/oferta';
+import { esMultiUnidad, loteDe, textoPromo, totalConOferta } from '@/lib/oferta';
 import type { ItemCatalogo, OfertaItem, Variante } from '@/lib/types';
 
 /** Con un 3×2 se arranca con el lote entero (en unidades de compra: una caja x6 ya lo cubre). */
@@ -86,23 +86,15 @@ export function useCompraProducto<T extends HTMLElement = HTMLDivElement>(produc
 
   /*
    * LA PROMO DE VARIAS UNIDADES (16/10/2026): 3×2, 2ª unidad, pack. No tiene un
-   * precio por unidad: se cuenta sobre lo elegido, igual que en el carrito y en
-   * el servidor. `faltan` = cuántas unidades completan el próximo lote.
+   * precio por unidad: `cadaUna` es lo que sale cada una llevando el lote
+   * entero, con la misma cuenta del carrito y del servidor.
    */
   const multi = esMultiUnidad(fuente.oferta) ? fuente.oferta : null;
   const porUnidad = variante?.paquetesPorUnidad ?? 1;
-  const promo = multi && (() => {
-    const lote = loteDe(multi);
-    const unidades = cantidad * porUnidad;
-    const precioUnidad = fuente.precio / porUnidad;
-    return {
-      texto: textoPromo(multi, money),
-      cadaUna: totalConOferta(multi, precioUnidad, lote) / lote,
-      total: totalConOferta(multi, precioUnidad, unidades),
-      sinPromo: precioUnidad * unidades,
-      faltan: faltanParaLote(multi, unidades),
-    };
-  })();
+  const promo = multi && {
+    texto: textoPromo(multi, money),
+    cadaUna: totalConOferta(multi, fuente.precio / porUnidad, loteDe(multi)) / loteDe(multi),
+  };
 
   /*
    * Lo que ya está en el carrito y cuánto más entra. El tope sale del carrito

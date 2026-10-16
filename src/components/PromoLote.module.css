@@ -1,9 +1,10 @@
 .promo {
-  display: flex; flex-direction: column; gap: 2px;
-  margin: -2px 0 8px; padding: 7px 10px;
+  margin: -2px 0 10px; padding: 10px 12px;
   border-radius: var(--radius-md);
-  background: #fff1ec; color: #9a2a12;
-  font-size: 12px; line-height: 1.35;
+  background: linear-gradient(135deg, #e8380d, #b4231a);
+  color: #fff;
+  line-height: 1.2;
+  box-shadow: 0 6px 14px rgba(180, 35, 26, 0.25);
 }
-.promo strong { font-weight: 800; }
-.det { font-size: 11.5px; color: #7c2d12; }
+.titulo { display: block; font-size: 16px; font-weight: 800; letter-spacing: -0.01em; }
+.precio { display: block; margin-top: 2px; font-size: 14px; font-weight: 600; opacity: 0.95; }

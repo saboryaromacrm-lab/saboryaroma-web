@@ -40,9 +40,9 @@ export const faltanParaLote = (o: OfertaItem, unidades: number) => {
   return resto ? loteDe(o) - resto : 0;
 };
 
-/** Lo que se lee en la tarjeta: «Llevás 3 y pagás 2», «La 2ª al 50% OFF», «Llevás 3 por $1.000». */
+/** Lo que se lee en la tarjeta y el carrito: «Agregá 3 y pagás 2», «La 2ª unidad al 50% OFF», «Agregá 3 por $1.000». */
 export function textoPromo(o: OfertaItem, fmt: (n: number) => string): string {
-  if (o.tipo === 'nxm') return `Llevás ${o.lleva} y pagás ${o.paga}`;
+  if (o.tipo === 'nxm') return `Agregá ${o.lleva} y pagás ${o.paga}`;
   if (o.tipo === 'segunda_unidad') return `La 2ª unidad al ${o.porcentaje}% OFF`;
-  return `Llevás ${o.lleva} por ${fmt(o.precioPack ?? 0)}`;
+  return `Agregá ${o.lleva} por ${fmt(o.precioPack ?? 0)}`;
 }
