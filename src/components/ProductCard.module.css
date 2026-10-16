@@ -257,3 +257,29 @@
   .formaDerecha { grid-column: 2; flex-direction: row; flex-wrap: wrap; align-items: center; gap: 2px 6px; }
   .ahorroMin, .conviene { padding: 6px 8px; }
 }
+
+/*
+ * LA TARJETA EN MODO MINORISTA (0173): la oferta manda —cartel grande, coral,
+ * arriba a la izquierda—, el precio en grande con el anterior tachado, y el
+ * botón de agregar como una píldora llena. El tamaño elegido del granel muestra
+ * su precio en el mismo botón.
+ */
+:global(html[data-modo='minorista']) .card { border-radius: var(--radius-xl); }
+:global(html[data-modo='minorista']) .imageWrap { background: var(--color-white); }
+:global(html[data-modo='minorista']) .ofertaBadge {
+  left: 10px; right: auto; top: 10px;
+  font-size: 14px; padding: 7px 13px;
+  background: var(--color-accent);
+  box-shadow: 0 6px 16px rgba(255, 75, 43, 0.35);
+  transform: rotate(-3deg);
+}
+:global(html[data-modo='minorista']) .tags { top: auto; bottom: 8px; left: 8px; }
+:global(html[data-modo='minorista']) .brand { color: var(--color-primary-light); }
+:global(html[data-modo='minorista']) .name { font-size: var(--font-size-base); font-weight: 700; }
+:global(html[data-modo='minorista']) .price { font-size: 1.55rem; letter-spacing: -0.02em; }
+:global(html[data-modo='minorista']) .priceOld { font-size: var(--font-size-base); }
+:global(html[data-modo='minorista']) .opcion { border-radius: 14px; padding: 6px 12px; }
+:global(html[data-modo='minorista']) .opcionPrecio { display: block; font-weight: 600; font-size: 11px; opacity: 0.8; }
+:global(html[data-modo='minorista']) .addBtn { border-radius: var(--radius-full); font-size: var(--font-size-base); padding: 12px; }
+:global(html[data-modo='minorista']) .addBtn[data-added='true'] { background: var(--color-primary-light); }
+:global(html[data-modo='minorista']) .qty { border-radius: var(--radius-full); }

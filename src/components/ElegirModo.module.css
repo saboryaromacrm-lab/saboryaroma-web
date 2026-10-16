@@ -1,0 +1,57 @@
+.fondo {
+  position: fixed; inset: 0; z-index: 3000;
+  display: flex; align-items: center; justify-content: center;
+  padding: var(--space-4);
+  background: rgba(7, 38, 25, 0.78);
+  backdrop-filter: blur(4px);
+}
+.caja {
+  width: min(760px, 100%);
+  background: var(--color-white);
+  border-radius: 24px;
+  padding: clamp(22px, 4vw, 40px);
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.35);
+  text-align: center;
+}
+.eyebrow { margin: 0 0 6px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; font-size: 12px; color: var(--color-primary); }
+.titulo { margin: 0 0 22px; font-size: clamp(24px, 4vw, 34px); font-weight: 900; letter-spacing: -0.02em; color: var(--color-black); text-wrap: balance; }
+.opciones { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.opcion {
+  display: flex; flex-direction: column; align-items: flex-start; gap: 8px;
+  padding: 22px 20px;
+  border-radius: 20px;
+  border: 2px solid transparent;
+  text-align: left;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
+}
+.opcion:hover, .opcion:focus-visible { transform: translateY(-3px); box-shadow: 0 14px 30px rgba(0, 0, 0, 0.14); outline: none; }
+.minorista { background: #f3fbf1; border-color: #c9f2c0; }
+.minorista:hover, .minorista:focus-visible { border-color: var(--color-primary); }
+.mayorista { background: #f6f3ee; border-color: #e7e0d2; }
+.mayorista:hover, .mayorista:focus-visible { border-color: #b45309; }
+.opcionIcono { font-size: 34px; line-height: 1; }
+.opcionTitulo { font-size: 22px; font-weight: 900; color: var(--color-black); letter-spacing: -0.01em; }
+.opcionTexto { font-size: 14px; line-height: 1.45; color: var(--color-gray-600); }
+.opcionPill {
+  font-size: 12px; font-weight: 800; padding: 4px 10px; border-radius: 999px;
+  background: var(--color-primary); color: var(--color-white);
+}
+.opcionCta { margin-top: auto; padding-top: 6px; font-weight: 800; color: var(--color-primary); }
+.mayorista .opcionCta { color: #b45309; }
+.nota { margin: 18px 0 0; font-size: 13px; color: var(--color-gray-500); }
+
+.switch {
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.14);
+  color: inherit;
+  font: inherit; font-weight: 700; font-size: 12px;
+  padding: 3px 10px; border-radius: 999px; cursor: pointer;
+  white-space: nowrap;
+}
+.switch:hover { background: rgba(255, 255, 255, 0.28); }
+
+@media (max-width: 640px) {
+  .opciones { grid-template-columns: 1fr; }
+  .opcion { padding: 16px; }
+}

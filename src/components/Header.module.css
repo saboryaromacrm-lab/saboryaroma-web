@@ -13,6 +13,11 @@
 .topBarText {
   margin: 0;
   padding: 6px var(--space-6);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 6px 14px;
   text-align: center;
   font-size: var(--font-size-xs);
   font-weight: 600;

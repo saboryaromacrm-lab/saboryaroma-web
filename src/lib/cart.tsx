@@ -18,9 +18,11 @@ import {
 } from 'react';
 import { getCatalogo } from './api';
 import { leerToken } from './sesion';
+import type { Modo } from './modo';
 import type { Catalogo, ClienteSesion, ItemCarrito, ItemCatalogo, ReglaMarca, Variante } from './types';
 
-const CART_KEY = 'sa_carrito';
+/** Un carrito por modo (0173): lo minorista y lo mayorista tienen precios distintos y no se mezclan. */
+const cartKey = (modo: Modo) => (modo === 'minorista' ? 'sa_carrito_min' : 'sa_carrito');
 
 /**
  * LA IDENTIDAD DE UN RENGLÓN: producto + opción (3/10/2026). «Albahaca 500 g» y
@@ -37,9 +39,15 @@ interface Config {
   envioCamionetaActivo: boolean;
   reglasMarca: ReglaMarca[];
   presupuestoValidezDias: number;
+  /** Minorista: envío a domicilio gratis desde este monto (0 = se coordina). */
+  envioGratisDesde: number;
+  /** El modo minorista está encendido: se puede elegir modo. */
+  minoristaActiva: boolean;
 }
 
 interface CartContextValue {
+  /** En qué modo está la tienda (0173). */
+  modo: Modo;
   items: ItemCarrito[];
   cantidadTotal: number;
   total: number;
@@ -81,9 +89,9 @@ interface CartContextValue {
 
 const CartContext = createContext<CartContextValue | null>(null);
 
-function leerCarrito(): ItemCarrito[] {
+function leerCarrito(modo: Modo): ItemCarrito[] {
   try {
-    const raw = localStorage.getItem(CART_KEY);
+    const raw = localStorage.getItem(cartKey(modo));
     const v = raw ? JSON.parse(raw) : [];
     return Array.isArray(v) ? v : [];
   } catch { return []; }
@@ -106,8 +114,9 @@ function configDeCatalogo(c: Catalogo | null): Config {
       montoMinimo: c.montoMinimo, montoMinimoCamioneta: c.montoMinimoCamioneta,
       envioCamionetaActivo: c.envioCamionetaActivo !== false,
       reglasMarca: c.reglasMarca, presupuestoValidezDias: c.presupuestoValidezDias,
+      envioGratisDesde: c.envioGratisDesde ?? 0, minoristaActiva: c.minoristaActiva === true,
     }
-    : { montoMinimo: 0, montoMinimoCamioneta: 0, envioCamionetaActivo: true, reglasMarca: [], presupuestoValidezDias: 7 };
+    : { montoMinimo: 0, montoMinimoCamioneta: 0, envioCamionetaActivo: true, reglasMarca: [], presupuestoValidezDias: 7, envioGratisDesde: 0, minoristaActiva: false };
 }
 
 /**
@@ -116,9 +125,13 @@ function configDeCatalogo(c: Catalogo | null): Config {
  * desde el navegador — evita el fetch duplicado y el parpadeo de mega-menú
  * y buscador vacíos mientras carga. Si no llegó (falló en el servidor), se
  * pide igual del lado del cliente como respaldo.
+ *
+ * `modo`: el de la tienda (0173). El layout lo monta con `key={modo}`: al
+ * cambiar de modo el carrito arranca de cero con el guardado de ESE modo.
  */
-export function CartProvider({ children, initialCatalogo = null }: {
+export function CartProvider({ children, modo, initialCatalogo = null }: {
   children: React.ReactNode;
+  modo: Modo;
   initialCatalogo?: Catalogo | null;
 }) {
   const [items, setItems] = useState<ItemCarrito[]>([]);
@@ -128,12 +141,12 @@ export function CartProvider({ children, initialCatalogo = null }: {
   const [quitadosViejos, setQuitadosViejos] = useState<string[]>([]);
 
   useEffect(() => {
-    const { vigentes, viejos } = separarViejos(leerCarrito());
+    const { vigentes, viejos } = separarViejos(leerCarrito(modo));
     setItems(vigentes);
     setQuitadosViejos(viejos);
     setCargado(true);
     if (initialCatalogo) return;
-    getCatalogo(leerToken())
+    getCatalogo(modo === 'mayorista' ? leerToken() : undefined, modo)
       .then((c) => { setConfig(configDeCatalogo(c)); setCatalogo(c); })
       .catch(() => { /* el carrito funciona igual sin esto; el checkout revalida */ });
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -163,8 +176,8 @@ export function CartProvider({ children, initialCatalogo = null }: {
 
   useEffect(() => {
     if (!cargado) return; // no pisar localStorage con el [] inicial antes de leerlo
-    try { localStorage.setItem(CART_KEY, JSON.stringify(items)); } catch { /* modo privado */ }
-  }, [items, cargado]);
+    try { localStorage.setItem(cartKey(modo), JSON.stringify(items)); } catch { /* modo privado */ }
+  }, [items, cargado, modo]);
 
   /**
    * EL TOPE, EN UN SOLO LUGAR.
@@ -272,18 +285,20 @@ export function CartProvider({ children, initialCatalogo = null }: {
 
     const cantidadOk = marcas.every((m) => m.ok) && productos.every((p) => p.ok);
     return {
-      habilitado: items.length > 0 && (montoOk || cantidadOk),
+      /* Minorista (0173): sin mínimos; con algo en el carrito ya se puede finalizar. */
+      habilitado: items.length > 0 && (modo === 'minorista' || montoOk || cantidadOk),
       montoOk,
       faltaMonto: Math.max(0, config.montoMinimo - total),
       marcas,
       productos,
     };
-  }, [items, total, config]);
+  }, [items, total, config, modo]);
 
   const value: CartContextValue = {
-    items, cantidadTotal, total, agregar, quitar, setCantidad, vaciar,
+    modo, items, cantidadTotal, total, agregar, quitar, setCantidad, vaciar,
     enCarrito, quitadosViejos, disponibleDe, config, catalogo, gate,
-    conPrecios: !!catalogo && catalogo.conPrecios !== false,
+    /* Minorista: los precios son públicos, siempre hay. */
+    conPrecios: modo === 'minorista' || (!!catalogo && catalogo.conPrecios !== false),
     cliente: catalogo?.cliente ?? null,
   };
 

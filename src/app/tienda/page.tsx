@@ -11,7 +11,7 @@ import styles from './page.module.css';
 
 export const metadata = {
   title: 'Tienda',
-  description: 'Catálogo mayorista completo: productos naturales, sin TACC y orgánicos, con precios de distribuidora.',
+  description: 'Catálogo completo: productos naturales, sin TACC y orgánicos, por menor y por mayor.',
 };
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3002';
@@ -69,6 +69,8 @@ export default async function TiendaPage({
   const marcasSel = idsDe(sp.marca);
   const tags = idsDe(sp.tag);
   const q = norm((sp.q ?? '').trim());
+  /** `?oferta=1`: solo lo que está en promo (la portada minorista lleva ahí). */
+  const soloOfertas = sp.oferta === '1';
 
   const items = cat.items.filter((p: ItemCatalogo) => {
     if (cats.size && (!p.categoriaId || !cats.has(p.categoriaId))) return false;
@@ -76,6 +78,7 @@ export default async function TiendaPage({
     if (marcasSel.size && (!p.marcaId || !marcasSel.has(p.marcaId))) return false;
     if (tags.size && !p.etiquetas.some((e) => tags.has(e.id))) return false;
     if (q && !norm(p.nombre).includes(q) && !norm(p.marca).includes(q)) return false;
+    if (soloOfertas && !p.oferta) return false;
     return true;
   });
 
@@ -89,6 +92,8 @@ export default async function TiendaPage({
   if (sp.q?.trim()) {
     miga = `Resultados para "${sp.q.trim()}"`;
     titulo = miga;
+  } else if (soloOfertas) {
+    miga = 'Ofertas'; titulo = '🔥 Ofertas';
   } else if (subUnica && cats.size <= 1 && !marcasSel.size && !tags.size) {
     const padre = cat.categorias.find((c) => c.id === subUnica.categoriaId);
     if (padre) migaPadre = { texto: padre.nombre, href: `/tienda?cat=${padre.id}` };

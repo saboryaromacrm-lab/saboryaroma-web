@@ -9,6 +9,7 @@ import { busquedaHecha } from '@/lib/analytics';
 import { money, norm } from '@/lib/format';
 import { MiniCart } from '@/components/MiniCart';
 import { BotonCuenta } from '@/components/Ingreso';
+import { ModoSwitch } from '@/components/ElegirModo';
 import type { Termino } from '@/lib/types';
 import styles from './Header.module.css';
 
@@ -23,7 +24,8 @@ function abrirInfoCompra() {
 }
 
 export function Header() {
-  const { cantidadTotal, catalogo, conPrecios } = useCart();
+  const { cantidadTotal, catalogo, conPrecios, modo, config } = useCart();
+  const minorista = modo === 'minorista';
   const router = useRouter();
   const pathname = usePathname();
   const [menuAbierto, setMenuAbierto] = useState(false);
@@ -211,8 +213,16 @@ export function Header() {
 
   return (
     <header className={styles.header}>
+      {/* El cartel dice en qué modo estás (0173) y deja pasar al otro. */}
       <div className={styles.topBar}>
-        <p className={styles.topBarText}>🍃 Tienda online solo compra mayorista — las mejores marcas con nosotros.</p>
+        <p className={styles.topBarText}>
+          <span>
+            {minorista
+              ? `🛒 Tienda minorista — precio de mostrador, sin mínimo de compra${config.envioGratisDesde > 0 ? ` · envío gratis desde ${money(config.envioGratisDesde)}` : ''}.`
+              : '🏪 Tienda mayorista — las mejores marcas con nosotros.'}
+          </span>
+          <ModoSwitch />
+        </p>
       </div>
 
       <div className={styles.main}>
@@ -431,7 +441,7 @@ export function Header() {
               )}
             </div>
 
-            <BotonCuenta className={styles.cuentaEscritorio} />
+            {!minorista && <BotonCuenta className={styles.cuentaEscritorio} />}
 
             <div ref={cartWrapRef} className={styles.cartWrap} onMouseEnter={abrirCarrito} onMouseLeave={programarCierreCarrito}>
               <Link id="header-cart-link" href="/carrito" className={styles.cartLink} aria-label="Ver carrito" aria-expanded={carritoAbierto}>
@@ -604,7 +614,7 @@ export function Header() {
             <button type="button" className={styles.mobileInfoBtn} onClick={() => { setMenuAbierto(false); abrirInfoCompra(); }}>
               <span aria-hidden>ⓘ</span> Info de compra
             </button>
-            <BotonCuenta className={styles.cuentaMovil} />
+            {!minorista && <BotonCuenta className={styles.cuentaMovil} />}
           </nav>
         </div>
       )}

@@ -16,7 +16,7 @@ import styles from './ProductCard.module.css';
  */
 export function ProductCard({ producto }: { producto: ItemCatalogo }) {
   const {
-    conPrecios, cantidad, restar, sumar, sumarBloqueado, variante, grupos, grupo, elegir, elegirGrupo, precioDe,
+    modo, conPrecios, cantidad, restar, sumar, sumarBloqueado, variante, grupos, grupo, elegir, elegirGrupo, precioDe,
     fuente, unidad, precioEfectivo, tieneDescuento, enStock, yaEnCarrito, disponible, conTope, puedoSumar,
     sinMargen, recortado, cajaQueConviene, agregado, agregarAlCarrito, raizRef: cardRef,
   } = useCompraProducto<HTMLDivElement>(producto);
@@ -79,6 +79,8 @@ export function ProductCard({ producto }: { producto: ItemCatalogo }) {
                   title={hay ? undefined : 'Sin stock'}
                 >
                   {g.etiqueta}
+                  {/* Minorista (0173): el precio del tamaño en el mismo botón (el más barato de sus formas). */}
+                  {modo === 'minorista' && hay && <span className={styles.opcionPrecio}>{money(Math.min(...g.formas.filter((v) => v.enStock).map(precioDe)))}</span>}
                 </button>
               );
             })}

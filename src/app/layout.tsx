@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from 'next';
-import { catalogoConSesion } from '@/lib/catalogoServidor';
+import { catalogoConSesion, modoElegido } from '@/lib/catalogoServidor';
+import { MODO_INICIAL } from '@/lib/modo';
 import { CartProvider } from '@/lib/cart';
+import { ElegirModo } from '@/components/ElegirModo';
 import { jsonLdString } from '@/lib/jsonLd';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
@@ -18,19 +20,19 @@ const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3002';
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: 'Sabor y Aroma — Tienda mayorista online',
+    default: 'Sabor y Aroma — Tienda online',
     template: '%s · Sabor y Aroma',
   },
-  description: 'Distribuidora saludable en Formosa. Productos naturales, orgánicos y libres de gluten al por mayor.',
-  keywords: ['mayorista', 'dietética', 'productos naturales', 'sin TACC', 'orgánico', 'Formosa', 'distribuidora'],
+  description: 'Dietética y distribuidora saludable en Formosa. Productos naturales, orgánicos y libres de gluten, por menor y por mayor.',
+  keywords: ['dietética', 'mayorista', 'minorista', 'productos naturales', 'sin TACC', 'orgánico', 'Formosa', 'distribuidora'],
   manifest: '/manifest.webmanifest',
   appleWebApp: { capable: true, statusBarStyle: 'default', title: 'Sabor y Aroma' },
   openGraph: {
     type: 'website',
     locale: 'es_AR',
     siteName: 'Sabor y Aroma',
-    title: 'Sabor y Aroma — Tienda mayorista online',
-    description: 'Productos naturales y saludables al por mayor, en Formosa.',
+    title: 'Sabor y Aroma — Tienda online',
+    description: 'Productos naturales y saludables, por menor y por mayor, en Formosa.',
   },
   robots: { index: true, follow: true },
 };
@@ -70,17 +72,26 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   // el fetch idéntico que cada página vuelve a hacer para su propio contenido
   // (Request Memoization), y este resultado se lo pasamos al carrito para que
   // no tenga que volver a pedirlo desde el navegador.
-  const catalogoInicial = await catalogoConSesion().catch(() => null);
+  const [catalogoInicial, elegido] = await Promise.all([catalogoConSesion().catch(() => null), modoElegido()]);
+  /*
+   * EL MODO (0173): el que dice el catálogo (la API baja a mayorista si el
+   * minorista está apagado); sin catálogo, el elegido o el inicial. `data-modo`
+   * en <html> es lo que viste la tienda (globals.css). La primera visita elige;
+   * con el minorista apagado no hay nada que elegir.
+   */
+  const modo = catalogoInicial?.modo ?? elegido ?? MODO_INICIAL;
+  const elegir = !elegido && catalogoInicial?.minoristaActiva === true;
 
   return (
-    <html lang="es-AR">
+    <html lang="es-AR" data-modo={modo}>
       <body>
         <script
           type="application/ld+json"
           // eslint-disable-next-line react/no-danger
           dangerouslySetInnerHTML={{ __html: jsonLdString(JSON_LD) }}
         />
-        <CartProvider initialCatalogo={catalogoInicial}>
+        {/* `key={modo}`: al cambiar de modo el carrito arranca de cero con el guardado de ese modo. */}
+        <CartProvider key={modo} modo={modo} initialCatalogo={catalogoInicial}>
           <Header />
           <main>{children}</main>
           <Footer />
@@ -88,8 +99,10 @@ export default async function RootLayout({ children }: { children: React.ReactNo
               HTML válido, y acá afuera queda FUERA del árbol de cliente del
               carrito — o sea, renderizada en el servidor y sin mandar JS. */}
           <FirmaCoftech />
-          <WelcomePopup />
-          <Ingreso />
+          {/* El cartel de condiciones y el ingreso con DNI son del mayorista. */}
+          {modo === 'mayorista' && <WelcomePopup />}
+          {modo === 'mayorista' && <Ingreso />}
+          <ElegirModo abiertoAlEntrar={elegir} />
           <FaviconSetter />
         </CartProvider>
         <PwaRegister />

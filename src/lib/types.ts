@@ -164,7 +164,22 @@ export interface ClienteSesion {
   localidad: string;
 }
 
+/** El comprador minorista (0173): lo guardado en su último pedido, para no escribirlo de nuevo. */
+export interface Comprador {
+  nombre: string;
+  apellido: string;
+  direccion: string;
+  localidad: string;
+  referencia: string;
+}
+
 export interface Catalogo {
+  /** En qué modo vino el catálogo (0173). Ausente = API anterior (mayorista). */
+  modo?: 'mayorista' | 'minorista';
+  /** El modo minorista está encendido en el ERP: la tienda ofrece elegir modo. Ausente = no. */
+  minoristaActiva?: boolean;
+  /** Minorista: envío a domicilio gratis desde este monto (0 = se coordina). */
+  envioGratisDesde?: number;
   /**
    * PRECIOS SOLO PARA LOS HABILITADOS (0155, 10/10/2026). `false`: el visitante
    * no ingresó y la API mandó el catálogo SIN NADA DE PLATA — los precios,
@@ -217,3 +232,5 @@ export interface ItemCarrito {
 }
 
 export type Entrega = 'retiro' | 'cadete' | 'camioneta';
+/** Minorista (0173): retiro en el local o envío a domicilio. */
+export type EntregaMinorista = 'retiro' | 'envio';

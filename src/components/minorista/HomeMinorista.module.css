@@ -1,0 +1,96 @@
+.portada { padding-bottom: var(--space-10); }
+
+/* El hero: bloque oscuro con el verde bosque y un resplandor lima. */
+.hero {
+  background:
+    radial-gradient(900px 380px at 85% -20%, rgba(215, 243, 107, 0.35), transparent 60%),
+    radial-gradient(600px 300px at -10% 120%, rgba(19, 122, 82, 0.55), transparent 60%),
+    var(--color-primary);
+  color: var(--color-white);
+}
+.heroInner {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+  gap: var(--space-8);
+  align-items: center;
+  padding-block: clamp(36px, 6vw, 72px);
+}
+.eyebrow { margin: 0 0 10px; font-size: 12px; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; color: var(--color-secondary); }
+.titulo {
+  margin: 0 0 14px;
+  font-size: clamp(32px, 5.2vw, 58px);
+  line-height: 1.02;
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  text-wrap: balance;
+}
+.sub { margin: 0 0 24px; max-width: 46ch; font-size: clamp(15px, 1.6vw, 18px); line-height: 1.5; color: rgba(255, 255, 255, 0.86); }
+.heroBotones { display: flex; flex-wrap: wrap; gap: 10px; }
+.ctaOfertas, .ctaTienda {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 13px 22px;
+  border-radius: var(--radius-full);
+  font-weight: 800; font-size: 15px;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+.ctaOfertas { background: var(--color-accent); color: var(--color-white); box-shadow: 0 10px 24px rgba(255, 75, 43, 0.4); }
+.ctaTienda { background: var(--color-secondary); color: var(--color-primary-dark); }
+.ctaOfertas:hover, .ctaTienda:hover { transform: translateY(-2px); }
+
+.heroDatos {
+  list-style: none; margin: 0; padding: 0;
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
+}
+.heroDatos li {
+  display: flex; flex-direction: column; gap: 2px;
+  padding: 16px 14px;
+  border-radius: var(--radius-lg);
+  background: rgba(255, 255, 255, 0.09);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  backdrop-filter: blur(6px);
+}
+.heroDatos strong { font-size: clamp(20px, 2.4vw, 28px); font-weight: 900; letter-spacing: -0.02em; color: var(--color-secondary); font-variant-numeric: tabular-nums; }
+.heroDatos span { font-size: 12px; font-weight: 600; color: rgba(255, 255, 255, 0.8); }
+
+.seccion { margin-top: clamp(32px, 5vw, 56px); }
+.seccionHead { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 10px 20px; margin-bottom: 18px; }
+.seccionTitulo { margin: 0; font-size: clamp(22px, 3vw, 30px); font-weight: 900; letter-spacing: -0.02em; color: var(--color-black); }
+.seccionSub { margin: 4px 0 0; color: var(--color-gray-550); }
+.fuego { display: inline-block; animation: fuego 1.4s ease-in-out infinite; }
+@keyframes fuego { 0%, 100% { transform: scale(1) rotate(-4deg); } 50% { transform: scale(1.18) rotate(4deg); } }
+@media (prefers-reduced-motion: reduce) { .fuego { animation: none; } }
+.verTodo { font-weight: 800; color: var(--color-primary); white-space: nowrap; }
+
+.gridOfertas, .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-5); }
+.gridOfertas {
+  padding: 18px;
+  border-radius: var(--radius-2xl);
+  background: linear-gradient(135deg, #fff3ee 0%, #ffe9e1 100%);
+  border: 1px solid rgba(255, 75, 43, 0.16);
+}
+
+.chips { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 6px; scrollbar-width: thin; }
+.chip {
+  display: inline-flex; align-items: center; gap: 10px; flex: none;
+  padding: 8px 16px 8px 8px;
+  border-radius: var(--radius-full);
+  background: var(--color-white);
+  border: 1.5px solid var(--color-gray-250);
+  font-weight: 700; font-size: 14px; color: var(--color-black);
+  transition: border-color 0.15s, transform 0.15s;
+}
+.chip:hover { border-color: var(--color-primary); transform: translateY(-2px); }
+.chipImg { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; background: var(--color-gray-100); }
+
+@media (max-width: 1024px) {
+  .gridOfertas, .grid { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 860px) {
+  .heroInner { grid-template-columns: 1fr; }
+}
+@media (max-width: 640px) {
+  .gridOfertas, .grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .gridOfertas { padding: 10px; }
+  .heroDatos { gap: 8px; }
+  .heroDatos li { padding: 12px 10px; }
+}

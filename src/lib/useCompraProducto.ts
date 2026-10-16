@@ -20,7 +20,7 @@ export type GrupoTamano = { clave: string; etiqueta: string; formas: Variante[] 
  * se le cuelga la telemetría de «cuánto tiempo estuvo a la vista».
  */
 export function useCompraProducto<T extends HTMLElement = HTMLDivElement>(producto: ItemCatalogo) {
-  const { agregar, enCarrito, disponibleDe, conPrecios } = useCart();
+  const { agregar, enCarrito, disponibleDe, conPrecios, modo } = useCart();
   const [cantidad, setCantidad] = useState(1);
   /*
    * EL GRANEL SE ELIGE POR TAMAÑO (3/10/2026): paquetes y bolsa cerrada, cada
@@ -118,7 +118,7 @@ export function useCompraProducto<T extends HTMLElement = HTMLDivElement>(produc
   };
 
   return {
-    conPrecios, cantidad, setCantidad, paso, restar, sumar, sumarBloqueado,
+    modo, conPrecios, cantidad, setCantidad, paso, restar, sumar, sumarBloqueado,
     variante, grupos, grupo, elegir, elegirGrupo, precioDe,
     fuente, unidad, precioEfectivo, tieneDescuento, enStock,
     yaEnCarrito, disponible, conTope, puedoSumar, sinMargen, recortado,

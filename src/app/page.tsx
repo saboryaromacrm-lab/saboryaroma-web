@@ -5,6 +5,7 @@ import { ProductCard } from '@/components/ProductCard';
 import { ProductCarousel } from '@/components/ProductCarousel';
 import { HeroSlider } from '@/components/HeroSlider';
 import { MarcasCarousel } from '@/components/MarcasCarousel';
+import { HomeMinorista } from '@/components/minorista/HomeMinorista';
 import styles from './page.module.css';
 
 export default async function HomePage() {
@@ -17,6 +18,8 @@ export default async function HomePage() {
       </div>
     );
   }
+  /* La portada minorista es otra (0173): las ofertas al frente. */
+  if (cat.modo === 'minorista') return <HomeMinorista cat={cat} />;
 
   // La grilla central la curan desde el módulo Web (★ Destacado); si nadie
   // marcó nada todavía, una selección automática mantiene la portada viva.

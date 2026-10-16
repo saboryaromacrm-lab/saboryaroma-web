@@ -8,6 +8,7 @@ import { leerToken } from '@/lib/sesion';
 import { money, telefonoArgentino } from '@/lib/format';
 import { IngresarParaComprar } from '@/components/Ingreso';
 import type { Entrega } from '@/lib/types';
+import { CheckoutMinorista } from './CheckoutMinorista';
 import styles from './page.module.css';
 
 /* `camioneta` es el id interno: el cliente lee «Envío sin costo» (4/10/2026). */
@@ -17,7 +18,13 @@ const ENTREGAS: { id: Entrega; label: string }[] = [
   { id: 'camioneta', label: 'Envío sin costo' },
 ];
 
+/** El checkout minorista es otro (0173): sin DNI, con el WhatsApp como llave. */
 export default function CheckoutPage() {
+  const { modo } = useCart();
+  return modo === 'minorista' ? <CheckoutMinorista /> : <CheckoutMayorista />;
+}
+
+function CheckoutMayorista() {
   const { items, total, gate, config, vaciar, conPrecios, cliente } = useCart();
   const [telefono, setTelefono] = useState('');
   const [entrega, setEntrega] = useState<Entrega>('retiro');

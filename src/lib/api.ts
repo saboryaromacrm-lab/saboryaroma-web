@@ -1,4 +1,5 @@
-import type { Catalogo, Entrega } from './types';
+import type { Catalogo, Comprador, Entrega, EntregaMinorista } from './types';
+import type { Modo } from './modo';
 
 /*
  * `||` y NO `??`: una cadena VACÍA tiene que contar como "no configurada".
@@ -66,13 +67,14 @@ const SESION = 'X-Tienda-Sesion';
 const conSesion = (token?: string): Record<string, string> => (token ? { [SESION]: token } : {});
 
 /**
- * Catálogo completo de la tienda. Sin caché: precios y stock cambian seguido.
- * Con el token de un cliente habilitado viene con precios y sus datos; sin él,
- * sin nada de plata (`conPrecios: false`).
+ * Catálogo completo de la tienda, en su modo (0173). Sin caché de este lado:
+ * la API ya lo guarda unos segundos para todos. Minorista: siempre con
+ * precios. Mayorista: con el token de un cliente habilitado viene con precios
+ * y sus datos; sin él, sin nada de plata (`conPrecios: false`).
  */
-export async function getCatalogo(token?: string): Promise<Catalogo> {
+export async function getCatalogo(token?: string, modo: Modo = 'mayorista'): Promise<Catalogo> {
   const r = await pedir(
-    `${API}/tienda/catalogo`,
+    `${API}/tienda/catalogo${modo === 'minorista' ? '?modo=minorista' : ''}`,
     { cache: 'no-store', headers: conSesion(token) },
     TIMEOUT_CATALOGO_MS,
     'No se pudo conectar con la tienda.',
@@ -140,6 +142,31 @@ export const ingresar = (dni: string) => postJson<EstadoIngreso>('/tienda/ingres
 export const registrarse = (datos: DatosRegistro) => postJson<EstadoIngreso>('/tienda/registro', datos);
 /** Cerrar la sesión de este aparato (si falla, igual se borra la cookie: queda vencida sola). */
 export const salir = (token: string) => postJson<{ ok: boolean }>('/tienda/salir', {}, token).catch(() => null);
+
+/* ----------------------------- modo minorista (0173) ----------------------------- */
+
+/** Los datos guardados de un comprador minorista por su WhatsApp (null si nunca compró). */
+export const buscarComprador = (telefono: string) => postJson<{ comprador: Comprador | null }>('/tienda/minorista/comprador', { telefono });
+
+export interface PedidoMinoristaDto {
+  telefono: string;
+  nombre: string;
+  apellido: string;
+  entrega: EntregaMinorista;
+  direccion?: DireccionEntrega;
+  observaciones?: string;
+  items: { productoId: number; cantidad: number; variante?: string }[];
+}
+
+export async function crearPedidoMinorista(dto: PedidoMinoristaDto): Promise<{ ok: true; codigo: string; total: number }> {
+  const r = await pedir(
+    `${API}/tienda/minorista/pedidos`,
+    { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(dto) },
+    TIMEOUT_PEDIDO_MS,
+    'No recibimos respuesta de la tienda. Esperá un momento antes de volver a intentar; si el problema sigue, escribinos por WhatsApp.',
+  );
+  return manejar(r);
+}
 
 export async function crearPedido(dto: PedidoDto, token: string): Promise<{ ok: true; codigo: string; total: number }> {
   const r = await pedir(
