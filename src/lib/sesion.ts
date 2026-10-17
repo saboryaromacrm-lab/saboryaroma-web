@@ -38,6 +38,26 @@ export const abrirIngreso = () => window.dispatchEvent(new Event('sa:abrir-ingre
 /** Igual, pero directo en el pedido de ingreso (el «Registrarme» del cartel de bienvenida). */
 export const abrirRegistro = () => window.dispatchEvent(new CustomEvent('sa:abrir-ingreso', { detail: 'registro' }));
 
+/**
+ * ELEGIR MINORISTA ABRE EL INGRESO (17/10/2026, pedido del dueño). Se anota
+ * acá y no se abre en el acto porque el cambio de modo puede rearmar la
+ * página: la ventana de la minorista la toma apenas está montada
+ * (`tomarIngresoPendiente`), sea en el acto (evento) o después de rearmar.
+ */
+const INGRESO_PENDIENTE = 'sa_ingreso_pendiente';
+export function pedirIngresoAlEntrar() {
+  try { sessionStorage.setItem(INGRESO_PENDIENTE, '1'); } catch { /* modo privado: se ingresa desde el botón */ }
+  window.dispatchEvent(new Event('sa:ingreso-pendiente'));
+}
+/** ¿Había que abrir el ingreso? Lo responde una vez (y lo borra). */
+export function tomarIngresoPendiente(): boolean {
+  try {
+    const hay = sessionStorage.getItem(INGRESO_PENDIENTE) === '1';
+    if (hay) sessionStorage.removeItem(INGRESO_PENDIENTE);
+    return hay;
+  } catch { return false; }
+}
+
 export function leerSolicitud(): boolean {
   try { return localStorage.getItem(SOLICITUD) === '1'; } catch { return false; }
 }

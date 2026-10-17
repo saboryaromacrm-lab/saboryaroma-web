@@ -12,14 +12,20 @@ import { useCart } from '@/lib/cart';
 import { imgSrc } from '@/lib/api';
 import { money } from '@/lib/format';
 import { ETIQUETA_MODO, guardarModo, type Modo } from '@/lib/modo';
+import { pedirIngresoAlEntrar } from '@/lib/sesion';
 import styles from './ElegirModo.module.css';
 
-/** Guarda el modo y vuelve a armar la página en el servidor (otro catálogo, otro carrito). */
+/**
+ * Guarda el modo y vuelve a armar la página en el servidor (otro catálogo, otro
+ * carrito). Ir a la minorista pide de una el ingreso con el WhatsApp (si ya
+ * ingresó, la ventana no se abre).
+ */
 function useCambiarModo() {
   const router = useRouter();
   const { modo } = useCart();
   return (nuevo: Modo) => {
     guardarModo(nuevo);
+    if (nuevo === 'minorista') pedirIngresoAlEntrar();
     if (nuevo !== modo) router.refresh();
   };
 }
