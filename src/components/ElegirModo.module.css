@@ -7,13 +7,12 @@
 }
 /*
  * EL CARTEL DECORADO (17/10/2026, pedido del dueño: «más diseño, con ondas y
- * patterns»): arriba una franja crema con hojitas y una onda que la cierra;
- * cada tarjeta con su dibujo de fondo (puntos en la minorista, rayas en la
- * mayorista) y una onda de su color abajo. Todo CSS con SVG en línea: el
- * contenido va por encima (z-index) y no cambia.
+ * patterns»): cada tarjeta con su dibujo de fondo (puntos en la minorista,
+ * rayas en la mayorista) y una onda de su color abajo. Todo CSS con SVG en línea: el
+ * contenido va por encima (z-index) y no cambia. La franja de arriba con
+ * hojitas se sacó a pedido (17/10/2026): el logo va sobre blanco.
  */
 .caja {
-  position: relative;
   width: min(760px, 100%);
   max-height: calc(100vh - 2 * var(--space-4));
   overflow-x: hidden;
@@ -24,18 +23,7 @@
   box-shadow: 0 30px 80px rgba(0, 0, 0, 0.35);
   text-align: center;
 }
-.caja::before {
-  content: '';
-  position: absolute; left: 0; right: 0; top: 0;
-  height: 150px;
-  background:
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 760 40' preserveAspectRatio='none'%3E%3Cpath d='M0 22 C 120 0 240 40 380 20 S 640 0 760 18 V40 H0 Z' fill='%23fff'/%3E%3C/svg%3E") bottom / 100% 40px no-repeat,
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='90' height='90' viewBox='0 0 90 90'%3E%3Cg fill='%23086633' fill-opacity='0.13'%3E%3Cpath d='M18 30 C 18 18 30 12 38 12 C 38 24 30 32 18 30 Z'/%3E%3Cpath d='M64 70 C 64 60 74 54 82 55 C 81 65 74 72 64 70 Z'/%3E%3C/g%3E%3Cg fill='%23e5933c' fill-opacity='0.22'%3E%3Ccircle cx='66' cy='22' r='3'/%3E%3Ccircle cx='22' cy='68' r='2.5'/%3E%3C/g%3E%3C/svg%3E") 0 0 / 90px 90px,
-    linear-gradient(120deg, #e9f6d4 0%, #f7f1e4 55%, #fbe3c8 100%);
-  pointer-events: none;
-}
-.caja > * { position: relative; z-index: 1; }
-.logo { display: block; height: 56px; width: auto; max-width: 100%; margin: 0 auto 14px; object-fit: contain; filter: drop-shadow(0 2px 4px rgba(255, 255, 255, 0.9)); }
+.logo { display: block; height: 56px; width: auto; max-width: 100%; margin: 0 auto 14px; object-fit: contain; }
 .eyebrow { margin: 0 0 6px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; font-size: 12px; color: var(--color-primary); }
 .titulo { margin: 0 0 24px; font-size: clamp(24px, 4vw, 34px); font-weight: 900; letter-spacing: -0.02em; color: var(--color-black); text-wrap: balance; }
 .opciones { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
@@ -136,5 +124,4 @@
   .opciones { grid-template-columns: 1fr; }
   .opcion { padding: 16px 16px 26px; }
   .opcionIcono { width: 50px; height: 50px; font-size: 26px; }
-  .caja::before { height: 130px; }
 }
