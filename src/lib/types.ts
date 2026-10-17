@@ -203,6 +203,8 @@ export interface Catalogo {
   minoristaActiva?: boolean;
   /** Minorista: envío a domicilio gratis desde este monto (0 = se coordina). */
   envioGratisDesde?: number;
+  /** La compra mínima mayorista, en los dos modos (para el cartel de elegir modo). Ausente = API anterior. */
+  minimoMayorista?: number;
   /**
    * PRECIOS SOLO PARA LOS HABILITADOS (0155, 10/10/2026). `false`: el visitante
    * no ingresó y la API mandó el catálogo SIN NADA DE PLATA — los precios,

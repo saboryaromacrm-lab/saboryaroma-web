@@ -13,6 +13,7 @@
   box-shadow: 0 30px 80px rgba(0, 0, 0, 0.35);
   text-align: center;
 }
+.logo { display: block; height: 52px; width: auto; max-width: 100%; margin: 0 auto 10px; object-fit: contain; }
 .eyebrow { margin: 0 0 6px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; font-size: 12px; color: var(--color-primary); }
 .titulo { margin: 0 0 22px; font-size: clamp(24px, 4vw, 34px); font-weight: 900; letter-spacing: -0.02em; color: var(--color-black); text-wrap: balance; }
 .opciones { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
@@ -26,19 +27,19 @@
   transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
 }
 .opcion:hover, .opcion:focus-visible { transform: translateY(-3px); box-shadow: 0 14px 30px rgba(0, 0, 0, 0.14); outline: none; }
-.minorista { background: #f3fbf1; border-color: #c9f2c0; }
-.minorista:hover, .minorista:focus-visible { border-color: var(--color-primary); }
-.mayorista { background: #f6f3ee; border-color: #e7e0d2; }
-.mayorista:hover, .mayorista:focus-visible { border-color: #b45309; }
+/* Cada tarjeta con su tono (17/10/2026): minorista naranja, mayorista verde. Fijos: no dependen del modo en que esté la página. */
+.minorista { --tono: var(--color-oferta-dark); --tono-borde: #f3c99a; background: #fdf3e6; border-color: var(--tono-borde); }
+.mayorista { --tono: #086633; --tono-borde: #b9e3c6; background: #eef8f1; border-color: var(--tono-borde); }
+.opcion:hover, .opcion:focus-visible { border-color: var(--tono); }
 .opcionIcono { font-size: 34px; line-height: 1; }
 .opcionTitulo { font-size: 22px; font-weight: 900; color: var(--color-black); letter-spacing: -0.01em; }
 .opcionTexto { font-size: 14px; line-height: 1.45; color: var(--color-gray-600); }
+.opcionTexto strong { color: var(--tono); }
 .opcionPill {
   font-size: 12px; font-weight: 800; padding: 4px 10px; border-radius: 999px;
-  background: var(--color-primary); color: var(--color-white);
+  background: var(--tono); color: var(--color-white);
 }
-.opcionCta { margin-top: auto; padding-top: 6px; font-weight: 800; color: var(--color-primary); }
-.mayorista .opcionCta { color: #b45309; }
+.opcionCta { margin-top: auto; padding-top: 6px; font-weight: 800; color: var(--tono); }
 .nota { margin: 18px 0 0; font-size: 13px; color: var(--color-gray-500); }
 
 .switch {

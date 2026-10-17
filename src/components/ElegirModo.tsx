@@ -9,6 +9,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useCart } from '@/lib/cart';
+import { imgSrc } from '@/lib/api';
 import { money } from '@/lib/format';
 import { ETIQUETA_MODO, guardarModo, type Modo } from '@/lib/modo';
 import styles from './ElegirModo.module.css';
@@ -24,28 +25,34 @@ function useCambiarModo() {
 }
 
 export function ElegirModo({ abiertoAlEntrar }: { abiertoAlEntrar: boolean }) {
-  const { config } = useCart();
+  const { config, catalogo } = useCart();
   const [abierto, setAbierto] = useState(abiertoAlEntrar);
   const cambiar = useCambiarModo();
   if (!abierto) return null;
   const elegir = (m: Modo) => { setAbierto(false); cambiar(m); };
+  /* 17/10/2026, pedido del dueño: el logo arriba; minorista en naranja y mayorista en verde, con sus textos. */
+  const logo = imgSrc(catalogo?.sitio?.logoUrl);
+  const minimo = catalogo?.minimoMayorista ?? 0;
   return (
     <div className={styles.fondo} role="dialog" aria-modal="true" aria-labelledby="elegir-modo-titulo">
       <div className={styles.caja}>
-        <p className={styles.eyebrow}>🍃 Sabor y Aroma</p>
+        {logo ? <img src={logo} alt="Sabor y Aroma" className={styles.logo} /> : <p className={styles.eyebrow}>🍃 Sabor y Aroma</p>}
         <h2 id="elegir-modo-titulo" className={styles.titulo}>¿Cómo querés comprar?</h2>
         <div className={styles.opciones}>
           <button type="button" className={`${styles.opcion} ${styles.minorista}`} onClick={() => elegir('minorista')}>
             <span className={styles.opcionIcono}>🛒</span>
             <span className={styles.opcionTitulo}>Minorista</span>
-            <span className={styles.opcionTexto}>Para tu casa. Precios a la vista, sin mínimo de compra ni registro.</span>
+            <span className={styles.opcionTexto}>Comprá rápido y sin vueltas: te lo enviamos o pasás a buscarlo.</span>
             {config.envioGratisDesde > 0 && <span className={styles.opcionPill}>Envío gratis desde {money(config.envioGratisDesde)}</span>}
             <span className={styles.opcionCta}>Comprar minorista →</span>
           </button>
           <button type="button" className={`${styles.opcion} ${styles.mayorista}`} onClick={() => elegir('mayorista')}>
             <span className={styles.opcionIcono}>🏪</span>
             <span className={styles.opcionTitulo}>Mayorista</span>
-            <span className={styles.opcionTexto}>Para tu negocio. Precios de distribuidora, con tu DNI habilitado.</span>
+            <span className={styles.opcionTexto}>
+              {minimo > 0 ? <>Precios mayoristas a partir de <strong>{money(minimo)}</strong> de compra.</> : 'Precios mayoristas para tu negocio.'}
+            </span>
+            <span className={styles.opcionPill}>Efectivo o transferencia</span>
             <span className={styles.opcionCta}>Comprar mayorista →</span>
           </button>
         </div>
