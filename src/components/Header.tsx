@@ -431,9 +431,12 @@ export function Header() {
           </nav>
 
           <div className={styles.actions}>
-            <button type="button" className={styles.infoBtn} onClick={abrirInfoCompra}>
-              <span aria-hidden>ⓘ</span> Info de compra
-            </button>
+            {/* El cartel de compra es solo de la mayorista (layout.tsx): en la minorista el botón no va (17/10/2026). */}
+            {!minorista && (
+              <button type="button" className={styles.infoBtn} onClick={abrirInfoCompra}>
+                <span aria-hidden>ⓘ</span> Info de compra
+              </button>
+            )}
 
             <div ref={searchWrapRef} className={styles.search}>
               <form onSubmit={buscar} className={styles.searchForm}>
@@ -656,9 +659,11 @@ export function Header() {
               )}
             </div>
 
-            <button type="button" className={styles.mobileInfoBtn} onClick={() => { setMenuAbierto(false); abrirInfoCompra(); }}>
-              <span aria-hidden>ⓘ</span> Info de compra
-            </button>
+            {!minorista && (
+              <button type="button" className={styles.mobileInfoBtn} onClick={() => { setMenuAbierto(false); abrirInfoCompra(); }}>
+                <span aria-hidden>ⓘ</span> Info de compra
+              </button>
+            )}
             {!minorista && <BotonCuenta className={styles.cuentaMovil} />}
           </nav>
         </div>
