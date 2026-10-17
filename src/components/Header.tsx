@@ -58,6 +58,7 @@ export function Header() {
   const searchWrapRef = useRef<HTMLDivElement>(null);
   const navRef = useRef<HTMLElement>(null);
   const megaMenuRef = useRef<HTMLDivElement>(null);
+  const marcasScrollRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLDivElement | null>(null);
   const cierreTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [carritoAbierto, setCarritoAbierto] = useState(false);
@@ -179,6 +180,13 @@ export function Header() {
     }
     return [...LETRAS, '#'].filter((l) => mapa.has(l)).map((letra) => ({ letra, marcas: mapa.get(letra)! }));
   }, [catalogo, filtroMarca]);
+
+  /** La fila de letras del menú de Marcas: lleva el scroll del panel a esa letra. */
+  const irALetra = (letra: string) => {
+    const box = marcasScrollRef.current;
+    const sec = box?.querySelector<HTMLElement>(`[data-letra="${letra}"]`);
+    if (box && sec) box.scrollTo({ top: sec.offsetTop - box.offsetTop, behavior: 'smooth' });
+  };
 
   /** Las dietas, con el mismo buscador que Categorías y Marcas. */
   const dietas = useMemo(() => {
@@ -355,25 +363,39 @@ export function Header() {
                   {marcasPorLetra.length === 0 ? (
                     <p className={styles.megaMenuVacio}>No encontramos marcas con ese nombre.</p>
                   ) : (
-                    /* El mismo panel que Categorías: cada letra es un bloque con su título, en columnas. */
-                    <div className={styles.catsScroll}>
-                      <div className={styles.catsGrid}>
+                    /* LAS MARCAS CON SU LOGO (17/10/2026, pedido del dueño): una grilla de
+                       tarjetas por letra —logo, nombre y cuántos productos—. Sin logo
+                       cargado, el dibujo genérico, como en el carrusel de la portada. */
+                    <>
+                      {marcasPorLetra.length > 1 && (
+                        <nav className={styles.marcasLetras} aria-label="Ir a una letra">
+                          {marcasPorLetra.map(({ letra }) => (
+                            <button key={letra} type="button" onClick={() => irALetra(letra)}>{letra}</button>
+                          ))}
+                        </nav>
+                      )}
+                      <div ref={marcasScrollRef} className={styles.catsScroll}>
                         {marcasPorLetra.map(({ letra, marcas }) => (
-                          <div key={letra} className={styles.catBloque}>
+                          <section key={letra} data-letra={letra} className={styles.marcasLetra} aria-label={`Marcas con ${letra}`}>
                             <div className={`${styles.catTitulo} ${styles.catTituloFijo}`}>
                               <span>{letra}</span>
                               <span className={styles.catCount}>{marcas.length} {marcas.length === 1 ? 'marca' : 'marcas'}</span>
                             </div>
-                            {marcas.map((m) => (
-                              <button key={m.id} type="button" onClick={() => irAFiltro('marca', m.id)} className={styles.catSub}>
-                                <span>{m.nombre}</span>
-                                <span className={styles.catCount}>{m.count}</span>
-                              </button>
-                            ))}
-                          </div>
+                            <div className={styles.marcasGrid}>
+                              {marcas.map((m) => (
+                                <button key={m.id} type="button" onClick={() => irAFiltro('marca', m.id)} className={styles.marcaTile} title={`Ver los productos de ${m.nombre}`}>
+                                  <span className={styles.marcaLogo}>
+                                    <img src={imgSrc(m.imagenUrl) || '/placeholder-marca.svg'} alt="" loading="lazy" />
+                                  </span>
+                                  <span className={styles.marcaNombre}>{m.nombre}</span>
+                                  <span className={styles.catCount}>{m.count} {m.count === 1 ? 'producto' : 'productos'}</span>
+                                </button>
+                              ))}
+                            </div>
+                          </section>
                         ))}
                       </div>
-                    </div>
+                    </>
                   )}
                 </div>
               )}
