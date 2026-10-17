@@ -5,41 +5,118 @@
   background: rgba(7, 38, 25, 0.78);
   backdrop-filter: blur(4px);
 }
+/*
+ * EL CARTEL DECORADO (17/10/2026, pedido del dueño: «más diseño, con ondas y
+ * patterns»): arriba una franja crema con hojitas y una onda que la cierra;
+ * cada tarjeta con su dibujo de fondo (puntos en la minorista, rayas en la
+ * mayorista) y una onda de su color abajo. Todo CSS con SVG en línea: el
+ * contenido va por encima (z-index) y no cambia.
+ */
 .caja {
+  position: relative;
   width: min(760px, 100%);
+  max-height: calc(100vh - 2 * var(--space-4));
+  overflow-x: hidden;
+  overflow-y: auto;
   background: var(--color-white);
-  border-radius: 24px;
+  border-radius: 28px;
   padding: clamp(22px, 4vw, 40px);
   box-shadow: 0 30px 80px rgba(0, 0, 0, 0.35);
   text-align: center;
 }
-.logo { display: block; height: 52px; width: auto; max-width: 100%; margin: 0 auto 10px; object-fit: contain; }
+.caja::before {
+  content: '';
+  position: absolute; left: 0; right: 0; top: 0;
+  height: 150px;
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 760 40' preserveAspectRatio='none'%3E%3Cpath d='M0 22 C 120 0 240 40 380 20 S 640 0 760 18 V40 H0 Z' fill='%23fff'/%3E%3C/svg%3E") bottom / 100% 40px no-repeat,
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='90' height='90' viewBox='0 0 90 90'%3E%3Cg fill='%23086633' fill-opacity='0.13'%3E%3Cpath d='M18 30 C 18 18 30 12 38 12 C 38 24 30 32 18 30 Z'/%3E%3Cpath d='M64 70 C 64 60 74 54 82 55 C 81 65 74 72 64 70 Z'/%3E%3C/g%3E%3Cg fill='%23e5933c' fill-opacity='0.22'%3E%3Ccircle cx='66' cy='22' r='3'/%3E%3Ccircle cx='22' cy='68' r='2.5'/%3E%3C/g%3E%3C/svg%3E") 0 0 / 90px 90px,
+    linear-gradient(120deg, #e9f6d4 0%, #f7f1e4 55%, #fbe3c8 100%);
+  pointer-events: none;
+}
+.caja > * { position: relative; z-index: 1; }
+.logo { display: block; height: 56px; width: auto; max-width: 100%; margin: 0 auto 14px; object-fit: contain; filter: drop-shadow(0 2px 4px rgba(255, 255, 255, 0.9)); }
 .eyebrow { margin: 0 0 6px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; font-size: 12px; color: var(--color-primary); }
-.titulo { margin: 0 0 22px; font-size: clamp(24px, 4vw, 34px); font-weight: 900; letter-spacing: -0.02em; color: var(--color-black); text-wrap: balance; }
-.opciones { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.titulo { margin: 0 0 24px; font-size: clamp(24px, 4vw, 34px); font-weight: 900; letter-spacing: -0.02em; color: var(--color-black); text-wrap: balance; }
+.opciones { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
 .opcion {
+  position: relative;
+  overflow: hidden;
   display: flex; flex-direction: column; align-items: flex-start; gap: 8px;
-  padding: 22px 20px;
-  border-radius: 20px;
-  border: 2px solid transparent;
+  padding: 22px 20px 30px;
+  border-radius: 22px;
+  border: 2px solid var(--tono-borde);
+  background: var(--tono-fondo);
   text-align: left;
   cursor: pointer;
-  transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
+  transition: transform 0.18s, box-shadow 0.18s, border-color 0.18s;
 }
-.opcion:hover, .opcion:focus-visible { transform: translateY(-3px); box-shadow: 0 14px 30px rgba(0, 0, 0, 0.14); outline: none; }
-/* Cada tarjeta con su tono (17/10/2026): minorista naranja, mayorista verde. Fijos: no dependen del modo en que esté la página. */
-.minorista { --tono: var(--color-oferta-dark); --tono-borde: #f3c99a; background: #fdf3e6; border-color: var(--tono-borde); }
-.mayorista { --tono: #086633; --tono-borde: #b9e3c6; background: #eef8f1; border-color: var(--tono-borde); }
-.opcion:hover, .opcion:focus-visible { border-color: var(--tono); }
-.opcionIcono { font-size: 34px; line-height: 1; }
-.opcionTitulo { font-size: 22px; font-weight: 900; color: var(--color-black); letter-spacing: -0.01em; }
-.opcionTexto { font-size: 14px; line-height: 1.45; color: var(--color-gray-600); }
+/* El dibujo de fondo de cada tarjeta, apenas visible. */
+.opcion::before {
+  content: '';
+  position: absolute; inset: 0;
+  background-image: var(--patron);
+  background-size: var(--patron-tam);
+  opacity: 0.5;
+  pointer-events: none;
+}
+/* La onda de su color, abajo. */
+.opcion::after {
+  content: '';
+  position: absolute; left: -2px; right: -2px; bottom: -2px;
+  height: 46px;
+  background: var(--tono);
+  opacity: 0.16;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 46' preserveAspectRatio='none'%3E%3Cpath d='M0 20 C 50 0 100 34 150 18 S 250 2 300 16 V46 H0 Z'/%3E%3C/svg%3E") center / 100% 100% no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 46' preserveAspectRatio='none'%3E%3Cpath d='M0 20 C 50 0 100 34 150 18 S 250 2 300 16 V46 H0 Z'/%3E%3C/svg%3E") center / 100% 100% no-repeat;
+  transition: height 0.25s, opacity 0.25s;
+  pointer-events: none;
+}
+.opcion > * { position: relative; z-index: 1; }
+.opcion:hover, .opcion:focus-visible { transform: translateY(-4px); box-shadow: 0 18px 36px rgba(0, 0, 0, 0.16); border-color: var(--tono); outline: none; }
+.opcion:hover::after, .opcion:focus-visible::after { height: 60px; opacity: 0.24; }
+
+/* Cada tarjeta con su tono (17/10/2026): minorista naranja con puntos, mayorista verde con rayas. Fijos: no dependen del modo de la página. */
+.minorista {
+  --tono: var(--color-oferta-dark);
+  --tono-borde: #f3c99a;
+  --tono-fondo: linear-gradient(160deg, #fff8ef 0%, #fdebd6 100%);
+  --patron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='22' height='22'%3E%3Ccircle cx='3' cy='3' r='1.6' fill='%23e5933c' fill-opacity='0.45'/%3E%3Ccircle cx='14' cy='14' r='1.6' fill='%23e5933c' fill-opacity='0.3'/%3E%3C/svg%3E");
+  --patron-tam: 22px 22px;
+}
+.mayorista {
+  --tono: #086633;
+  --tono-borde: #b9e3c6;
+  --tono-fondo: linear-gradient(160deg, #f4fbf6 0%, #e2f3e8 100%);
+  --patron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18'%3E%3Cpath d='M-2 4 L4 -2 M0 18 L18 0 M14 20 L20 14' stroke='%23086633' stroke-opacity='0.14' stroke-width='2'/%3E%3C/svg%3E");
+  --patron-tam: 18px 18px;
+}
+
+.opcionIcono {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 60px; height: 60px; border-radius: 50%;
+  background: var(--color-white);
+  border: 2px solid var(--tono-borde);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.08);
+  font-size: 30px; line-height: 1;
+}
+.opcionTitulo { font-size: 23px; font-weight: 900; color: var(--tono); letter-spacing: -0.01em; }
+.opcionTexto { font-size: 14px; line-height: 1.45; color: var(--color-gray-700); }
 .opcionTexto strong { color: var(--tono); }
 .opcionPill {
   font-size: 12px; font-weight: 800; padding: 4px 10px; border-radius: 999px;
-  background: var(--tono); color: var(--color-white);
+  background: var(--color-white); color: var(--tono);
+  border: 1.5px solid var(--tono);
 }
-.opcionCta { margin-top: auto; padding-top: 6px; font-weight: 800; color: var(--tono); }
+.opcionCta {
+  margin-top: auto;
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 9px 18px; border-radius: 999px;
+  background: var(--tono); color: var(--color-white);
+  font-weight: 800; font-size: 14px;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.12);
+}
 .nota { margin: 18px 0 0; font-size: 13px; color: var(--color-gray-500); }
 
 .switch {
@@ -52,7 +129,12 @@
 }
 .switch:hover { background: rgba(255, 255, 255, 0.28); }
 
+@media (prefers-reduced-motion: reduce) {
+  .opcion, .opcion::after { transition: none; }
+}
 @media (max-width: 640px) {
   .opciones { grid-template-columns: 1fr; }
-  .opcion { padding: 16px; }
+  .opcion { padding: 16px 16px 26px; }
+  .opcionIcono { width: 50px; height: 50px; font-size: 26px; }
+  .caja::before { height: 130px; }
 }
