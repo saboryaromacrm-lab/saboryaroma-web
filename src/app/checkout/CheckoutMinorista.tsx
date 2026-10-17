@@ -1,67 +1,36 @@
 'use client';
 
 /**
- * EL CHECKOUT MINORISTA (0173, 16/10/2026): sin ingreso ni aprobación. El
- * WhatsApp va primero: si ya compró, sus datos (nombre, apellido, dirección)
- * se completan solos; si no, los escribe una vez y quedan para la próxima.
- * Retiro en el local o envío a domicilio, gratis desde el monto configurado.
- * Segunda confirmación antes de enviar, como el mayorista.
+ * EL CHECKOUT MINORISTA (0173, 16/10/2026). Desde 0178 se compra con ingreso:
+ * quién compra (WhatsApp, nombre y apellido) sale de la sesión, no se escribe.
+ * Retiro en el local o envío a domicilio —gratis desde el monto configurado—,
+ * a su dirección guardada (la ve a medias: «Av. 25 de…») o a otra, que pasa a
+ * ser la guardada. Segunda confirmación antes de enviar, como el mayorista.
  */
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import Link from 'next/link';
 import { totalLinea, useCart } from '@/lib/cart';
-import { buscarComprador, crearPedidoMinorista } from '@/lib/api';
-import { money, telefonoArgentino } from '@/lib/format';
+import { crearPedidoMinorista } from '@/lib/api';
+import { leerToken } from '@/lib/sesion';
+import { money } from '@/lib/format';
+import { IngresarParaComprar } from '@/components/Ingreso';
 import type { EntregaMinorista } from '@/lib/types';
 import styles from './page.module.css';
 
-/** El último WhatsApp con el que se compró en este aparato: la próxima vez ya está puesto. */
-const TEL_KEY = 'sa_min_tel';
-const leerTel = () => { try { return localStorage.getItem(TEL_KEY) ?? ''; } catch { return ''; } };
-const guardarTel = (t: string) => { try { localStorage.setItem(TEL_KEY, t); } catch { /* modo privado */ } };
-
 export function CheckoutMinorista() {
-  const { items, total, config, vaciar } = useCart();
-  const [telefono, setTelefono] = useState('');
-  const [nombre, setNombre] = useState('');
-  const [apellido, setApellido] = useState('');
+  const { items, total, config, vaciar, conPrecios, comprador } = useCart();
   const [entrega, setEntrega] = useState<EntregaMinorista>('retiro');
+  /** A su dirección guardada o a otra (la otra pasa a ser la guardada). */
+  const [aGuardada, setAGuardada] = useState(true);
   const [calle, setCalle] = useState('');
   const [localidad, setLocalidad] = useState('');
   const [referencia, setReferencia] = useState('');
   const [observaciones, setObservaciones] = useState('');
-  /** Qué pasó con el teléfono: nada, buscando, lo conocemos (con nombre) o es nuevo. */
-  const [buscado, setBuscado] = useState<{ tel: string; conocido: string | null } | null>(null);
-  const [buscando, setBuscando] = useState(false);
   const [confirmar, setConfirmar] = useState(false);
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState('');
   const [resultado, setResultado] = useState<{ codigo: string; total: number; telefono: string } | null>(null);
   const enVuelo = useRef(false);
-
-  /* Con los 10 dígitos se buscan sus datos, una vez por número (el cupo de la API es chico a propósito). */
-  const buscar = async (crudo: string) => {
-    const tel = telefonoArgentino(crudo);
-    if (!tel || buscado?.tel === tel) return;
-    setBuscando(true);
-    try {
-      const { comprador } = await buscarComprador(tel);
-      if (comprador) {
-        setNombre((v) => v || comprador.nombre);
-        setApellido((v) => v || comprador.apellido);
-        setCalle((v) => v || comprador.direccion);
-        setLocalidad((v) => v || comprador.localidad);
-        setReferencia((v) => v || comprador.referencia);
-      }
-      setBuscado({ tel, conocido: comprador ? comprador.nombre : null });
-    } catch { /* sin datos guardados se escribe todo igual */ } finally { setBuscando(false); }
-  };
-
-  useEffect(() => {
-    const tel = leerTel();
-    if (tel) { setTelefono(tel); buscar(tel); }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   if (resultado) {
     return (
@@ -71,6 +40,16 @@ export function CheckoutMinorista() {
         <p className={styles.okText}>Tu pedido <strong>{resultado.codigo}</strong> por {money(resultado.total)} ya está en revisión.</p>
         <p className={styles.okDestacado}>Te escribimos por WhatsApp al <strong>{resultado.telefono}</strong> para coordinar el pago y la entrega.</p>
         <Link href="/tienda" className={styles.cta}>Seguir comprando</Link>
+      </div>
+    );
+  }
+
+  /* Sin haber ingresado no se compra (0178). */
+  if (!conPrecios || !comprador) {
+    return (
+      <div className="container" style={{ paddingBlock: '60px' }}>
+        <h1 className={styles.title} style={{ textAlign: 'center' }}>Finalizar pedido</h1>
+        <IngresarParaComprar />
       </div>
     );
   }
@@ -85,6 +64,9 @@ export function CheckoutMinorista() {
   }
 
   const conEnvio = entrega === 'envio';
+  /** Va a la guardada si tiene una y la eligió; si no, a la que escriba. */
+  const usaGuardada = conEnvio && aGuardada && comprador.direccion !== '';
+  const quien = `${comprador.nombre} ${comprador.inicial}.`;
   const envioGratis = config.envioGratisDesde > 0 && total >= config.envioGratisDesde;
   const textoEnvio = config.envioGratisDesde <= 0
     ? 'El costo del envío se coordina por WhatsApp.'
@@ -94,12 +76,7 @@ export function CheckoutMinorista() {
   const revisar = (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    if (!telefonoArgentino(telefono)) {
-      setError('Revisá el WhatsApp: escribilo con el código de área, sin el 15 — por ejemplo 370 4123456 (10 dígitos en total).');
-      return;
-    }
-    if (nombre.trim().length < 2 || apellido.trim().length < 2) { setError('Escribí tu nombre y tu apellido.'); return; }
-    if (conEnvio && (!calle.trim() || !localidad.trim())) {
+    if (conEnvio && !usaGuardada && (!calle.trim() || !localidad.trim())) {
       setError('Para el envío necesitamos la dirección: calle y número, y el barrio o localidad.');
       return;
     }
@@ -112,15 +89,15 @@ export function CheckoutMinorista() {
     enVuelo.current = true;
     setEnviando(true);
     setError('');
-    const tel = telefonoArgentino(telefono);
     try {
       const r = await crearPedidoMinorista({
-        telefono: tel, nombre: nombre.trim(), apellido: apellido.trim(), entrega, observaciones,
-        direccion: conEnvio ? { calle: calle.trim(), localidad: localidad.trim(), referencia: referencia.trim() || undefined } : undefined,
+        entrega, observaciones,
+        direccion: !conEnvio ? undefined
+          : usaGuardada ? { guardada: true }
+            : { calle: calle.trim(), localidad: localidad.trim(), referencia: referencia.trim() || undefined },
         items: items.map((it) => ({ productoId: it.productoId, cantidad: it.cantidad, ...(it.variante ? { variante: it.variante } : {}) })),
-      });
-      guardarTel(tel);
-      setResultado({ codigo: r.codigo, total: r.total, telefono: tel });
+      }, leerToken('minorista'));
+      setResultado({ codigo: r.codigo, total: r.total, telefono: comprador.telefono });
       vaciar();
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (err) {
@@ -138,36 +115,9 @@ export function CheckoutMinorista() {
 
       <div className={styles.layout}>
         <form onSubmit={revisar} className={styles.form}>
-          <div className={styles.field}>
-            <label htmlFor="telefono">
-              Tu WhatsApp *
-              <span className={styles.hint}>Por acá coordinamos el pago y la entrega. Con código de área, sin 0 ni 15.</span>
-            </label>
-            <input
-              id="telefono" required inputMode="tel" value={telefono} autoComplete="tel-national"
-              onChange={(e) => setTelefono(e.target.value)}
-              onBlur={(e) => buscar(e.target.value)}
-              placeholder="Ej: 370 4123456"
-            />
-            {telefono.trim() !== '' && !telefonoArgentino(telefono) && (
-              <span className={styles.hint} style={{ color: '#b91c1c' }}>Le faltan dígitos: tienen que ser 10 en total (área + número).</span>
-            )}
-            {buscando && <span className={styles.hint}>Buscando tus datos…</span>}
-            {!buscando && buscado?.conocido && buscado.tel === telefonoArgentino(telefono) && (
-              <p className={styles.dniEstado} data-tipo="ok">¡Hola de nuevo, <strong>{buscado.conocido}</strong>! Completamos tus datos; revisalos.</p>
-            )}
-          </div>
-
-          <div className={styles.row}>
-            <div className={styles.field}>
-              <label htmlFor="nombre">Nombre *</label>
-              <input id="nombre" required maxLength={60} value={nombre} onChange={(e) => setNombre(e.target.value)} autoComplete="given-name" />
-            </div>
-            <div className={styles.field}>
-              <label htmlFor="apellido">Apellido *</label>
-              <input id="apellido" required maxLength={60} value={apellido} onChange={(e) => setApellido(e.target.value)} autoComplete="family-name" />
-            </div>
-          </div>
+          <p className={styles.dniEstado} data-tipo="ok">
+            Comprás como <strong>{quien}</strong> · te escribimos al WhatsApp <strong>{comprador.telefono}</strong> para coordinar el pago y la entrega.
+          </p>
 
           <div className={styles.field}>
             <label>Entrega *</label>
@@ -186,7 +136,23 @@ export function CheckoutMinorista() {
             </div>
           </div>
 
-          {conEnvio && (
+          {conEnvio && comprador.direccion && (
+            <div className={styles.field}>
+              <label>¿A dónde te lo llevamos? *</label>
+              <div className={styles.entregas}>
+                <label className={styles.entregaOpt} data-selected={aGuardada}>
+                  <input type="radio" name="destino" checked={aGuardada} onChange={() => setAGuardada(true)} />
+                  <span>A mi dirección guardada<span className={styles.hint}>{comprador.direccion}</span></span>
+                </label>
+                <label className={styles.entregaOpt} data-selected={!aGuardada}>
+                  <input type="radio" name="destino" checked={!aGuardada} onChange={() => setAGuardada(false)} />
+                  <span>A otra dirección<span className={styles.hint}>Pasa a ser tu dirección guardada.</span></span>
+                </label>
+              </div>
+            </div>
+          )}
+
+          {conEnvio && !usaGuardada && (
             <>
               <div className={styles.field}>
                 <label htmlFor="calle">
@@ -231,10 +197,10 @@ export function CheckoutMinorista() {
               <h2 id="confirm-titulo" className={styles.confirmTitulo}>¿Están bien tus datos?</h2>
               <p className={styles.confirmSub}>Revisalos antes de enviar: con estos datos te contactamos.</p>
               <dl className={styles.confirmDatos}>
-                <dt>Nombre</dt><dd>{nombre.trim()} {apellido.trim()}</dd>
-                <dt>WhatsApp</dt><dd>{telefono}</dd>
+                <dt>Nombre</dt><dd>{quien}</dd>
+                <dt>WhatsApp</dt><dd>{comprador.telefono}</dd>
                 <dt>Entrega</dt><dd>{conEnvio ? `Envío a domicilio${envioGratis ? ' (gratis)' : ''}` : 'Retiro en el local'}</dd>
-                {conEnvio && (<><dt>Dirección</dt><dd>{[calle.trim(), localidad.trim(), referencia.trim()].filter(Boolean).join(' · ')}</dd></>)}
+                {conEnvio && (<><dt>Dirección</dt><dd>{usaGuardada ? `Tu dirección guardada (${comprador.direccion})` : [calle.trim(), localidad.trim(), referencia.trim()].filter(Boolean).join(' · ')}</dd></>)}
                 {observaciones.trim() && (<><dt>Notas</dt><dd>{observaciones.trim()}</dd></>)}
                 <dt>Total</dt><dd><strong>{money(total)}</strong></dd>
               </dl>

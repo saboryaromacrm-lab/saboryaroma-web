@@ -188,12 +188,18 @@ export interface ClienteSesion {
 }
 
 /** El comprador minorista (0173): lo guardado en su último pedido, para no escribirlo de nuevo. */
-export interface Comprador {
+/**
+ * El comprador minorista que ingresó con su WhatsApp (0178). La dirección viene
+ * A MEDIAS (`Av. 25 de…`): con un WhatsApp ajeno no se ven los datos de nadie.
+ */
+export interface CompradorSesion {
   nombre: string;
-  apellido: string;
+  /** La inicial del apellido. */
+  inicial: string;
+  /** 10 dígitos (área + abonado). */
+  telefono: string;
+  /** La guardada, a medias; '' si no tiene. */
   direccion: string;
-  localidad: string;
-  referencia: string;
 }
 
 export interface Catalogo {
@@ -215,6 +221,8 @@ export interface Catalogo {
   conPrecios?: boolean;
   /** Con sesión, sus datos; sin ella, null. */
   cliente?: ClienteSesion | null;
+  /** Quién ingresó a la minorista (0178), o ausente. */
+  comprador?: CompradorSesion | null;
   /** Sin ingreso el piso del envío sin costo viene en 0: esto dice SI hay uno (para el cartel de condiciones). */
   hayMinimoEnvio?: boolean;
   sucursalId: number | null;

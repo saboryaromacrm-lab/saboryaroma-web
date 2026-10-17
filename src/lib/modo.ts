@@ -1,7 +1,7 @@
 /**
  * EL MODO DE LA TIENDA (0173, 16/10/2026): la misma URL vende MINORISTA (precio
- * de mostrador, sin mínimo ni registro) y MAYORISTA (la tienda de siempre, con
- * DNI habilitado). La elección vive en una cookie que leen el navegador y el
+ * de mostrador, sin mínimo, se ingresa con el WhatsApp desde 0178) y MAYORISTA
+ * (la tienda de siempre, con DNI habilitado). La elección vive en una cookie que leen el navegador y el
  * servidor de Next: así el HTML ya sale armado para el modo elegido.
  */
 export type Modo = 'mayorista' | 'minorista';

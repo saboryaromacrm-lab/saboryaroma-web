@@ -1,5 +1,5 @@
 import { cookies } from 'next/headers';
-import { COOKIE_SESION, getCatalogo } from './api';
+import { COOKIE_SESION, COOKIE_SESION_MIN, getCatalogo } from './api';
 import { COOKIE_MODO, MODO_INICIAL, modoDe, type Modo } from './modo';
 
 /** El modo que eligió este navegador (cookie), o null si todavía no eligió. */
@@ -13,13 +13,13 @@ export async function modoElegido(): Promise<Modo | null> {
  * El layout y las páginas llaman a esto con las mismas cookies, así que Next
  * junta los pedidos en uno.
  *
- * La sesión va SIEMPRE, aunque la cookie diga minorista (17/10/2026): con la
- * minorista apagada la API contesta la mayorista, y sin la sesión el cliente
- * habilitado quedaba afuera aunque acabara de ingresar. En minorista la API
- * no la usa.
+ * Las sesiones van SIEMPRE, las dos, aunque la cookie diga otro modo
+ * (17/10/2026): con la minorista apagada la API contesta la mayorista, y sin
+ * la sesión el cliente habilitado quedaba afuera aunque acabara de ingresar.
+ * La API usa la del modo que contesta.
  */
 export async function catalogoConSesion() {
   const c = await cookies();
   const modo = modoDe(c.get(COOKIE_MODO)?.value) ?? MODO_INICIAL;
-  return getCatalogo(c.get(COOKIE_SESION)?.value, modo);
+  return getCatalogo(c.get(COOKIE_SESION)?.value, modo, c.get(COOKIE_SESION_MIN)?.value);
 }

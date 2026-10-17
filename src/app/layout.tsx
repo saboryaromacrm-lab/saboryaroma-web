@@ -9,6 +9,7 @@ import { Footer } from '@/components/Footer';
 import { FirmaCoftech } from '@/components/FirmaCoftech';
 import { WelcomePopup } from '@/components/WelcomePopup';
 import { Ingreso } from '@/components/Ingreso';
+import { IngresoMinorista } from '@/components/minorista/IngresoMinorista';
 import { PwaRegister } from '@/components/PwaRegister';
 import { AnalyticsTracker } from '@/components/AnalyticsTracker';
 import { FaviconSetter } from '@/components/FaviconSetter';
@@ -99,9 +100,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
               HTML válido, y acá afuera queda FUERA del árbol de cliente del
               carrito — o sea, renderizada en el servidor y sin mandar JS. */}
           <FirmaCoftech />
-          {/* El cartel de condiciones y el ingreso con DNI son del mayorista. */}
+          {/* El cartel de condiciones es del mayorista; cada modo ingresa con lo suyo: el DNI o el WhatsApp (0178). */}
           {modo === 'mayorista' && <WelcomePopup />}
-          {modo === 'mayorista' && <Ingreso />}
+          {modo === 'mayorista' ? <Ingreso /> : <IngresoMinorista />}
           <ElegirModo abiertoAlEntrar={elegir} />
           <FaviconSetter />
         </CartProvider>

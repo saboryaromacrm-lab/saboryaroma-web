@@ -6,6 +6,7 @@ import { jsonLdString } from '@/lib/jsonLd';
 import { ProductCard } from '@/components/ProductCard';
 import { ListaProductos } from '@/components/ListaProductos';
 import { ShopFilters } from '@/components/ShopFilters';
+import { IngresarParaComprar } from '@/components/Ingreso';
 import { LEMA_NUTRIOFERTAS, NUTRIOFERTAS, mayorDescuento } from '@/lib/nutriofertas';
 import { esMultiUnidad } from '@/lib/oferta';
 import type { ItemCatalogo } from '@/lib/types';
@@ -56,7 +57,7 @@ function jsonLdProductos(items: ItemCatalogo[]) {
  * precio de fondo, el nombre en grande, el lema y lo que hay —cuántas, hasta
  * cuánto de descuento y si hay promos por cantidad—, todo sacado del catálogo.
  */
-function NutriOfertasHero({ items }: { items: ItemCatalogo[] }) {
+function NutriOfertasHero({ items, sinSesion }: { items: ItemCatalogo[]; sinSesion: boolean }) {
   const hasta = mayorDescuento(items);
   const porCantidad = items.some((p) => esMultiUnidad(p.oferta));
   return (
@@ -66,7 +67,8 @@ function NutriOfertasHero({ items }: { items: ItemCatalogo[] }) {
         <h1 className={styles.nutriTitulo}><span aria-hidden>🔥</span> {NUTRIOFERTAS}</h1>
         <p className={styles.nutriLema}>{LEMA_NUTRIOFERTAS}</p>
         <ul className={styles.nutriDatos}>
-          <li>{items.length} producto{items.length === 1 ? '' : 's'} en oferta</li>
+          {/* Sin ingresar no viajan las ofertas (0178): no hay qué contar. */}
+          {sinSesion ? <li>🔒 Ingresá con tu WhatsApp para verlas</li> : <li>{items.length} producto{items.length === 1 ? '' : 's'} en oferta</li>}
           {hasta > 0 && <li>Hasta <strong>{hasta}% OFF</strong></li>}
           {porCantidad && <li>Promos por cantidad: <strong>3×2, 2ª unidad y packs</strong></li>}
         </ul>
@@ -100,6 +102,8 @@ export default async function TiendaPage({
   const soloOfertas = sp.oferta === '1';
   /** En la minorista es la página de NutriOfertas: con su propio encabezado y su fondo (17/10/2026). */
   const nutri = soloOfertas && cat.modo === 'minorista';
+  /** Sin ingresar no viajan precios ni ofertas (0155 / 0178): la página de ofertas invita a ingresar. */
+  const sinSesion = cat.conPrecios === false;
 
   const items = cat.items.filter((p: ItemCatalogo) => {
     if (cats.size && (!p.categoriaId || !cats.has(p.categoriaId))) return false;
@@ -166,7 +170,7 @@ export default async function TiendaPage({
       </div>
 
       {nutri ? (
-        <NutriOfertasHero items={items} />
+        <NutriOfertasHero items={items} sinSesion={sinSesion} />
       ) : (
         <div className={styles.headerBar}>
           <div className={`container ${styles.headerInner}`}>
@@ -180,7 +184,9 @@ export default async function TiendaPage({
         <ShopFilters categorias={cat.categorias} subcategorias={cat.subcategorias ?? []} marcas={cat.marcas} etiquetas={cat.etiquetas} productos={cat.items} />
 
         <section>
-          {items.length === 0 ? (
+          {soloOfertas && sinSesion ? (
+            <IngresarParaComprar />
+          ) : items.length === 0 ? (
             <p className={styles.vacio}>No se encontraron productos que coincidan con tu selección.</p>
           ) : cat.vistaLista ? (
             <div className={styles.lista}>

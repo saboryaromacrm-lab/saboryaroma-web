@@ -1,4 +1,4 @@
-import type { Catalogo, Comprador, Entrega, EntregaMinorista } from './types';
+import type { Catalogo, Entrega, EntregaMinorista } from './types';
 import type { Modo } from './modo';
 
 /*
@@ -62,20 +62,27 @@ async function manejar<T>(r: Response): Promise<T> {
 
 /** La cookie con el token del aparato que ingresó (0155). La leen el navegador (sesion.ts) y el servidor de Next. */
 export const COOKIE_SESION = 'sa_sesion';
-/** La cabecera con que viaja el token a la API. */
+/** La del comprador minorista (0178): otra cookie, así entrar en un modo no saca del otro. */
+export const COOKIE_SESION_MIN = 'sa_sesion_min';
+/** Las cabeceras con que viaja cada token a la API. */
 const SESION = 'X-Tienda-Sesion';
-const conSesion = (token?: string): Record<string, string> => (token ? { [SESION]: token } : {});
+const SESION_MIN = 'X-Tienda-Sesion-Min';
+const conSesion = (token?: string, tokenMin?: string): Record<string, string> => ({
+  ...(token ? { [SESION]: token } : {}),
+  ...(tokenMin ? { [SESION_MIN]: tokenMin } : {}),
+});
 
 /**
  * Catálogo completo de la tienda, en su modo (0173). Sin caché de este lado:
- * la API ya lo guarda unos segundos para todos. Minorista: siempre con
- * precios. Mayorista: con el token de un cliente habilitado viene con precios
- * y sus datos; sin él, sin nada de plata (`conPrecios: false`).
+ * la API ya lo guarda unos segundos para todos. Con la sesión del modo (el DNI
+ * en la mayorista, el WhatsApp en la minorista, 0178) viene con precios y los
+ * datos de quien ingresó; sin ella, sin nada de plata (`conPrecios: false`).
+ * Van las dos sesiones: la API usa la del modo que contesta.
  */
-export async function getCatalogo(token?: string, modo: Modo = 'mayorista'): Promise<Catalogo> {
+export async function getCatalogo(token?: string, modo: Modo = 'mayorista', tokenMin?: string): Promise<Catalogo> {
   const r = await pedir(
     `${API}/tienda/catalogo${modo === 'minorista' ? '?modo=minorista' : ''}`,
-    { cache: 'no-store', headers: conSesion(token) },
+    { cache: 'no-store', headers: conSesion(token, tokenMin) },
     TIMEOUT_CATALOGO_MS,
     'No se pudo conectar con la tienda.',
   );
@@ -145,23 +152,35 @@ export const salir = (token: string) => postJson<{ ok: boolean }>('/tienda/salir
 
 /* ----------------------------- modo minorista (0173) ----------------------------- */
 
-/** Los datos guardados de un comprador minorista por su WhatsApp (null si nunca compró). */
-export const buscarComprador = (telefono: string) => postJson<{ comprador: Comprador | null }>('/tienda/minorista/comprador', { telefono });
+/** Lo que contesta la API al ingresar o registrarse en la minorista (0178). `completar`: ya compró, le faltan datos. */
+export type EstadoMinorista =
+  | { estado: 'habilitado'; token: string; nombre: string }
+  | { estado: 'sin_registro' | 'completar' | 'bloqueado' };
 
-export interface PedidoMinoristaDto {
+export interface RegistroMinorista {
   telefono: string;
   nombre: string;
   apellido: string;
+  direccion: string;
+}
+
+/** Entrar a la minorista con el WhatsApp. */
+export const ingresarMinorista = (telefono: string) => postJson<EstadoMinorista>('/tienda/minorista/ingresar', { telefono });
+/** Registrarse (o completar lo que falta) y entrar. */
+export const registrarMinorista = (datos: RegistroMinorista) => postJson<EstadoMinorista>('/tienda/minorista/registro', datos);
+
+/** Quién compra sale de la sesión (0178): acá solo la entrega, a su dirección guardada o a otra. */
+export interface PedidoMinoristaDto {
   entrega: EntregaMinorista;
-  direccion?: DireccionEntrega;
+  direccion?: DireccionEntrega | { guardada: true };
   observaciones?: string;
   items: { productoId: number; cantidad: number; variante?: string }[];
 }
 
-export async function crearPedidoMinorista(dto: PedidoMinoristaDto): Promise<{ ok: true; codigo: string; total: number }> {
+export async function crearPedidoMinorista(dto: PedidoMinoristaDto, tokenMin: string): Promise<{ ok: true; codigo: string; total: number }> {
   const r = await pedir(
     `${API}/tienda/minorista/pedidos`,
-    { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(dto) },
+    { method: 'POST', headers: { 'Content-Type': 'application/json', ...conSesion(undefined, tokenMin) }, body: JSON.stringify(dto) },
     TIMEOUT_PEDIDO_MS,
     'No recibimos respuesta de la tienda. Esperá un momento antes de volver a intentar; si el problema sigue, escribinos por WhatsApp.',
   );

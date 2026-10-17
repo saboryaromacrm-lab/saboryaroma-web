@@ -510,7 +510,7 @@ export function Header() {
               )}
             </div>
 
-            {!minorista && <BotonCuenta className={styles.cuentaEscritorio} />}
+            <BotonCuenta className={styles.cuentaEscritorio} />
             {/* Minorista: las NutriOfertas a un toque, como botón propio del encabezado (17/10/2026). */}
             {conNutriOfertas && (
               <Link href={URL_NUTRIOFERTAS} className={styles.ofertasPill}>🔥 {NUTRIOFERTAS}</Link>
@@ -692,7 +692,7 @@ export function Header() {
                 <span aria-hidden>ⓘ</span> Info de compra
               </button>
             )}
-            {!minorista && <BotonCuenta className={styles.cuentaMovil} />}
+            <BotonCuenta className={styles.cuentaMovil} />
           </nav>
         </div>
       )}

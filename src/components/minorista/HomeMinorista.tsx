@@ -5,6 +5,7 @@ import { ProductCard } from '@/components/ProductCard';
 import { ProductCarousel } from '@/components/ProductCarousel';
 import { MarcasCarousel } from '@/components/MarcasCarousel';
 import { HeroFotos } from './HeroFotos';
+import { IngresarParaComprar } from '@/components/Ingreso';
 import { LEMA_NUTRIOFERTAS, NUTRIOFERTAS, URL_NUTRIOFERTAS } from '@/lib/nutriofertas';
 import type { Catalogo, ItemCatalogo, PortadaMinorista } from '@/lib/types';
 import styles from './HomeMinorista.module.css';
@@ -56,6 +57,8 @@ function fotosDelHero(items: ItemCatalogo[]) {
 export function HomeMinorista({ cat }: { cat: Catalogo }) {
   const p = cat.sitio.minorista ?? VACIO;
   const enOferta = cat.items.filter((x) => x.oferta && x.enStock);
+  /* Sin ingresar no viajan precios ni ofertas (0178): las NutriOfertas se anuncian e invitan a ingresar. */
+  const sinSesion = cat.conPrecios === false;
   const destacados = cat.items.filter((x) => x.destacado);
   const seleccion = destacados.length ? destacados : cat.items.filter((x) => x.enStock).slice(0, 8);
   const reingresados = cat.items.filter((x) => x.reingreso && !x.oferta);
@@ -76,7 +79,7 @@ export function HomeMinorista({ cat }: { cat: Catalogo }) {
             <h1 className={styles.titulo}>{p.hero.titulo || 'Sabor y Aroma'}</h1>
             {p.hero.texto && <p className={styles.sub}>{p.hero.texto}</p>}
             <div className={styles.heroBotones}>
-              {p.hero.cta1.texto && (enOferta.length > 0 || p.hero.cta1.url !== '/#ofertas') && (
+              {p.hero.cta1.texto && (enOferta.length > 0 || sinSesion || p.hero.cta1.url !== '/#ofertas') && (
                 <Link href={p.hero.cta1.url} className={styles.ctaPrincipal}>{p.hero.cta1.texto}</Link>
               )}
               {p.hero.cta2.texto && <Link href={p.hero.cta2.url} className={styles.ctaSecundario}>{p.hero.cta2.texto}</Link>}
@@ -110,18 +113,22 @@ export function HomeMinorista({ cat }: { cat: Catalogo }) {
         </section>
       )}
 
-      {enOferta.length > 0 && (
+      {(enOferta.length > 0 || sinSesion) && (
         <section id="ofertas" className={`container ${styles.seccion}`}>
           <div className={styles.seccionHead}>
             <div>
               <h2 className={styles.seccionTitulo}><span className={styles.fuego}>🔥</span> {NUTRIOFERTAS}</h2>
               <p className={styles.seccionSub}>{LEMA_NUTRIOFERTAS}</p>
             </div>
-            <Link href={URL_NUTRIOFERTAS} className={styles.verTodo}>Ver todas las {NUTRIOFERTAS} ({enOferta.length}) →</Link>
+            {enOferta.length > 0 && <Link href={URL_NUTRIOFERTAS} className={styles.verTodo}>Ver todas las {NUTRIOFERTAS} ({enOferta.length}) →</Link>}
           </div>
-          <div className={styles.gridOfertas}>
-            {enOferta.slice(0, OFERTAS_AL_FRENTE).map((x) => <ProductCard key={x.id} producto={x} />)}
-          </div>
+          {sinSesion ? (
+            <div className={styles.ofertasCerradas}><IngresarParaComprar /></div>
+          ) : (
+            <div className={styles.gridOfertas}>
+              {enOferta.slice(0, OFERTAS_AL_FRENTE).map((x) => <ProductCard key={x.id} producto={x} />)}
+            </div>
+          )}
         </section>
       )}
 

@@ -8,26 +8,29 @@
  * navegador la manda en la cabecera `X-Tienda-Sesion`—, y no da más de lo que
  * ya da el DNI (decisión del dueño: se entra solo con el DNI).
  */
-import { COOKIE_SESION } from './api';
+import { COOKIE_SESION, COOKIE_SESION_MIN } from './api';
+import type { Modo } from './modo';
 
 const NOVENTA_DIAS_S = 90 * 86_400;
+/** Cada modo con su cookie (0178): el DNI de la mayorista y el WhatsApp de la minorista. */
+const cookieDe = (modo: Modo) => (modo === 'minorista' ? COOKIE_SESION_MIN : COOKIE_SESION);
 /** Pidió ingreso y espera: el cartel «tu solicitud está en revisión» hasta que entre o se lo rechace. */
 const SOLICITUD = 'sa_solicitud';
 
-export function leerToken(): string {
+export function leerToken(modo: Modo = 'mayorista'): string {
   if (typeof document === 'undefined') return '';
-  const m = new RegExp(`(?:^|;\\s*)${COOKIE_SESION}=([^;]+)`).exec(document.cookie);
+  const m = new RegExp(`(?:^|;\\s*)${cookieDe(modo)}=([^;]+)`).exec(document.cookie);
   return m ? decodeURIComponent(m[1]) : '';
 }
 
 /** Guarda (o renueva) la cookie por 90 días más. */
-export function guardarToken(token: string) {
+export function guardarToken(token: string, modo: Modo = 'mayorista') {
   const seguro = location.protocol === 'https:' ? '; Secure' : '';
-  document.cookie = `${COOKIE_SESION}=${encodeURIComponent(token)}; Max-Age=${NOVENTA_DIAS_S}; Path=/; SameSite=Lax${seguro}`;
+  document.cookie = `${cookieDe(modo)}=${encodeURIComponent(token)}; Max-Age=${NOVENTA_DIAS_S}; Path=/; SameSite=Lax${seguro}`;
 }
 
-export function borrarToken() {
-  document.cookie = `${COOKIE_SESION}=; Max-Age=0; Path=/; SameSite=Lax`;
+export function borrarToken(modo: Modo = 'mayorista') {
+  document.cookie = `${cookieDe(modo)}=; Max-Age=0; Path=/; SameSite=Lax`;
 }
 
 /** Abre la ventana de ingreso desde cualquier lado (botón del encabezado, «Agregar», el carrito). */

@@ -20,7 +20,7 @@ import { getCatalogo } from './api';
 import { esMultiUnidad, totalConOferta } from './oferta';
 import { leerToken } from './sesion';
 import type { Modo } from './modo';
-import type { Catalogo, ClienteSesion, ItemCarrito, ItemCatalogo, ReglaMarca, Variante } from './types';
+import type { Catalogo, ClienteSesion, CompradorSesion, ItemCarrito, ItemCatalogo, ReglaMarca, Variante } from './types';
 
 /** Un carrito por modo (0173): lo minorista y lo mayorista tienen precios distintos y no se mezclan. */
 const cartKey = (modo: Modo) => (modo === 'minorista' ? 'sa_carrito_min' : 'sa_carrito');
@@ -78,13 +78,15 @@ interface CartContextValue {
   /** Catálogo completo, cargado una vez del lado del cliente: lo reusan el mega-menú y la búsqueda en vivo. */
   catalogo: Catalogo | null;
   /**
-   * Ingresó un cliente habilitado y hay precios (0155). Sin esto no se muestra
-   * plata ni se compra: el botón lleva a la ventana de ingreso. Una API anterior
-   * (sin `conPrecios`) cuenta como con precios.
+   * Ingresó (con el DNI en la mayorista, con el WhatsApp en la minorista, 0178)
+   * y hay precios. Sin esto no se muestra plata ni se compra: el botón lleva a
+   * la ventana de ingreso. Una API anterior (sin `conPrecios`) cuenta como con precios.
    */
   conPrecios: boolean;
-  /** Quién ingresó (sus datos para el checkout), o null. */
+  /** Quién ingresó a la mayorista (sus datos para el checkout), o null. */
   cliente: ClienteSesion | null;
+  /** Quién ingresó a la minorista (0178), o null. */
+  comprador: CompradorSesion | null;
   /** Progreso hacia el mínimo de compra: si se cumple, y qué falta. */
   gate: {
     habilitado: boolean;
@@ -154,7 +156,7 @@ export function CartProvider({ children, modo, initialCatalogo = null }: {
     setQuitadosViejos(viejos);
     setCargado(true);
     if (initialCatalogo) return;
-    getCatalogo(leerToken(), modo) // con la sesión siempre: ver catalogoServidor.ts
+    getCatalogo(leerToken('mayorista'), modo, leerToken('minorista')) // con las sesiones siempre: ver catalogoServidor.ts
       .then((c) => { setConfig(configDeCatalogo(c)); setCatalogo(c); })
       .catch(() => { /* el carrito funciona igual sin esto; el checkout revalida */ });
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -332,9 +334,9 @@ export function CartProvider({ children, modo, initialCatalogo = null }: {
   const value: CartContextValue = {
     modo, items, cantidadTotal, total, agregar, quitar, setCantidad, vaciar,
     enCarrito, quitadosViejos, disponibleDe, config, catalogo, gate,
-    /* Minorista: los precios son públicos, siempre hay. */
-    conPrecios: modo === 'minorista' || (!!catalogo && catalogo.conPrecios !== false),
+    conPrecios: !!catalogo && catalogo.conPrecios !== false,
     cliente: catalogo?.cliente ?? null,
+    comprador: catalogo?.comprador ?? null,
   };
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;

@@ -119,6 +119,13 @@
 .verTodo { font-weight: 800; color: var(--color-primary); white-space: nowrap; }
 
 .gridOfertas, .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-5); }
+/* Sin ingresar (0178): el mismo marco cálido, con la invitación a ingresar en vez de las tarjetas. */
+.ofertasCerradas {
+  padding: 26px 18px;
+  border-radius: var(--radius-2xl);
+  background: linear-gradient(135deg, #fdf6ec 0%, #fbead6 100%);
+  border: 1px solid rgba(229, 147, 60, 0.2);
+}
 .gridOfertas {
   padding: 18px;
   border-radius: var(--radius-2xl);
