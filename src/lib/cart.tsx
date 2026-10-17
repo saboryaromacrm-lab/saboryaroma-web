@@ -154,7 +154,7 @@ export function CartProvider({ children, modo, initialCatalogo = null }: {
     setQuitadosViejos(viejos);
     setCargado(true);
     if (initialCatalogo) return;
-    getCatalogo(modo === 'mayorista' ? leerToken() : undefined, modo)
+    getCatalogo(leerToken(), modo) // con la sesión siempre: ver catalogoServidor.ts
       .then((c) => { setConfig(configDeCatalogo(c)); setCatalogo(c); })
       .catch(() => { /* el carrito funciona igual sin esto; el checkout revalida */ });
     // eslint-disable-next-line react-hooks/exhaustive-deps
