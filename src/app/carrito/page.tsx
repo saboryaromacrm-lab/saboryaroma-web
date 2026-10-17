@@ -45,12 +45,13 @@ export default function CarritoPage() {
 
   /*
    * LAS OFERTAS DE HOY EN EL CARRITO (17/10/2026, pedido del dueño: «algo que
-   * realmente incentive a comprar las ofertas»): las vigentes con stock que el
-   * cliente todavía no lleva, en un carrusel. Se agregan desde la misma tarjeta
-   * de la tienda, sin salir del carrito; al agregarla, sale del carrusel.
+   * realmente incentive a comprar las ofertas», arriba de todo): todas las
+   * vigentes con stock, primero las que el cliente todavía no lleva. Se
+   * agregan desde la misma tarjeta de la tienda, sin salir del carrito.
    */
   const enElCarrito = new Set(items.map((it) => it.productoId));
-  const ofertas = (catalogo?.items ?? []).filter((p) => p.oferta && p.enStock && !enElCarrito.has(p.id));
+  const conOferta = (catalogo?.items ?? []).filter((p) => p.oferta && p.enStock);
+  const ofertas = [...conOferta.filter((p) => !enElCarrito.has(p.id)), ...conOferta.filter((p) => enElCarrito.has(p.id))];
   const carruselOfertas = (
     <ProductCarousel
       variant="ofertas"
@@ -63,12 +64,12 @@ export default function CarritoPage() {
   if (items.length === 0) {
     return (
       <>
-        <div className="container" style={{ paddingTop: '60px', textAlign: 'center' }}>
+        {carruselOfertas}
+        <div className="container" style={{ paddingBlock: '60px', textAlign: 'center' }}>
           {avisoViejos}
           <h1 className={styles.title}>Tu carrito está vacío</h1>
           <Link href="/tienda" className={styles.cta}>Ir a la tienda</Link>
         </div>
-        <div style={{ paddingBottom: '60px' }}>{carruselOfertas}</div>
       </>
     );
   }
@@ -98,7 +99,8 @@ export default function CarritoPage() {
 
   return (
     <>
-      <div className="container" style={{ paddingTop: '32px' }}>
+      {carruselOfertas}
+      <div className="container" style={{ paddingTop: '32px', paddingBottom: '60px' }}>
         <div className={styles.head}>
           <h1 className={styles.title}>Tu carrito</h1>
           <span className={styles.headCount}>{nArticulos} producto{nArticulos === 1 ? '' : 's'}</span>
@@ -259,7 +261,6 @@ export default function CarritoPage() {
           </aside>
         </div>
       </div>
-      <div style={{ paddingBottom: '60px' }}>{carruselOfertas}</div>
     </>
   );
 }

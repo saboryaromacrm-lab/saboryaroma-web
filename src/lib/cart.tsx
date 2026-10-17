@@ -182,6 +182,30 @@ export function CartProvider({ children, modo, initialCatalogo = null }: {
     setQuitadosViejos((q) => [...new Set([...q, ...viejos.map((x) => x.nombre)])]);
   }, [cargado, catalogo, items]);
 
+  /*
+   * LA PROMO DEL RENGLÓN SIGUE A LA DEL CATÁLOGO (17/10/2026). Se guardaba la
+   * del momento de agregar: un renglón que entró antes de crear el 3×2 se
+   * cobraba lleno, y uno cuya promo terminó la seguía cobrando. Con el
+   * catálogo a mano se toma la vigente; un producto que ya no está, no se toca.
+   */
+  useEffect(() => {
+    if (!cargado || !catalogo) return;
+    setItems((prev) => {
+      let cambio = false;
+      const next = prev.map((x) => {
+        const p = catalogo.items.find((c) => c.id === x.productoId);
+        if (!p) return x;
+        const v = x.variante ? p.variantes?.find((y) => y.clave === x.variante) : undefined;
+        const o = (v ?? p).oferta;
+        const promo = esMultiUnidad(o) ? { oferta: o, unidadesOferta: v?.paquetesPorUnidad ?? 1 } : { oferta: undefined, unidadesOferta: undefined };
+        if (JSON.stringify([x.oferta, x.unidadesOferta]) === JSON.stringify([promo.oferta, promo.unidadesOferta])) return x;
+        cambio = true;
+        return { ...x, ...promo };
+      });
+      return cambio ? next : prev;
+    });
+  }, [cargado, catalogo]);
+
   useEffect(() => {
     if (!cargado) return; // no pisar localStorage con el [] inicial antes de leerlo
     try { localStorage.setItem(cartKey(modo), JSON.stringify(items)); } catch { /* modo privado */ }
