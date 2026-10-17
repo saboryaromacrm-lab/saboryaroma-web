@@ -23,6 +23,22 @@ function abrirInfoCompra() {
   window.dispatchEvent(new Event('sa:abrir-popup'));
 }
 
+const AVISO_MS = 4500;
+
+/**
+ * LOS AVISOS DE LA BARRA DE ARRIBA, rotando (17/10/2026): uno cada 4,5 s, con
+ * un fundido. Son los que se cargan en el ERP; con uno solo no gira.
+ */
+function AvisosRotativos({ avisos }: { avisos: string[] }) {
+  const [i, setI] = useState(0);
+  useEffect(() => {
+    if (avisos.length < 2) return undefined;
+    const t = setInterval(() => setI((x) => (x + 1) % avisos.length), AVISO_MS);
+    return () => clearInterval(t);
+  }, [avisos.length]);
+  return <span key={i} className={styles.aviso}>{avisos[i % avisos.length]}</span>;
+}
+
 export function Header() {
   const { cantidadTotal, catalogo, conPrecios, modo, config } = useCart();
   const minorista = modo === 'minorista';
@@ -216,11 +232,15 @@ export function Header() {
       {/* El cartel dice en qué modo estás (0173) y deja pasar al otro. */}
       <div className={styles.topBar}>
         <p className={styles.topBarText}>
-          <span>
-            {minorista
-              ? `🛒 Tienda minorista — precio de mostrador, sin mínimo de compra${config.envioGratisDesde > 0 ? ` · envío gratis desde ${money(config.envioGratisDesde)}` : ''}.`
-              : '🏪 Tienda mayorista — las mejores marcas con nosotros.'}
-          </span>
+          {minorista && (catalogo?.sitio?.minorista?.avisos.length ?? 0) > 0
+            ? <AvisosRotativos avisos={catalogo!.sitio.minorista!.avisos} />
+            : (
+              <span>
+                {minorista
+                  ? `🛒 Tienda minorista — precio de mostrador, sin mínimo de compra${config.envioGratisDesde > 0 ? ` · envío gratis desde ${money(config.envioGratisDesde)}` : ''}.`
+                  : '🏪 Tienda mayorista — las mejores marcas con nosotros.'}
+              </span>
+            )}
           <ModoSwitch />
         </p>
       </div>
@@ -442,6 +462,10 @@ export function Header() {
             </div>
 
             {!minorista && <BotonCuenta className={styles.cuentaEscritorio} />}
+            {/* Minorista: las ofertas a un toque, como botón propio del encabezado (17/10/2026). */}
+            {minorista && (catalogo?.items.some((p) => p.oferta) ?? false) && (
+              <Link href="/tienda?oferta=1" className={styles.ofertasPill}>🔥 Ofertas</Link>
+            )}
 
             <div ref={cartWrapRef} className={styles.cartWrap} onMouseEnter={abrirCarrito} onMouseLeave={programarCierreCarrito}>
               <Link id="header-cart-link" href="/carrito" className={styles.cartLink} aria-label="Ver carrito" aria-expanded={carritoAbierto}>

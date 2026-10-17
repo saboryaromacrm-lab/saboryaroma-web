@@ -148,6 +148,23 @@ export interface SitioConfig {
   contacto: ContactoSitio;
   /** El cartel de bienvenida, editable en el ERP (3/10/2026). Opcional: una API anterior no lo manda. */
   popup?: PopupSitio;
+  /** Los textos de la portada minorista (17/10/2026), editables en el ERP. Opcional: una API anterior no lo manda. */
+  minorista?: PortadaMinorista;
+}
+
+/** Un botón de la portada: texto y ruta interna del sitio. */
+export interface BotonSitio { texto: string; url: string; }
+
+/** Lo configurable de la portada minorista; lo demás sale del catálogo. */
+export interface PortadaMinorista {
+  /** Los avisos que rotan en la barra de arriba. */
+  avisos: string[];
+  hero: { eyebrow: string; titulo: string; texto: string; cta1: BotonSitio; cta2: BotonSitio };
+  /** Los sellos del hero («Sin TACC», «100 % natural»…). */
+  sellos: string[];
+  beneficios: { titulo: string; items: { icono: string; titulo: string; texto: string }[] };
+  /** El cierre: título, texto y el botón de WhatsApp. */
+  cierre: { titulo: string; texto: string; cta: string };
 }
 
 export interface PopupSitio {

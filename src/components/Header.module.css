@@ -25,6 +25,38 @@
 }
 
 .main { background: #89e1b42e; border-bottom: 2px solid var(--color-accent); }
+
+/* Un aviso de la barra entra con un fundido (ver `AvisosRotativos`). */
+.aviso { display: inline-block; animation: avisoIn 0.45s ease; }
+@keyframes avisoIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+
+/* El botón de las ofertas del encabezado minorista: píldora blanca con borde verde. */
+.ofertasPill {
+  display: none; align-items: center; gap: 4px; flex-shrink: 0;
+  padding: 8px 16px;
+  border: 2px solid var(--color-primary);
+  border-radius: var(--radius-full);
+  background: var(--color-white);
+  color: var(--color-primary);
+  font-size: 13px; font-weight: 800; letter-spacing: 0.02em;
+  transition: transform 0.15s, background 0.15s;
+}
+.ofertasPill:hover { transform: translateY(-1px); background: var(--color-tertiary); }
+
+/*
+ * EL ENCABEZADO MINORISTA (17/10/2026): barra de arriba naranja con el aviso
+ * que rota, y la barra principal en beige con el verde bosque, sin la línea
+ * naranja de abajo. Mismo markup; cambia la piel.
+ */
+:global(html[data-modo='minorista']) .topBar { background: linear-gradient(90deg, var(--color-oferta-dark), var(--color-oferta)); }
+:global(html[data-modo='minorista']) .topBarText { font-size: 13px; font-weight: 700; padding-block: 8px; }
+:global(html[data-modo='minorista']) .main { background: #f7f4ee; border-bottom: 1px solid rgba(11, 59, 46, 0.1); }
+:global(html[data-modo='minorista']) .navLink { color: var(--color-primary); font-weight: 700; }
+:global(html[data-modo='minorista']) .navLink:hover { color: var(--color-primary); background: rgba(11, 59, 46, 0.07); }
+:global(html[data-modo='minorista']) .navLink::after { background: var(--color-oferta); }
+:global(html[data-modo='minorista']) .navLinkActive { background: var(--color-primary); color: var(--color-white); }
+:global(html[data-modo='minorista']) .searchForm { border-color: rgba(11, 59, 46, 0.18); }
+:global(html[data-modo='minorista']) .cartCount { background: var(--color-oferta); }
 .mainInner {
   display: flex;
   align-items: center;
@@ -519,6 +551,7 @@
 @media (min-width: 1180px) {
   .nav, .search { display: flex; }
   .mobileToggle { display: none; }
+  :global(html[data-modo='minorista']) .ofertasPill { display: inline-flex; }
 }
 
 /* El botón "Info de compra" es el elemento menos esencial: solo aparece cuando sobra espacio real. */
