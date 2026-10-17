@@ -6,76 +6,107 @@
  */
 .portada { padding-bottom: var(--space-10); }
 
-/* ---- El hero: beige cálido con un resplandor verde y las fotos a la derecha ---- */
+/*
+ * ---- El hero (a partir de magicspoon.com) ----
+ * A pantalla casi completa, con un degradé lima → crema → naranja a lo ancho y
+ * el encabezado transparente encima (`--sa-header-h` lo mide el Header: el hero
+ * se corre hacia arriba esa altura y la devuelve como padding).
+ */
 .hero {
   position: relative;
   overflow: hidden;
-  background:
-    radial-gradient(760px 420px at 100% 0%, rgba(215, 243, 107, 0.45), transparent 62%),
-    radial-gradient(560px 360px at 0% 100%, rgba(229, 147, 60, 0.22), transparent 60%),
-    linear-gradient(160deg, #fbf7f0 0%, #f1ede5 100%);
+  display: flex;
+  align-items: center;
+  min-height: min(92vh, 880px);
+  margin-top: calc(-1 * var(--sa-header-h, 0px));
+  padding-top: var(--sa-header-h, 0px);
+  background: linear-gradient(112deg, #c3e94a 0%, #e2f09a 26%, #f6e8c2 50%, #f9d29b 74%, #f0a556 100%);
   color: var(--color-primary);
 }
 .heroInner {
   display: grid;
-  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
-  gap: clamp(20px, 4vw, 48px);
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+  gap: clamp(20px, 4vw, 56px);
   align-items: center;
-  padding-block: clamp(32px, 6vw, 80px);
+  width: 100%;
+  padding-block: clamp(28px, 4vw, 56px) clamp(44px, 5vw, 72px);
 }
-.eyebrow { margin: 0 0 12px; font-size: 12px; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase; color: var(--color-oferta-dark); }
+.eyebrow { margin: 0 0 14px; font-size: 12px; font-weight: 800; letter-spacing: 0.16em; text-transform: uppercase; color: var(--color-oferta-dark); }
 .titulo {
-  margin: 0 0 14px;
-  font-size: clamp(36px, 5.6vw, 66px);
-  line-height: 1;
+  margin: 0 0 18px;
+  font-size: clamp(40px, 5.4vw, 74px);
+  line-height: 0.98;
   font-weight: 900;
   letter-spacing: -0.035em;
   text-wrap: balance;
   color: var(--color-primary);
 }
-.sub { margin: 0 0 24px; max-width: 44ch; font-size: clamp(16px, 1.6vw, 19px); line-height: 1.5; color: #3b4a43; }
-.heroBotones { display: flex; flex-wrap: wrap; gap: 10px; }
+.sub { margin: 0 0 26px; max-width: 42ch; font-size: clamp(16px, 1.5vw, 18px); line-height: 1.5; color: #2f4a3e; }
+.heroBotones { display: flex; flex-wrap: wrap; gap: 12px; }
 .ctaPrincipal, .ctaSecundario, .ctaClaro {
   display: inline-flex; align-items: center; justify-content: center; gap: 6px;
-  min-height: 50px; padding: 12px 26px;
+  min-height: 56px; padding: 14px 34px;
   border-radius: var(--radius-full);
-  font-weight: 800; font-size: 15px;
+  font-weight: 800; font-size: 14px; letter-spacing: 0.08em; text-transform: uppercase;
   transition: transform 0.15s, box-shadow 0.15s;
 }
-.ctaPrincipal { background: var(--color-oferta); color: var(--color-white); box-shadow: 0 10px 24px rgba(229, 147, 60, 0.4); }
-.ctaSecundario { background: var(--color-primary); color: var(--color-white); }
+.ctaPrincipal { background: var(--color-oferta-dark); color: var(--color-white); box-shadow: 0 10px 24px rgba(184, 101, 26, 0.3); }
+.ctaSecundario { background: var(--color-primary); color: var(--color-white); box-shadow: 0 10px 24px rgba(11, 59, 46, 0.22); }
 .ctaClaro { background: var(--color-white); color: var(--color-primary); }
 .ctaPrincipal:hover, .ctaSecundario:hover, .ctaClaro:hover { transform: translateY(-2px); }
 
-/* Los sellos: círculos blancos con borde de puntas (clip-path) y el texto en verde. */
-.sellos { list-style: none; margin: 26px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 12px; }
+/* Los sellos: círculos de puntas (clip-path) con borde verde y centro blanco, como etiquetas. */
+.sellos { list-style: none; margin: 30px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 14px; }
 .sello {
-  width: 96px; height: 96px;
+  width: 92px; height: 92px;
+  padding: 3px;
+  background: var(--color-primary);
+  filter: drop-shadow(0 8px 14px rgba(11, 59, 46, 0.16));
+}
+.selloInner {
+  width: 100%; height: 100%;
   display: flex; align-items: center; justify-content: center;
-  padding: 14px;
+  padding: 12px;
   background: var(--color-white);
   color: var(--color-primary);
   text-align: center; font-size: 12px; font-weight: 800; line-height: 1.15; letter-spacing: -0.01em;
-  filter: drop-shadow(0 6px 10px rgba(11, 59, 46, 0.12));
 }
 
-/* Las fotos de los productos, «flotando»: una grande y tres chicas, apenas giradas. */
-.heroFotos { position: relative; aspect-ratio: 1 / 0.92; max-width: 520px; margin-left: auto; width: 100%; }
-.foto {
+/*
+ * Las fotos: una grande girada y cinco chicas flotando alrededor, un par
+ * cortadas por el borde. `mix-blend-mode: multiply` funde el fondo blanco de
+ * las fotos con el degradé (va en el enlace, sin `filter`: un filtro lo aísla
+ * del fondo y el blanco vuelve a verse).
+ */
+.heroFotos { min-width: 0; }
+.escena { position: relative; aspect-ratio: 1 / 0.92; width: 100%; }
+.grande, .chica {
   position: absolute;
-  display: flex; align-items: center; justify-content: center;
-  padding: 10px;
-  background: var(--color-white);
-  border-radius: var(--radius-xl);
-  box-shadow: 0 18px 40px rgba(11, 59, 46, 0.16), 0 4px 10px rgba(11, 59, 46, 0.08);
-  transition: transform 0.25s;
+  display: block;
+  mix-blend-mode: multiply;
+  animation: flotar 6s ease-in-out infinite;
 }
-.foto img { width: 100%; height: 100%; object-fit: contain; }
-.foto:hover { transform: scale(1.04) rotate(0deg) !important; z-index: 2; }
-.foto1 { left: 8%; top: 6%; width: 56%; height: 60%; transform: rotate(-4deg); z-index: 1; }
-.foto2 { right: 0; top: 0; width: 34%; height: 36%; transform: rotate(6deg); }
-.foto3 { right: 6%; bottom: 8%; width: 40%; height: 40%; transform: rotate(-3deg); }
-.foto4 { left: 0; bottom: 0; width: 32%; height: 32%; transform: rotate(5deg); }
+.grande img, .chica img { width: 100%; height: 100%; object-fit: contain; }
+.grande { left: 12%; top: 8%; width: 64%; height: 76%; z-index: 2; --giro: -7deg; animation: aparecer 0.6s ease both, flotar 7s ease-in-out 0.6s infinite; }
+.chica1 { left: -10%; top: -8%; width: 30%; height: 28%; --giro: -18deg; animation-duration: 8s; }
+.chica2 { left: 50%; top: -11%; width: 32%; height: 30%; --giro: 12deg; animation-duration: 9s; animation-delay: -2s; }
+.chica3 { left: 74%; top: 34%; width: 27%; height: 27%; --giro: 20deg; animation-duration: 7.5s; animation-delay: -4s; }
+.chica4 { left: -12%; top: 60%; width: 30%; height: 30%; --giro: 14deg; animation-duration: 8.5s; animation-delay: -1s; }
+.chica5 { left: 42%; top: 80%; width: 28%; height: 26%; --giro: -12deg; animation-duration: 9.5s; animation-delay: -3s; }
+@keyframes flotar { 0%, 100% { transform: rotate(var(--giro)) translateY(0); } 50% { transform: rotate(var(--giro)) translateY(-10px); } }
+@keyframes aparecer { from { opacity: 0; transform: rotate(var(--giro)) scale(0.92); } to { opacity: 1; transform: rotate(var(--giro)) scale(1); } }
+
+/* Los puntos que eligen el producto grande: abajo, al centro del hero. */
+.puntos { position: absolute; left: 50%; bottom: 16px; transform: translateX(-50%); display: flex; gap: 8px; z-index: 3; }
+.punto {
+  width: 12px; height: 12px; padding: 0;
+  border: 0; border-radius: 50%;
+  background: rgba(11, 59, 46, 0.25);
+  cursor: pointer;
+  transition: transform 0.15s, background 0.15s;
+}
+.punto:hover { transform: scale(1.2); }
+.puntoActivo { background: var(--color-primary); }
 
 /* ---- Secciones ---- */
 .seccion { margin-top: clamp(32px, 5vw, 56px); }
@@ -84,7 +115,7 @@
 .seccionSub { margin: 4px 0 0; color: var(--color-gray-550); }
 .fuego { display: inline-block; animation: fuego 1.4s ease-in-out infinite; }
 @keyframes fuego { 0%, 100% { transform: scale(1) rotate(-4deg); } 50% { transform: scale(1.18) rotate(4deg); } }
-@media (prefers-reduced-motion: reduce) { .fuego { animation: none; } .foto { transition: none; } }
+@media (prefers-reduced-motion: reduce) { .fuego, .grande, .chica { animation: none; } .grande, .chica { transform: rotate(var(--giro)); } }
 .verTodo { font-weight: 800; color: var(--color-primary); white-space: nowrap; }
 
 .gridOfertas, .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-5); }
@@ -155,17 +186,22 @@
   .gridOfertas, .grid { grid-template-columns: repeat(3, 1fr); }
 }
 @media (max-width: 860px) {
-  .heroInner { grid-template-columns: 1fr; }
-  .heroFotos { max-width: 420px; margin-inline: auto; }
+  .hero { min-height: 0; }
+  .heroInner { grid-template-columns: 1fr; gap: 8px; }
+  .escena { aspect-ratio: 1 / 0.78; max-width: 460px; margin-inline: auto; }
+  .heroTexto { text-align: center; }
+  .sub { margin-inline: auto; }
+  .heroBotones, .sellos { justify-content: center; }
+  .puntos { position: static; transform: none; justify-content: center; margin-top: 4px; }
   .beneficiosGrid { grid-template-columns: 1fr; }
 }
 @media (max-width: 640px) {
   .gridOfertas, .grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
   .gridOfertas { padding: 10px; }
   .sellos { gap: 8px; }
-  .sello { width: 78px; height: 78px; font-size: 10.5px; padding: 10px; }
-  .heroFotos { aspect-ratio: 1 / 0.8; }
-  .ctaPrincipal, .ctaSecundario, .ctaClaro { flex: 1 1 auto; }
+  .sello { width: 78px; height: 78px; }
+  .selloInner { font-size: 10.5px; padding: 9px; }
+  .ctaPrincipal, .ctaSecundario, .ctaClaro { flex: 1 1 auto; padding-inline: 18px; }
   .circulo { width: 92px; }
   .circuloImg { width: 80px; height: 80px; }
 }

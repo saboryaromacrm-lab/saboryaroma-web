@@ -57,6 +57,11 @@
 :global(html[data-modo='minorista']) .navLinkActive { background: var(--color-primary); color: var(--color-white); }
 :global(html[data-modo='minorista']) .searchForm { border-color: rgba(11, 59, 46, 0.18); }
 :global(html[data-modo='minorista']) .cartCount { background: var(--color-oferta); }
+/* Sobre el hero de la portada (ver `sobreHero` en Header.tsx): sin fondo ni sombra, el degradé se ve detrás. */
+:global(html[data-modo='minorista']) .transparente { background: transparent; box-shadow: none; }
+:global(html[data-modo='minorista']) .transparente .main { background: transparent; border-bottom-color: transparent; }
+:global(html[data-modo='minorista']) .header { transition: box-shadow 0.2s; }
+:global(html[data-modo='minorista']) .main { transition: background 0.2s, border-color 0.2s; }
 .mainInner {
   display: flex;
   align-items: center;

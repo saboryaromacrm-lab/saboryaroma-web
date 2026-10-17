@@ -63,6 +63,27 @@ export function Header() {
   const [carritoAbierto, setCarritoAbierto] = useState(false);
   const cartCierreTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const cartWrapRef = useRef<HTMLDivElement>(null);
+  const headerRef = useRef<HTMLElement>(null);
+  /** En la portada minorista el encabezado va transparente sobre el hero hasta que se baja un poco. */
+  const sobreHero = minorista && pathname === '/';
+  const [bajado, setBajado] = useState(false);
+  useEffect(() => {
+    if (!sobreHero) return undefined;
+    const mirar = () => setBajado(window.scrollY > 24);
+    mirar();
+    window.addEventListener('scroll', mirar, { passive: true });
+    return () => window.removeEventListener('scroll', mirar);
+  }, [sobreHero]);
+  /* El hero necesita saber cuánto mide el encabezado para meterse debajo (`--sa-header-h`). */
+  useLayoutEffect(() => {
+    const el = headerRef.current;
+    if (!el) return undefined;
+    const medir = () => document.documentElement.style.setProperty('--sa-header-h', `${el.offsetHeight}px`);
+    medir();
+    const ro = new ResizeObserver(medir);
+    ro.observe(el);
+    return () => { ro.disconnect(); document.documentElement.style.removeProperty('--sa-header-h'); };
+  }, []);
 
   const cancelarCierre = useCallback(() => {
     if (cierreTimer.current) { clearTimeout(cierreTimer.current); cierreTimer.current = null; }
@@ -228,7 +249,7 @@ export function Header() {
     : { top: -9999, left: -9999, visibility: 'hidden' };
 
   return (
-    <header className={styles.header}>
+    <header ref={headerRef} className={`${styles.header} ${sobreHero && !bajado ? styles.transparente : ''}`}>
       {/* El cartel dice en qué modo estás (0173) y deja pasar al otro. */}
       <div className={styles.topBar}>
         <p className={styles.topBarText}>

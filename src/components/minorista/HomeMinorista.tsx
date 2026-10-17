@@ -4,13 +4,14 @@ import { linkWhatsApp, money } from '@/lib/format';
 import { ProductCard } from '@/components/ProductCard';
 import { ProductCarousel } from '@/components/ProductCarousel';
 import { MarcasCarousel } from '@/components/MarcasCarousel';
+import { HeroFotos } from './HeroFotos';
 import type { Catalogo, ItemCatalogo, PortadaMinorista } from '@/lib/types';
 import styles from './HomeMinorista.module.css';
 
 /** Cuántas ofertas van en la grilla grande de arriba. */
 const OFERTAS_AL_FRENTE = 8;
-/** Cuántas fotos de productos «flotan» en el hero. */
-const FOTOS_HERO = 4;
+/** Cuántos productos con foto entran al hero (3 escenas de uno grande + 5 chicos). */
+const FOTOS_HERO = 8;
 
 /**
  * Si la API es anterior al 17/10/2026 no manda los textos: la portada se arma
@@ -44,8 +45,9 @@ function fotosDelHero(items: ItemCatalogo[]) {
 
 /**
  * LA PORTADA MINORISTA (0173 · rediseño 17/10/2026, pedido del dueño a partir
- * de magicspoon.com, con los colores de la casa). Un hero con título grande,
- * dos botones, sellos y las fotos de los productos flotando; después las
+ * de magicspoon.com, con los colores de la casa). Un hero a pantalla completa
+ * con degradé, el encabezado encima, las fotos de los productos flotando a la
+ * izquierda y el título, los botones y los sellos a la derecha; después las
  * categorías en círculos, las OFERTAS en grande, los elegidos, los beneficios,
  * lo que volvió, las marcas y un cierre que lleva al WhatsApp. Los textos se
  * editan en el ERP (`sitio.minorista`); los productos salen del catálogo.
@@ -67,6 +69,7 @@ export function HomeMinorista({ cat }: { cat: Catalogo }) {
     <div className={styles.portada}>
       <section className={styles.hero}>
         <div className={`container ${styles.heroInner}`}>
+          <HeroFotos fotos={fotos} />
           <div className={styles.heroTexto}>
             {p.hero.eyebrow && <p className={styles.eyebrow}>{p.hero.eyebrow}</p>}
             <h1 className={styles.titulo}>{p.hero.titulo || 'Sabor y Aroma'}</h1>
@@ -75,23 +78,18 @@ export function HomeMinorista({ cat }: { cat: Catalogo }) {
               {p.hero.cta1.texto && (enOferta.length > 0 || p.hero.cta1.url !== '/#ofertas') && (
                 <Link href={p.hero.cta1.url} className={styles.ctaPrincipal}>{p.hero.cta1.texto}</Link>
               )}
-              {p.hero.cta2.texto && <Link href={p.hero.cta2.url} className={styles.ctaSecundario}>{p.hero.cta2.texto} →</Link>}
+              {p.hero.cta2.texto && <Link href={p.hero.cta2.url} className={styles.ctaSecundario}>{p.hero.cta2.texto}</Link>}
             </div>
             {sellos.length > 0 && (
               <ul className={styles.sellos} aria-label="Lo que nos distingue">
-                {sellos.map((s) => <li key={s} className={styles.sello} style={{ clipPath: SELLO_CLIP }}><span>{s}</span></li>)}
+                {sellos.map((s) => (
+                  <li key={s} className={styles.sello} style={{ clipPath: SELLO_CLIP }}>
+                    <span className={styles.selloInner} style={{ clipPath: SELLO_CLIP }}>{s}</span>
+                  </li>
+                ))}
               </ul>
             )}
           </div>
-          {fotos.length > 0 && (
-            <div className={styles.heroFotos} aria-hidden>
-              {fotos.map((f, i) => (
-                <Link key={f.id} href={`/tienda?q=${encodeURIComponent(f.nombre)}`} className={`${styles.foto} ${styles[`foto${i + 1}`]}`} tabIndex={-1}>
-                  <img src={imgSrc(f.imagenUrl)} alt="" loading={i === 0 ? 'eager' : 'lazy'} />
-                </Link>
-              ))}
-            </div>
-          )}
         </div>
       </section>
 
