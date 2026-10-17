@@ -36,6 +36,25 @@
 .titulo { font-size: var(--font-size-xl); font-weight: 800; margin: 0; overflow-wrap: anywhere; }
 .texto { font-size: var(--font-size-sm); color: var(--color-gray-600); line-height: 1.55; margin: 0; }
 
+/*
+ * EL WHATSAPP A LA VISTA (minorista, 17/10/2026, pedido del dueño): grande y
+ * aparte, porque es el dato en el que más se equivocan y es por donde se los
+ * contacta.
+ */
+.telResaltado { font-size: 18px; letter-spacing: 0.04em; font-variant-numeric: tabular-nums; color: var(--color-primary); white-space: nowrap; }
+.telCaja {
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  padding: 12px 14px;
+  border: 2px solid var(--color-primary);
+  border-radius: var(--radius-md);
+  background: #f0fdf4;
+}
+.telCaja > span { font-size: var(--font-size-xs); font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--color-gray-600); }
+.telCaja > strong { font-size: 28px; font-weight: 900; letter-spacing: 0.04em; font-variant-numeric: tabular-nums; color: var(--color-primary); line-height: 1.15; }
+.revisar { display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; margin: 0; padding: 12px 14px; text-align: left; background: var(--color-gray-50); border-radius: var(--radius-md); }
+.revisar dt { font-size: var(--font-size-sm); color: var(--color-gray-500); }
+.revisar dd { margin: 0; font-size: var(--font-size-sm); font-weight: 700; overflow-wrap: anywhere; }
+
 .fila { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); }
 @media (max-width: 480px) { .fila { grid-template-columns: 1fr; } }
 .campo {

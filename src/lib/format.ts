@@ -32,6 +32,11 @@ export function telefonoArgentino(tel: string): string {
 }
 
 /** Link a WhatsApp desde el número configurado; si no es válido, va al histórico. */
+/** «370 412-3456»: un teléfono de 10 dígitos como se lee (si no tiene 10, tal cual). */
+export function telLegible(tel: string): string {
+  return /^\d{10}$/.test(tel) ? `${tel.slice(0, 3)} ${tel.slice(3, 6)}-${tel.slice(6)}` : tel;
+}
+
 export function linkWhatsApp(numero: string): string {
   const n = telefonoArgentino(numero);
   return `https://wa.me/${n ? `549${n}` : '5493704621563'}`;

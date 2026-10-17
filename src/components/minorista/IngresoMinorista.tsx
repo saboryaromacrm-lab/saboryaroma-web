@@ -8,16 +8,18 @@
  * dueño): pone su WhatsApp; si está registrado entra, y si no, el mismo número
  * sigue al registro —nombre, apellido y dirección, nada más— y entra en el
  * momento, sin aprobación. Al que ya compró y le falta algún dato se lo pide
- * una vez («completar»). Se abre con `abrirIngreso()` y también sola al elegir
+ * una vez («completar»). Antes de crear la cuenta, una SEGUNDA VERIFICACIÓN de
+ * los datos con el WhatsApp bien grande (pedido del dueño: es donde más se
+ * equivocan). Se abre con `abrirIngreso()` y también sola al elegir
  * la minorista (`tomarIngresoPendiente`); comparte con la del DNI el marco y el
  * candado del envío.
  */
-import { useEffect, useState } from 'react';
+import { Fragment, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useCart } from '@/lib/cart';
 import { ingresarMinorista, registrarMinorista, type EstadoMinorista } from '@/lib/api';
 import { abrirIngreso, guardarToken, leerToken, tomarIngresoPendiente } from '@/lib/sesion';
-import { linkWhatsApp, telefonoArgentino } from '@/lib/format';
+import { linkWhatsApp, telLegible, telefonoArgentino } from '@/lib/format';
 import { VentanaIngreso, useVentanaIngreso } from '../Ingreso';
 import styles from '../Ingreso.module.css';
 
@@ -34,6 +36,8 @@ export function IngresoMinorista() {
   const [nombre, setNombre] = useState('');
   const [apellido, setApellido] = useState('');
   const [direccion, setDireccion] = useState('');
+  /** Segundo paso del registro: los datos a la vista para confirmarlos. */
+  const [revisando, setRevisando] = useState(false);
   const whatsappEmpresa = linkWhatsApp(catalogo?.sitio?.contacto?.whatsapp ?? '');
   const tel = telefonoArgentino(telefono);
 
@@ -74,10 +78,11 @@ export function IngresoMinorista() {
     if (!tel) { setError(MSG_WHATSAPP); return; }
     if (nombre.trim().length < 2 || apellido.trim().length < 2) { setError('Escribí tu nombre y tu apellido.'); return; }
     if (direccion.trim().length < 5) { setError('Escribí tu dirección: calle, número y barrio.'); return; }
+    if (!revisando) { setError(''); setRevisando(true); return; }
     enviar(() => registrarMinorista({ telefono: tel, nombre: nombre.trim(), apellido: apellido.trim(), direccion: direccion.trim() }), resolver);
   };
 
-  const volver = () => { setError(''); setPaso('telefono'); };
+  const volver = () => { setError(''); setRevisando(false); setPaso('telefono'); };
 
   if (!abierto) return null;
 
@@ -93,6 +98,7 @@ export function IngresoMinorista() {
             Tu WhatsApp
             <input autoFocus inputMode="tel" autoComplete="tel-national" placeholder="Ej: 370 4123456" value={telefono} onChange={(e) => setTelefono(e.target.value)} />
           </label>
+          {tel && <p className={styles.texto}>Vas a ingresar con el <strong className={styles.telResaltado}>{telLegible(tel)}</strong></p>}
           {error && <p className={styles.error}>{error}</p>}
           <button type="submit" className={styles.boton} disabled={enviando}>{enviando ? 'Un momento…' : 'Continuar'}</button>
         </form>
@@ -101,29 +107,51 @@ export function IngresoMinorista() {
       {(paso === 'registro' || completar) && (
         <form onSubmit={registrar} className={styles.form}>
           <span className={styles.etiqueta}>{completar ? '📝 Completá tus datos' : '📝 Registro'}</span>
-          <h2 id="ingreso-titulo" className={styles.titulo}>{completar ? 'Nos faltan algunos datos' : 'Es tu primera vez: creá tu cuenta'}</h2>
-          <p className={styles.texto}>Una sola vez: después entrás solo con tu WhatsApp <strong>{tel}</strong>.</p>
-          <div className={styles.fila}>
-            <label className={styles.campo}>
-              Nombre *
-              <input autoFocus maxLength={60} autoComplete="given-name" value={nombre} onChange={(e) => setNombre(e.target.value)} />
-            </label>
-            <label className={styles.campo}>
-              Apellido *
-              <input maxLength={60} autoComplete="family-name" value={apellido} onChange={(e) => setApellido(e.target.value)} />
-            </label>
+          <h2 id="ingreso-titulo" className={styles.titulo}>
+            {revisando ? '¿Están bien tus datos?' : completar ? 'Nos faltan algunos datos' : 'Es tu primera vez: creá tu cuenta'}
+          </h2>
+          {/* El número, grande y aparte: es donde más se equivocan. */}
+          <div className={styles.telCaja}>
+            <span>Tu WhatsApp</span>
+            <strong>{telLegible(tel)}</strong>
+            <button type="button" className={styles.link} onClick={volver}>¿No es tu número? <strong>Cambiarlo</strong></button>
           </div>
-          <label className={styles.campo}>
-            Dirección *
-            <input maxLength={120} autoComplete="street-address" placeholder="Calle, número y barrio" value={direccion} onChange={(e) => setDireccion(e.target.value)} />
-          </label>
-          {error && <p className={styles.error}>{error}</p>}
-          <button type="submit" className={styles.boton} disabled={enviando}>
-            {enviando ? 'Guardando…' : completar ? 'Guardar y entrar' : 'Registrarme y entrar'}
-          </button>
-          <button type="button" className={styles.link} onClick={volver}>
-            ¿No es tu número? <strong>Cambiarlo</strong>
-          </button>
+          {/* Con `key`: cada pantalla con sus propios botones. Sin eso React reusaba el
+              botón, y «Corregir» se volvía «Revisar» (submit) en medio del clic. */}
+          {revisando ? (
+            <Fragment key="revisar">
+              <p className={styles.texto}>Revisalos bien: <strong>por ese WhatsApp te escribimos</strong> para coordinar tus pedidos, y con él entrás la próxima vez.</p>
+              <dl className={styles.revisar}>
+                <dt>Nombre</dt><dd>{nombre.trim()} {apellido.trim()}</dd>
+                <dt>Dirección</dt><dd>{direccion.trim()}</dd>
+              </dl>
+              {error && <p className={styles.error}>{error}</p>}
+              <button type="submit" className={styles.boton} disabled={enviando}>
+                {enviando ? 'Guardando…' : 'Sí, están bien: entrar'}
+              </button>
+              <button type="button" className={styles.link} onClick={() => setRevisando(false)} disabled={enviando}>Corregir mis datos</button>
+            </Fragment>
+          ) : (
+            <Fragment key="datos">
+              <p className={styles.texto}>Una sola vez: después entrás solo con tu WhatsApp.</p>
+              <div className={styles.fila}>
+                <label className={styles.campo}>
+                  Nombre *
+                  <input autoFocus maxLength={60} autoComplete="given-name" value={nombre} onChange={(e) => setNombre(e.target.value)} />
+                </label>
+                <label className={styles.campo}>
+                  Apellido *
+                  <input maxLength={60} autoComplete="family-name" value={apellido} onChange={(e) => setApellido(e.target.value)} />
+                </label>
+              </div>
+              <label className={styles.campo}>
+                Dirección *
+                <input maxLength={120} autoComplete="street-address" placeholder="Calle, número y barrio" value={direccion} onChange={(e) => setDireccion(e.target.value)} />
+              </label>
+              {error && <p className={styles.error}>{error}</p>}
+              <button type="submit" className={styles.boton}>Revisar mis datos</button>
+            </Fragment>
+          )}
         </form>
       )}
 

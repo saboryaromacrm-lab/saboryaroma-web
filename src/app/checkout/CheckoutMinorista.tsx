@@ -12,7 +12,7 @@ import Link from 'next/link';
 import { totalLinea, useCart } from '@/lib/cart';
 import { crearPedidoMinorista } from '@/lib/api';
 import { leerToken } from '@/lib/sesion';
-import { money } from '@/lib/format';
+import { money, telLegible } from '@/lib/format';
 import { IngresarParaComprar } from '@/components/Ingreso';
 import type { EntregaMinorista } from '@/lib/types';
 import styles from './page.module.css';
@@ -38,7 +38,7 @@ export function CheckoutMinorista() {
         <div className={styles.okIcon}>✓</div>
         <h1 className={styles.title}>¡Pedido recibido!</h1>
         <p className={styles.okText}>Tu pedido <strong>{resultado.codigo}</strong> por {money(resultado.total)} ya está en revisión.</p>
-        <p className={styles.okDestacado}>Te escribimos por WhatsApp al <strong>{resultado.telefono}</strong> para coordinar el pago y la entrega.</p>
+        <p className={styles.okDestacado}>Te escribimos por WhatsApp al <strong>{telLegible(resultado.telefono)}</strong> para coordinar el pago y la entrega.</p>
         <Link href="/tienda" className={styles.cta}>Seguir comprando</Link>
       </div>
     );
@@ -116,7 +116,7 @@ export function CheckoutMinorista() {
       <div className={styles.layout}>
         <form onSubmit={revisar} className={styles.form}>
           <p className={styles.dniEstado} data-tipo="ok">
-            Comprás como <strong>{quien}</strong> · te escribimos al WhatsApp <strong>{comprador.telefono}</strong> para coordinar el pago y la entrega.
+            Comprás como <strong>{quien}</strong> · te escribimos al WhatsApp <strong>{telLegible(comprador.telefono)}</strong> para coordinar el pago y la entrega.
           </p>
 
           <div className={styles.field}>
@@ -198,7 +198,7 @@ export function CheckoutMinorista() {
               <p className={styles.confirmSub}>Revisalos antes de enviar: con estos datos te contactamos.</p>
               <dl className={styles.confirmDatos}>
                 <dt>Nombre</dt><dd>{quien}</dd>
-                <dt>WhatsApp</dt><dd>{comprador.telefono}</dd>
+                <dt>WhatsApp</dt><dd>{telLegible(comprador.telefono)}</dd>
                 <dt>Entrega</dt><dd>{conEnvio ? `Envío a domicilio${envioGratis ? ' (gratis)' : ''}` : 'Retiro en el local'}</dd>
                 {conEnvio && (<><dt>Dirección</dt><dd>{usaGuardada ? `Tu dirección guardada (${comprador.direccion})` : [calle.trim(), localidad.trim(), referencia.trim()].filter(Boolean).join(' · ')}</dd></>)}
                 {observaciones.trim() && (<><dt>Notas</dt><dd>{observaciones.trim()}</dd></>)}
