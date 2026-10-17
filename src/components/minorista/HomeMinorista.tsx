@@ -5,6 +5,7 @@ import { ProductCard } from '@/components/ProductCard';
 import { ProductCarousel } from '@/components/ProductCarousel';
 import { MarcasCarousel } from '@/components/MarcasCarousel';
 import { HeroFotos } from './HeroFotos';
+import { LEMA_NUTRIOFERTAS, NUTRIOFERTAS, URL_NUTRIOFERTAS } from '@/lib/nutriofertas';
 import type { Catalogo, ItemCatalogo, PortadaMinorista } from '@/lib/types';
 import styles from './HomeMinorista.module.css';
 
@@ -113,10 +114,10 @@ export function HomeMinorista({ cat }: { cat: Catalogo }) {
         <section id="ofertas" className={`container ${styles.seccion}`}>
           <div className={styles.seccionHead}>
             <div>
-              <h2 className={styles.seccionTitulo}><span className={styles.fuego}>🔥</span> Ofertas de hoy</h2>
-              <p className={styles.seccionSub}>Precios especiales mientras duren.</p>
+              <h2 className={styles.seccionTitulo}><span className={styles.fuego}>🔥</span> {NUTRIOFERTAS}</h2>
+              <p className={styles.seccionSub}>{LEMA_NUTRIOFERTAS}</p>
             </div>
-            {enOferta.length > OFERTAS_AL_FRENTE && <Link href="/tienda?oferta=1" className={styles.verTodo}>Ver las {enOferta.length} ofertas →</Link>}
+            <Link href={URL_NUTRIOFERTAS} className={styles.verTodo}>Ver todas las {NUTRIOFERTAS} ({enOferta.length}) →</Link>
           </div>
           <div className={styles.gridOfertas}>
             {enOferta.slice(0, OFERTAS_AL_FRENTE).map((x) => <ProductCard key={x.id} producto={x} />)}

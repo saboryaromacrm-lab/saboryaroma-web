@@ -10,6 +10,7 @@ import { money, norm } from '@/lib/format';
 import { MiniCart } from '@/components/MiniCart';
 import { BotonCuenta } from '@/components/Ingreso';
 import { ModoSwitch } from '@/components/ElegirModo';
+import { NUTRIOFERTAS, URL_NUTRIOFERTAS } from '@/lib/nutriofertas';
 import type { Termino } from '@/lib/types';
 import styles from './Header.module.css';
 
@@ -42,6 +43,8 @@ function AvisosRotativos({ avisos }: { avisos: string[] }) {
 export function Header() {
   const { cantidadTotal, catalogo, conPrecios, modo, config } = useCart();
   const minorista = modo === 'minorista';
+  /** Minorista con ofertas vigentes: el acceso a NutriOfertas va en el encabezado y en el menú del celular. */
+  const conNutriOfertas = minorista && (catalogo?.items.some((p) => p.oferta) ?? false);
   const router = useRouter();
   const pathname = usePathname();
   const [menuAbierto, setMenuAbierto] = useState(false);
@@ -508,9 +511,9 @@ export function Header() {
             </div>
 
             {!minorista && <BotonCuenta className={styles.cuentaEscritorio} />}
-            {/* Minorista: las ofertas a un toque, como botón propio del encabezado (17/10/2026). */}
-            {minorista && (catalogo?.items.some((p) => p.oferta) ?? false) && (
-              <Link href="/tienda?oferta=1" className={styles.ofertasPill}>🔥 Ofertas</Link>
+            {/* Minorista: las NutriOfertas a un toque, como botón propio del encabezado (17/10/2026). */}
+            {conNutriOfertas && (
+              <Link href={URL_NUTRIOFERTAS} className={styles.ofertasPill}>🔥 {NUTRIOFERTAS}</Link>
             )}
 
             <div ref={cartWrapRef} className={styles.cartWrap} onMouseEnter={abrirCarrito} onMouseLeave={programarCierreCarrito}>
@@ -554,6 +557,9 @@ export function Header() {
           <nav className={styles.mobileNav}>
             <Link href="/" className={styles.mobileNavLink} onClick={() => setMenuAbierto(false)}>Inicio</Link>
             <Link href="/tienda" className={styles.mobileNavLink} onClick={() => setMenuAbierto(false)}>Tienda</Link>
+            {conNutriOfertas && (
+              <Link href={URL_NUTRIOFERTAS} className={styles.mobileNavLink} onClick={() => setMenuAbierto(false)}>🔥 {NUTRIOFERTAS}</Link>
+            )}
 
             <div className={styles.mobileAccordion}>
               <button

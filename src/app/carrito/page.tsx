@@ -6,6 +6,7 @@ import { money, cant } from '@/lib/format';
 import { faltanParaLote, textoPromo } from '@/lib/oferta';
 import { IngresarParaComprar } from '@/components/Ingreso';
 import { ProductCarousel } from '@/components/ProductCarousel';
+import { LEMA_NUTRIOFERTAS, NUTRIOFERTAS } from '@/lib/nutriofertas';
 import styles from './page.module.css';
 
 /** Barra de avance de una condición: verde cuando se cumple. */
@@ -24,7 +25,7 @@ function cantidadTexto(n: number, unidad: 'kg' | 'u', etiqueta?: string | null):
 }
 
 export default function CarritoPage() {
-  const { items, total, setCantidad, quitar, gate, config, disponibleDe, quitadosViejos, conPrecios, catalogo } = useCart();
+  const { items, total, setCantidad, quitar, gate, config, disponibleDe, quitadosViejos, conPrecios, catalogo, modo } = useCart();
 
   if (!conPrecios) {
     return (
@@ -52,11 +53,17 @@ export default function CarritoPage() {
   const enElCarrito = new Set(items.map((it) => it.productoId));
   const conOferta = (catalogo?.items ?? []).filter((p) => p.oferta && p.enStock);
   const ofertas = [...conOferta.filter((p) => !enElCarrito.has(p.id)), ...conOferta.filter((p) => enElCarrito.has(p.id))];
+  /* En la minorista se llaman NutriOfertas y llevan su lema (17/10/2026). */
+  const nutri = modo === 'minorista';
+  const enStock = `${ofertas.length} producto${ofertas.length === 1 ? '' : 's'} con precio especial, mientras dure el stock. Se agregan sin salir del carrito.`;
   const carruselOfertas = (
     <ProductCarousel
       variant="ofertas"
-      titulo={items.length ? '¿Sumás alguna oferta a tu pedido?' : 'Empezá por las ofertas de hoy'}
-      subtitulo={`${ofertas.length} producto${ofertas.length === 1 ? '' : 's'} con precio especial, mientras dure el stock. Se agregan sin salir del carrito.`}
+      badge={nutri ? `🔥 ${NUTRIOFERTAS}` : undefined}
+      titulo={nutri
+        ? (items.length ? `¿Sumás alguna de las ${NUTRIOFERTAS}?` : `Empezá por las ${NUTRIOFERTAS}`)
+        : (items.length ? '¿Sumás alguna oferta a tu pedido?' : 'Empezá por las ofertas de hoy')}
+      subtitulo={nutri ? `${LEMA_NUTRIOFERTAS} ${enStock}` : enStock}
       productos={ofertas}
     />
   );

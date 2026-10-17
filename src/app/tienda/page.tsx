@@ -6,6 +6,8 @@ import { jsonLdString } from '@/lib/jsonLd';
 import { ProductCard } from '@/components/ProductCard';
 import { ListaProductos } from '@/components/ListaProductos';
 import { ShopFilters } from '@/components/ShopFilters';
+import { LEMA_NUTRIOFERTAS, NUTRIOFERTAS, mayorDescuento } from '@/lib/nutriofertas';
+import { esMultiUnidad } from '@/lib/oferta';
 import type { ItemCatalogo } from '@/lib/types';
 import styles from './page.module.css';
 
@@ -48,6 +50,31 @@ function jsonLdProductos(items: ItemCatalogo[]) {
   };
 }
 
+/**
+ * EL ENCABEZADO DE NUTRIOFERTAS (17/10/2026, pedido del dueño: «más decorada,
+ * más de ofertas, distinta a la tienda»): franja naranja con etiquetas de
+ * precio de fondo, el nombre en grande, el lema y lo que hay —cuántas, hasta
+ * cuánto de descuento y si hay promos por cantidad—, todo sacado del catálogo.
+ */
+function NutriOfertasHero({ items }: { items: ItemCatalogo[] }) {
+  const hasta = mayorDescuento(items);
+  const porCantidad = items.some((p) => esMultiUnidad(p.oferta));
+  return (
+    <div className={styles.nutriHero}>
+      <div className={`container ${styles.nutriInner}`}>
+        <span className={styles.nutriCinta}>✓ Ofertas reales</span>
+        <h1 className={styles.nutriTitulo}><span aria-hidden>🔥</span> {NUTRIOFERTAS}</h1>
+        <p className={styles.nutriLema}>{LEMA_NUTRIOFERTAS}</p>
+        <ul className={styles.nutriDatos}>
+          <li>{items.length} producto{items.length === 1 ? '' : 's'} en oferta</li>
+          {hasta > 0 && <li>Hasta <strong>{hasta}% OFF</strong></li>}
+          {porCantidad && <li>Promos por cantidad: <strong>3×2, 2ª unidad y packs</strong></li>}
+        </ul>
+      </div>
+    </div>
+  );
+}
+
 export default async function TiendaPage({
   searchParams,
 }: {
@@ -71,6 +98,8 @@ export default async function TiendaPage({
   const q = norm((sp.q ?? '').trim());
   /** `?oferta=1`: solo lo que está en promo (la portada minorista lleva ahí). */
   const soloOfertas = sp.oferta === '1';
+  /** En la minorista es la página de NutriOfertas: con su propio encabezado y su fondo (17/10/2026). */
+  const nutri = soloOfertas && cat.modo === 'minorista';
 
   const items = cat.items.filter((p: ItemCatalogo) => {
     if (cats.size && (!p.categoriaId || !cats.has(p.categoriaId))) return false;
@@ -93,7 +122,7 @@ export default async function TiendaPage({
     miga = `Resultados para "${sp.q.trim()}"`;
     titulo = miga;
   } else if (soloOfertas) {
-    miga = 'Ofertas'; titulo = '🔥 Ofertas';
+    miga = nutri ? NUTRIOFERTAS : 'Ofertas'; titulo = nutri ? `🔥 ${NUTRIOFERTAS}` : '🔥 Ofertas';
   } else if (subUnica && cats.size <= 1 && !marcasSel.size && !tags.size) {
     const padre = cat.categorias.find((c) => c.id === subUnica.categoriaId);
     if (padre) migaPadre = { texto: padre.nombre, href: `/tienda?cat=${padre.id}` };
@@ -110,7 +139,7 @@ export default async function TiendaPage({
   }
 
   return (
-    <div className={styles.shopPage}>
+    <div className={`${styles.shopPage} ${nutri ? styles.nutriPage : ''}`}>
       <script
         type="application/ld+json"
         // eslint-disable-next-line react/no-danger
@@ -136,12 +165,16 @@ export default async function TiendaPage({
         </div>
       </div>
 
-      <div className={styles.headerBar}>
-        <div className={`container ${styles.headerInner}`}>
-          <h1 className={styles.title}>{titulo}</h1>
-          <span className={styles.count}>{items.length} producto{items.length === 1 ? '' : 's'}</span>
+      {nutri ? (
+        <NutriOfertasHero items={items} />
+      ) : (
+        <div className={styles.headerBar}>
+          <div className={`container ${styles.headerInner}`}>
+            <h1 className={styles.title}>{titulo}</h1>
+            <span className={styles.count}>{items.length} producto{items.length === 1 ? '' : 's'}</span>
+          </div>
         </div>
-      </div>
+      )}
 
       <div className={`container ${styles.layout}`}>
         <ShopFilters categorias={cat.categorias} subcategorias={cat.subcategorias ?? []} marcas={cat.marcas} etiquetas={cat.etiquetas} productos={cat.items} />

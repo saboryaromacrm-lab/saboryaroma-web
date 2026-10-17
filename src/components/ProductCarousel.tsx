@@ -5,13 +5,15 @@ import type { ItemCatalogo } from '@/lib/types';
 import { ProductCard } from './ProductCard';
 import styles from './ProductCarousel.module.css';
 
-export function ProductCarousel({ id, titulo, subtitulo, productos, variant }: {
+export function ProductCarousel({ id, titulo, subtitulo, productos, variant, badge = '🔥 Ofertas' }: {
   id?: string;
   titulo: string;
   subtitulo?: string;
   productos: ItemCatalogo[];
   /** 'ofertas': tarjeta con degradé cálido, igual al carrusel de ofertas del tema original. */
   variant?: 'ofertas';
+  /** El cartelito de la variante 'ofertas' (la minorista dice «NutriOfertas»). */
+  badge?: string;
 }) {
   const trackRef = useRef<HTMLDivElement>(null);
 
@@ -27,7 +29,7 @@ export function ProductCarousel({ id, titulo, subtitulo, productos, variant }: {
     <>
       <div className={styles.headRow}>
         <div className={styles.headLeft}>
-          {variant === 'ofertas' && <span className={styles.badge}>🔥 Ofertas</span>}
+          {variant === 'ofertas' && <span className={styles.badge}>{badge}</span>}
           <div>
             <h2 className={styles.title}>{titulo}</h2>
             {subtitulo && <p className={styles.subtitle}>{subtitulo}</p>}
