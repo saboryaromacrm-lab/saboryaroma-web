@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { totalLinea, useCart } from '@/lib/cart';
 import { crearPedido } from '@/lib/api';
+import { pedidoEnviado } from '@/lib/analytics';
 import { leerToken } from '@/lib/sesion';
 import { money, telefonoArgentino } from '@/lib/format';
 import { IngresarParaComprar } from '@/components/Ingreso';
@@ -153,6 +154,7 @@ function CheckoutMayorista() {
         // La opción del granel viaja: el servidor la necesita para saber si son bolsas o paquetes.
         items: items.map((it) => ({ productoId: it.productoId, cantidad: it.cantidad, ...(it.variante ? { variante: it.variante } : {}) })),
       }, leerToken());
+      pedidoEnviado(r.codigo);
       setResultado({ codigo: r.codigo, total: r.total, telefono });
       vaciar();
       // El «¡Pedido recibido!» está arriba y el botón de enviar abajo: sin esto,

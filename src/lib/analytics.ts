@@ -10,6 +10,11 @@
  *  - `vista_producto`: SEGUNDOS con la tarjeta realmente visible (≥50% en
  *    pantalla, medido con IntersectionObserver) — "en qué se quedan mirando".
  *  - `agregar_carrito`: el clic en Agregar.
+ *  - `busqueda`: lo que se escribió en el buscador.
+ *  - `pedido`: el pedido que se mandó (0179), para cerrar el embudo por sesión.
+ *
+ * Cada lote dice en qué MODO de la tienda pasó (mayorista o minorista, 0179):
+ * las métricas del ERP van separadas por modo.
  *
  * Los eventos se juntan en memoria y viajan EN LOTE: cada 15 s y al salir de
  * la página (sendBeacon, que sobrevive al cierre). Si la API no responde, se
@@ -63,7 +68,8 @@ function flush(alSalir = false) {
   // request); si quedó más, espera al próximo flush. Antes había un `cola = []`
   // acá que tiraba a la basura todo lo que pasaba de 200.
   const lote = cola.splice(0, 200);
-  const payload = JSON.stringify({ sesion: sesionId(), eventos: lote });
+  /* El modo en que está la página (lo pone el layout en <html data-modo>). */
+  const payload = JSON.stringify({ sesion: sesionId(), modo: document.documentElement.dataset.modo, eventos: lote });
   try {
     if (alSalir && navigator.sendBeacon) {
       navigator.sendBeacon(`${API}/tienda/eventos`, new Blob([payload], { type: 'application/json' }));
@@ -92,6 +98,12 @@ export function paginaVista(ruta: string) {
 
 export function carritoAgregado(productoId: number) {
   cola.push({ tipo: 'agregar_carrito', productoId });
+}
+
+/** Se mandó un pedido: viaja en el acto, no espera el lote. */
+export function pedidoEnviado(codigo: string) {
+  cola.push({ tipo: 'pedido', ruta: codigo });
+  flush(false);
 }
 
 /** Qué se escribió en el buscador: lo que se busca y no está es catálogo faltante. */

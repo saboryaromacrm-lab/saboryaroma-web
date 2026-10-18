@@ -11,6 +11,7 @@ import { useRef, useState } from 'react';
 import Link from 'next/link';
 import { totalLinea, useCart } from '@/lib/cart';
 import { crearPedidoMinorista } from '@/lib/api';
+import { pedidoEnviado } from '@/lib/analytics';
 import { leerToken } from '@/lib/sesion';
 import { money, telLegible } from '@/lib/format';
 import { IngresarParaComprar } from '@/components/Ingreso';
@@ -97,6 +98,7 @@ export function CheckoutMinorista() {
             : { calle: calle.trim(), localidad: localidad.trim(), referencia: referencia.trim() || undefined },
         items: items.map((it) => ({ productoId: it.productoId, cantidad: it.cantidad, ...(it.variante ? { variante: it.variante } : {}) })),
       }, leerToken('minorista'));
+      pedidoEnviado(r.codigo);
       setResultado({ codigo: r.codigo, total: r.total, telefono: comprador.telefono });
       vaciar();
       window.scrollTo({ top: 0, behavior: 'smooth' });
