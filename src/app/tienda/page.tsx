@@ -56,6 +56,7 @@ function jsonLdProductos(items: ItemCatalogo[]) {
  * más de ofertas, distinta a la tienda»): franja naranja con etiquetas de
  * precio de fondo, el nombre en grande, el lema y lo que hay —cuántas, hasta
  * cuánto de descuento y si hay promos por cantidad—, todo sacado del catálogo.
+ * Sin la cinta «Ofertas reales» (18/10/2026): repetía el lema.
  */
 function NutriOfertasHero({ items, sinSesion }: { items: ItemCatalogo[]; sinSesion: boolean }) {
   const hasta = mayorDescuento(items);
@@ -63,8 +64,7 @@ function NutriOfertasHero({ items, sinSesion }: { items: ItemCatalogo[]; sinSesi
   return (
     <div className={styles.nutriHero}>
       <div className={`container ${styles.nutriInner}`}>
-        <span className={styles.nutriCinta}>✓ Ofertas reales</span>
-        <h1 className={styles.nutriTitulo}><span aria-hidden>🔥</span> {NUTRIOFERTAS}</h1>
+        <h1 className={styles.nutriTitulo}><span className={styles.nutriFuego} aria-hidden>🔥</span>{NUTRIOFERTAS}</h1>
         <p className={styles.nutriLema}>{LEMA_NUTRIOFERTAS}</p>
         <ul className={styles.nutriDatos}>
           {/* Sin ingresar no viajan las ofertas (0178): no hay qué contar. */}

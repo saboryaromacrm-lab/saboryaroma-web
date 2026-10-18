@@ -41,20 +41,17 @@
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Cg fill='none' stroke='%23fff' stroke-width='3'%3E%3Cpath d='M20 34 L52 34 L68 50 L52 66 L20 66 Z' transform='rotate(-18 44 50)'/%3E%3Ccircle cx='30' cy='44' r='4' transform='rotate(-18 44 50)'/%3E%3Cpath d='M78 86 l8 -14 l8 14 z'/%3E%3C/g%3E%3Ctext x='70' y='40' font-family='Arial' font-weight='900' font-size='22' fill='%23fff'%3E%25%3C/text%3E%3C/svg%3E");
   pointer-events: none;
 }
-.nutriInner { position: relative; display: flex; flex-direction: column; align-items: flex-start; gap: 10px; padding-block: 34px 30px; }
-.nutriCinta {
-  display: inline-flex; align-items: center; gap: 6px;
-  padding: 6px 14px;
-  border-radius: var(--radius-full);
-  background: var(--color-white);
-  color: var(--color-oferta-dark);
-  font-size: 12px; font-weight: 900; letter-spacing: 0.12em; text-transform: uppercase;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
-  transform: rotate(-2deg);
+.nutriInner { position: relative; display: flex; flex-direction: column; align-items: flex-start; gap: 14px; padding-block: 36px 32px; }
+/* El fuego al lado del nombre, del alto de la letra y alineado: antes era más alto que la línea y se encimaba. */
+.nutriTitulo {
+  margin: 0;
+  display: flex; align-items: center; gap: 0.25em;
+  font-size: clamp(34px, 5.5vw, 60px); font-weight: 900; line-height: 1.05; letter-spacing: -0.03em;
+  text-shadow: 0 3px 0 rgba(0, 0, 0, 0.12);
 }
-.nutriTitulo { margin: 0; font-size: clamp(36px, 6vw, 64px); font-weight: 900; line-height: 1; letter-spacing: -0.03em; text-shadow: 0 3px 0 rgba(0, 0, 0, 0.12); }
-.nutriLema { margin: 0; font-size: clamp(16px, 2vw, 21px); font-weight: 800; }
-.nutriDatos { list-style: none; margin: 6px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+.nutriFuego { font-size: 0.8em; line-height: 1; text-shadow: none; }
+.nutriLema { margin: 0; font-size: clamp(16px, 2vw, 21px); font-weight: 800; line-height: 1.35; }
+.nutriDatos { list-style: none; margin: 4px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
 .nutriDatos li {
   padding: 7px 14px;
   border-radius: var(--radius-full);
@@ -63,7 +60,6 @@
   font-size: 14px; font-weight: 600;
 }
 .nutriDatos strong { font-weight: 900; }
-.nutriPage .breadcrumbBar { background: transparent; border-bottom: 0; }
 .headerInner { display: flex; align-items: center; flex-wrap: wrap; gap: var(--space-4); }
 .title { font-size: 28px; font-weight: 700; color: var(--color-black); margin: 0; }
 .count {
