@@ -71,6 +71,9 @@
 
 /* En el teléfono la franja se aprieta: 40 px de costado se comen el ancho. */
 @media (max-width: 600px) {
-  .firma { padding: 16px 20px; }
+  /* Abajo queda el lugar del botón flotante de WhatsApp (14 px del borde + 50 px): al final de la página no tapa la firma. */
+  .firma { padding: 8px 20px 72px; }
+  /* El enlace, de 40 px de alto para el dedo (el relleno de la franja baja lo mismo). */
+  .marca { padding-block: 8px; }
   .inner { justify-content: center; text-align: center; }
 }

@@ -75,6 +75,7 @@
   color: var(--color-primary);
   white-space: nowrap;
 }
+.logoImg { display: block; height: 46px; width: auto; }
 
 .nav { display: none; gap: 1px; flex-shrink: 0; align-items: center; }
 .navLink {
@@ -414,24 +415,54 @@
 }
 
 .mobileToggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
   border: none;
   background: none;
   font-size: 22px;
   cursor: pointer;
-  padding: 4px 8px;
+  padding: 0;
   flex-shrink: 0;
 }
 
+/*
+ * EL MENÚ DEL CELULAR FLOTA (19/10/2026): pegado debajo del encabezado
+ * (`--sa-header-h`: lo fijo no cuenta en esa medida) y con su propio scroll
+ * hasta el pie de la pantalla. Antes empujaba la página y su tope suponía un
+ * encabezado de 76 px: con la barra de avisos, lo último quedaba fuera de alcance.
+ */
+.mobileMenuFondo {
+  position: fixed;
+  inset: var(--sa-header-h, 0px) 0 0;
+  background: rgba(7, 38, 25, 0.45);
+}
 .mobileMenu {
+  position: fixed;
+  top: var(--sa-header-h, 0px);
+  left: 0;
+  right: 0;
+  max-height: calc(100dvh - var(--sa-header-h, 0px));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  background: var(--color-white);
+  box-shadow: var(--shadow-card-hover);
   border-top: 1px solid var(--color-gray-200);
   padding: var(--space-4) var(--space-4) var(--space-6);
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
-  max-height: calc(100vh - 76px);
-  overflow-y: auto;
 }
-.mobileSearch { display: flex; }
+.mobileSearch {
+  display: flex;
+  min-height: 44px;
+  border: 1px solid var(--color-gray-300);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+.mobileSearch:focus-within { border-color: var(--color-primary); box-shadow: 0 0 0 1px var(--color-primary); }
 .mobileNav { display: flex; flex-direction: column; gap: var(--space-1); }
 .mobileNavLink {
   padding: 12px 8px;
@@ -586,6 +617,36 @@
   transition: background 0.2s ease;
 }
 .mobileInfoBtn:hover { background: var(--color-primary-dark); }
+
+/*
+ * EL ENCABEZADO EN EL CELULAR (19/10/2026): la barra de avisos es UNA franja de
+ * alto fijo —el aviso a la izquierda, hasta dos renglones, y el cambio de
+ * tienda a la derecha—, así los avisos que rotan no hacen saltar la página;
+ * y la barra del logo, más baja. De 157 px a unos 104.
+ */
+@media (max-width: 640px) {
+  .topBarText,
+  :global(html[data-modo='minorista']) .topBarText {
+    flex-wrap: nowrap;
+    justify-content: space-between;
+    gap: 10px;
+    min-height: 44px;
+    padding: 6px var(--space-4);
+    font-size: 12px;
+    line-height: 1.25;
+    text-align: left;
+  }
+  .aviso {
+    flex: 1;
+    min-width: 0;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .mainInner { min-height: 60px; gap: var(--space-2); }
+  .logoImg { height: 38px; }
+}
 
 @media (min-width: 1180px) {
   .nav, .search { display: flex; }

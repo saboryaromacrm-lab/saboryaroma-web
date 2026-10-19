@@ -15,9 +15,11 @@
   animation: entrar 0.25s ease-out;
 }
 .cerrar {
-  position: absolute; top: 10px; right: 12px;
+  position: absolute; top: 6px; right: 6px;
+  display: flex; align-items: center; justify-content: center;
+  width: 40px; height: 40px; padding: 0;
   border: none; background: none; font-size: 24px; line-height: 1;
-  color: var(--color-gray-500); cursor: pointer; padding: 4px;
+  color: var(--color-gray-500); cursor: pointer;
 }
 .cerrar:hover { color: var(--color-black); }
 
@@ -83,7 +85,7 @@
 .boton:disabled { opacity: 0.6; cursor: wait; }
 .link {
   border: none; background: none; cursor: pointer; font: inherit;
-  font-size: var(--font-size-sm); color: var(--color-gray-600); padding: 4px;
+  font-size: var(--font-size-sm); color: var(--color-gray-600); padding: 10px 8px;
 }
 .link strong { color: var(--color-primary); }
 
@@ -100,7 +102,9 @@
 .hola { max-width: 140px; overflow: hidden; text-overflow: ellipsis; }
 .salir {
   border: none; background: none; cursor: pointer; font: inherit; font-size: var(--font-size-xs);
-  color: var(--color-gray-550); text-decoration: underline; padding: 0;
+  color: var(--color-gray-550); text-decoration: underline;
+  /* Más blanco para el dedo sin mover nada: el relleno lo compensa el margen. */
+  padding: 10px 6px; margin: -10px -6px;
 }
 
 /* En lugar del precio. */

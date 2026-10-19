@@ -193,7 +193,7 @@
   cursor: pointer;
 }
 .checkoutBtn[data-disabled] { background: var(--color-gray-300); color: var(--color-gray-550); cursor: not-allowed; }
-.seguir { text-align: center; font-size: 14px; font-weight: 600; color: var(--color-primary); margin-top: -4px; }
+.seguir { display: flex; align-items: center; justify-content: center; min-height: 40px; font-size: 14px; font-weight: 600; color: var(--color-primary); margin-top: -4px; }
 
 @media (max-width: 900px) {
   .layout { grid-template-columns: minmax(0, 1fr); gap: var(--space-5); }

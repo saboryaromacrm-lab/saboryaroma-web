@@ -44,7 +44,9 @@
 .limpiar {
   border: none;
   background: none;
-  padding: 0;
+  /* Más blanco para el dedo sin mover nada: el relleno lo compensa el margen. */
+  padding: 10px 6px;
+  margin: -10px -6px;
   font-size: 13px;
   font-weight: 600;
   color: var(--color-primary);
@@ -76,14 +78,14 @@
 .grupo { margin-bottom: 24px; }
 .grupo:last-child { margin-bottom: 0; }
 .titulo { font-size: 14px; font-weight: 700; color: var(--color-black); margin: 0 0 14px; }
-.lista { display: flex; flex-direction: column; gap: 4px; max-height: 340px; overflow-y: auto; }
+/* El margen negativo va en la lista y no en cada renglón: dentro de una caja con scroll, el renglón más ancho que ella abría una barra horizontal. */
+.lista { display: flex; flex-direction: column; gap: 4px; max-height: 340px; overflow-y: auto; margin: 0 -10px; }
 
 .item {
   display: flex;
   align-items: center;
   gap: 10px;
   padding: 8px 10px;
-  margin: 0 -10px;
   border-radius: var(--radius-md);
   cursor: pointer;
   transition: background 0.15s;
@@ -123,8 +125,8 @@
   display: flex;
   flex-direction: column;
   gap: 2px;
-  margin: 2px 0 6px 8px;
-  padding-left: 12px;
+  margin: 2px 0 6px 18px;
+  padding-left: 2px;
   border-left: 2px solid var(--color-accent);
 }
 .subitem { padding-top: 6px; padding-bottom: 6px; }

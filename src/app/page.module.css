@@ -24,7 +24,7 @@
 .catCount { font-size: var(--font-size-xs); color: var(--color-gray-500); }
 
 .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-5); }
-.verTodo { font-weight: 700; color: var(--color-primary); }
+.verTodo { display: inline-flex; align-items: center; min-height: 40px; font-weight: 700; color: var(--color-primary); }
 
 @media (max-width: 1200px) {
   .catGrid { grid-template-columns: repeat(4, 1fr); }

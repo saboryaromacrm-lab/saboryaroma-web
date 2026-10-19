@@ -116,25 +116,38 @@
 
 .dots {
   position: absolute;
-  bottom: 20px;
+  bottom: 12px;
   left: 50%;
   transform: translateX(-50%);
   z-index: 10;
   display: flex;
-  gap: 10px;
 }
+/* El botón es el blanco para el dedo (28 px); el puntito se dibuja adentro, del tamaño de siempre. */
 .dot {
-  width: 12px;
-  height: 12px;
+  --dot: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
   padding: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+.dot::before {
+  content: '';
+  width: var(--dot);
+  height: var(--dot);
+  box-sizing: border-box;
   background: rgba(255, 255, 255, 0.5);
   border: 2px solid rgba(255, 255, 255, 0.8);
   border-radius: 50%;
-  cursor: pointer;
   transition: all 0.25s ease;
 }
-.dot:hover { background: rgba(255, 255, 255, 0.8); }
-.dotActive { background: var(--color-white); border-color: var(--color-white); transform: scale(1.2); }
+.dot:hover::before { background: rgba(255, 255, 255, 0.8); }
+.dotActive::before { background: var(--color-white); border-color: var(--color-white); transform: scale(1.2); }
+.dot:focus-visible { outline: 2px solid var(--color-white); outline-offset: -2px; border-radius: 50%; }
 
 @media (max-width: 1024px) {
   .content { max-width: 500px; padding: 0 30px; }
@@ -193,6 +206,6 @@
   .button:hover { background: var(--color-white); color: var(--color-primary); }
 
   .nav { display: none; }
-  .dots { bottom: 18px; gap: 8px; }
-  .dot { width: 10px; height: 10px; }
+  .dots { bottom: 9px; }
+  .dot { --dot: 10px; }
 }

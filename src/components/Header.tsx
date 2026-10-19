@@ -129,7 +129,7 @@ export function Header() {
       if (cartWrapRef.current && !cartWrapRef.current.contains(e.target as Node)) setCarritoAbierto(false);
     };
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') { setBuscadorAbierto(false); cancelarCierre(); setFly(null); setMenuPos(null); setCarritoAbierto(false); }
+      if (e.key === 'Escape') { setBuscadorAbierto(false); cancelarCierre(); setFly(null); setMenuPos(null); setCarritoAbierto(false); setMenuAbierto(false); }
     };
     document.addEventListener('mousedown', onClick);
     document.addEventListener('keydown', onKey);
@@ -267,9 +267,9 @@ export function Header() {
           {minorista && (catalogo?.sitio?.minorista?.avisos.length ?? 0) > 0
             ? <AvisosRotativos avisos={catalogo!.sitio.minorista!.avisos} />
             : (
-              <span>
+              <span className={styles.aviso}>
                 {minorista
-                  ? `🛒 Tienda minorista — precio de mostrador, sin mínimo de compra${config.envioGratisDesde > 0 ? ` · envío gratis desde ${money(config.envioGratisDesde)}` : ''}.`
+                  ? `🛒 Sin mínimo de compra${config.envioGratisDesde > 0 ? ` · envío gratis desde ${money(config.envioGratisDesde)}` : ''}.`
                   : '🏪 Tienda mayorista — las mejores marcas con nosotros.'}
               </span>
             )}
@@ -281,7 +281,7 @@ export function Header() {
         <div className={`container ${styles.mainInner}`}>
           <Link href="/" className={styles.logo} aria-label="Ir al inicio">
             {catalogo?.sitio?.logoUrl
-              ? <img src={imgSrc(catalogo.sitio.logoUrl)} alt="Sabor y Aroma" style={{ height: 46, width: 'auto', display: 'block' }} />
+              ? <img src={imgSrc(catalogo.sitio.logoUrl)} alt="Sabor y Aroma" className={styles.logoImg} />
               : 'Sabor y Aroma'}
           </Link>
 
@@ -543,158 +543,162 @@ export function Header() {
         </div>
       </div>
 
+      {/* El menú del celular flota sobre la página (no la empuja) y se cierra tocando afuera. */}
       {menuAbierto && (
-        <div className={styles.mobileMenu}>
-          <form onSubmit={buscar} className={styles.mobileSearch}>
-            <input
-              type="search"
-              placeholder="Buscar productos..."
-              value={busqueda}
-              onChange={(e) => setBusqueda(e.target.value)}
-              className={styles.searchInput}
-            />
-          </form>
-          <nav className={styles.mobileNav}>
-            <Link href="/" className={styles.mobileNavLink} onClick={() => setMenuAbierto(false)}>Inicio</Link>
-            <Link href="/tienda" className={styles.mobileNavLink} onClick={() => setMenuAbierto(false)}>Tienda</Link>
-            {conNutriOfertas && (
-              <Link href={URL_NUTRIOFERTAS} className={styles.mobileNavLink} onClick={() => setMenuAbierto(false)}>🔥 {NUTRIOFERTAS}</Link>
-            )}
-
-            <div className={styles.mobileAccordion}>
-              <button
-                type="button"
-                className={styles.mobileAccordionToggle}
-                onClick={() => setAccordion((v) => (v === 'categorias' ? null : 'categorias'))}
-                aria-expanded={accordion === 'categorias'}
-              >
-                Categorías <span className={`${styles.navArrow} ${accordion === 'categorias' ? styles.navArrowOpen : ''}`}>▾</span>
-              </button>
-              {accordion === 'categorias' && (
-                <div className={`${styles.mobileAccordionContent} ${styles.mobileCats}`}>
-                  <input
-                    type="text"
-                    placeholder="Buscar categoría o subcategoría..."
-                    value={filtroCategoria}
-                    onChange={(e) => setFiltroCategoria(e.target.value)}
-                    className={styles.mobileBrandsSearch}
-                    aria-label="Buscar categoría o subcategoría"
-                  />
-                  {arbolCategorias.length === 0 && <p className={styles.megaMenuVacio}>No encontramos categorías con ese nombre.</p>}
-                  {arbolCategorias.map((c) => {
-                    /* Con búsqueda, las que coinciden por una subcategoría se abren solas: lo buscado queda a la vista. */
-                    const abierta = c.subs.length > 0 && (catAbierta === c.id || (c.coincidenSubs && !!filtroCategoria.trim()));
-                    return (
-                      <div key={c.id} className={styles.mobileCat}>
-                        <div className={styles.mobileCatFila}>
-                          <button type="button" className={styles.mobileCatNombre} onClick={() => irAFiltro('cat', c.id)}>
-                            {c.nombre} <span className={styles.catCount}>{c.count}</span>
-                          </button>
-                          {c.subs.length > 0 && (
-                            <button
-                              type="button"
-                              className={styles.mobileCatAbrir}
-                              onClick={() => setCatAbierta((v) => (v === c.id ? null : c.id))}
-                              aria-expanded={abierta}
-                              aria-label={`${abierta ? 'Ocultar' : 'Ver'} las subcategorías de ${c.nombre}`}
-                            >
-                              <span className={`${styles.navArrow} ${abierta ? styles.navArrowOpen : ''}`}>▾</span>
-                            </button>
-                          )}
-                        </div>
-                        {abierta && (
-                          <div className={styles.mobileSubs}>
-                            <button type="button" className={styles.mobileSub} onClick={() => irAFiltro('cat', c.id)}>
-                              <strong>Todo {c.nombre}</strong>
-                            </button>
-                            {c.subs.map((s) => (
-                              <button key={s.id} type="button" className={styles.mobileSub} onClick={() => irASub(c.id, s.id)}>
-                                {s.nombre} <span className={styles.catCount}>{s.count}</span>
-                              </button>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
+        <>
+          <div className={styles.mobileMenuFondo} onClick={() => setMenuAbierto(false)} aria-hidden />
+          <div className={styles.mobileMenu}>
+            <form onSubmit={buscar} className={styles.mobileSearch}>
+              <input
+                type="search"
+                placeholder="Buscar productos..."
+                value={busqueda}
+                onChange={(e) => setBusqueda(e.target.value)}
+                className={styles.searchInput}
+              />
+            </form>
+            <nav className={styles.mobileNav}>
+              <Link href="/" className={styles.mobileNavLink} onClick={() => setMenuAbierto(false)}>Inicio</Link>
+              <Link href="/tienda" className={styles.mobileNavLink} onClick={() => setMenuAbierto(false)}>Tienda</Link>
+              {conNutriOfertas && (
+                <Link href={URL_NUTRIOFERTAS} className={styles.mobileNavLink} onClick={() => setMenuAbierto(false)}>🔥 {NUTRIOFERTAS}</Link>
               )}
-            </div>
 
-            <div className={styles.mobileAccordion}>
-              <button
-                type="button"
-                className={styles.mobileAccordionToggle}
-                onClick={() => setAccordion((v) => (v === 'marcas' ? null : 'marcas'))}
-                aria-expanded={accordion === 'marcas'}
-              >
-                Marcas <span className={`${styles.navArrow} ${accordion === 'marcas' ? styles.navArrowOpen : ''}`}>▾</span>
-              </button>
-              {accordion === 'marcas' && (
-                <div className={`${styles.mobileAccordionContent} ${styles.mobileCats}`}>
-                  <input
-                    type="text"
-                    placeholder="Buscar marca..."
-                    value={filtroMarca}
-                    onChange={(e) => setFiltroMarca(e.target.value)}
-                    className={styles.mobileBrandsSearch}
-                    aria-label="Buscar marca"
-                  />
-                  {marcasPorLetra.length === 0 && <p className={styles.megaMenuVacio}>No encontramos marcas con ese nombre.</p>}
-                  {/* Igual que Categorías: la letra como título y las marcas debajo, con cuántos productos tiene cada una. */}
-                  {marcasPorLetra.map(({ letra, marcas }) => (
-                    <div key={letra} className={styles.mobileGrupo}>
-                      <div className={styles.mobileLetra}>{letra}</div>
-                      {marcas.map((m) => (
-                        <button key={m.id} type="button" className={styles.mobileSub} onClick={() => irAFiltro('marca', m.id)}>
-                          {m.nombre} <span className={styles.catCount}>{m.count}</span>
-                        </button>
-                      ))}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            <div className={styles.mobileAccordion}>
-              <button
-                type="button"
-                className={styles.mobileAccordionToggle}
-                onClick={() => setAccordion((v) => (v === 'etiquetas' ? null : 'etiquetas'))}
-                aria-expanded={accordion === 'etiquetas'}
-              >
-                Etiquetas <span className={`${styles.navArrow} ${accordion === 'etiquetas' ? styles.navArrowOpen : ''}`}>▾</span>
-              </button>
-              {accordion === 'etiquetas' && (
-                <div className={`${styles.mobileAccordionContent} ${styles.mobileCats}`}>
-                  {(catalogo?.etiquetas ?? []).length > 8 && (
+              <div className={styles.mobileAccordion}>
+                <button
+                  type="button"
+                  className={styles.mobileAccordionToggle}
+                  onClick={() => setAccordion((v) => (v === 'categorias' ? null : 'categorias'))}
+                  aria-expanded={accordion === 'categorias'}
+                >
+                  Categorías <span className={`${styles.navArrow} ${accordion === 'categorias' ? styles.navArrowOpen : ''}`}>▾</span>
+                </button>
+                {accordion === 'categorias' && (
+                  <div className={`${styles.mobileAccordionContent} ${styles.mobileCats}`}>
                     <input
                       type="text"
-                      placeholder="Buscar etiqueta..."
-                      value={filtroEtiqueta}
-                      onChange={(e) => setFiltroEtiqueta(e.target.value)}
+                      placeholder="Buscar categoría o subcategoría..."
+                      value={filtroCategoria}
+                      onChange={(e) => setFiltroCategoria(e.target.value)}
                       className={styles.mobileBrandsSearch}
-                      aria-label="Buscar etiqueta"
+                      aria-label="Buscar categoría o subcategoría"
                     />
-                  )}
-                  {etiquetasFiltradas.length === 0 && <p className={styles.megaMenuVacio}>No encontramos etiquetas con ese nombre.</p>}
-                  {etiquetasFiltradas.map((t) => (
-                    <button key={t.id} type="button" className={styles.mobileSub} onClick={() => irAFiltro('tag', t.id)}>
-                      {t.nombre} <span className={styles.catCount}>{t.count}</span>
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
+                    {arbolCategorias.length === 0 && <p className={styles.megaMenuVacio}>No encontramos categorías con ese nombre.</p>}
+                    {arbolCategorias.map((c) => {
+                      /* Con búsqueda, las que coinciden por una subcategoría se abren solas: lo buscado queda a la vista. */
+                      const abierta = c.subs.length > 0 && (catAbierta === c.id || (c.coincidenSubs && !!filtroCategoria.trim()));
+                      return (
+                        <div key={c.id} className={styles.mobileCat}>
+                          <div className={styles.mobileCatFila}>
+                            <button type="button" className={styles.mobileCatNombre} onClick={() => irAFiltro('cat', c.id)}>
+                              {c.nombre} <span className={styles.catCount}>{c.count}</span>
+                            </button>
+                            {c.subs.length > 0 && (
+                              <button
+                                type="button"
+                                className={styles.mobileCatAbrir}
+                                onClick={() => setCatAbierta((v) => (v === c.id ? null : c.id))}
+                                aria-expanded={abierta}
+                                aria-label={`${abierta ? 'Ocultar' : 'Ver'} las subcategorías de ${c.nombre}`}
+                              >
+                                <span className={`${styles.navArrow} ${abierta ? styles.navArrowOpen : ''}`}>▾</span>
+                              </button>
+                            )}
+                          </div>
+                          {abierta && (
+                            <div className={styles.mobileSubs}>
+                              <button type="button" className={styles.mobileSub} onClick={() => irAFiltro('cat', c.id)}>
+                                <strong>Todo {c.nombre}</strong>
+                              </button>
+                              {c.subs.map((s) => (
+                                <button key={s.id} type="button" className={styles.mobileSub} onClick={() => irASub(c.id, s.id)}>
+                                  {s.nombre} <span className={styles.catCount}>{s.count}</span>
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
 
-            {!minorista && (
-              <button type="button" className={styles.mobileInfoBtn} onClick={() => { setMenuAbierto(false); abrirInfoCompra(); }}>
-                <span aria-hidden>ⓘ</span> Info de compra
-              </button>
-            )}
-            <BotonCuenta className={styles.cuentaMovil} />
-          </nav>
-        </div>
+              <div className={styles.mobileAccordion}>
+                <button
+                  type="button"
+                  className={styles.mobileAccordionToggle}
+                  onClick={() => setAccordion((v) => (v === 'marcas' ? null : 'marcas'))}
+                  aria-expanded={accordion === 'marcas'}
+                >
+                  Marcas <span className={`${styles.navArrow} ${accordion === 'marcas' ? styles.navArrowOpen : ''}`}>▾</span>
+                </button>
+                {accordion === 'marcas' && (
+                  <div className={`${styles.mobileAccordionContent} ${styles.mobileCats}`}>
+                    <input
+                      type="text"
+                      placeholder="Buscar marca..."
+                      value={filtroMarca}
+                      onChange={(e) => setFiltroMarca(e.target.value)}
+                      className={styles.mobileBrandsSearch}
+                      aria-label="Buscar marca"
+                    />
+                    {marcasPorLetra.length === 0 && <p className={styles.megaMenuVacio}>No encontramos marcas con ese nombre.</p>}
+                    {/* Igual que Categorías: la letra como título y las marcas debajo, con cuántos productos tiene cada una. */}
+                    {marcasPorLetra.map(({ letra, marcas }) => (
+                      <div key={letra} className={styles.mobileGrupo}>
+                        <div className={styles.mobileLetra}>{letra}</div>
+                        {marcas.map((m) => (
+                          <button key={m.id} type="button" className={styles.mobileSub} onClick={() => irAFiltro('marca', m.id)}>
+                            {m.nombre} <span className={styles.catCount}>{m.count}</span>
+                          </button>
+                        ))}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div className={styles.mobileAccordion}>
+                <button
+                  type="button"
+                  className={styles.mobileAccordionToggle}
+                  onClick={() => setAccordion((v) => (v === 'etiquetas' ? null : 'etiquetas'))}
+                  aria-expanded={accordion === 'etiquetas'}
+                >
+                  Etiquetas <span className={`${styles.navArrow} ${accordion === 'etiquetas' ? styles.navArrowOpen : ''}`}>▾</span>
+                </button>
+                {accordion === 'etiquetas' && (
+                  <div className={`${styles.mobileAccordionContent} ${styles.mobileCats}`}>
+                    {(catalogo?.etiquetas ?? []).length > 8 && (
+                      <input
+                        type="text"
+                        placeholder="Buscar etiqueta..."
+                        value={filtroEtiqueta}
+                        onChange={(e) => setFiltroEtiqueta(e.target.value)}
+                        className={styles.mobileBrandsSearch}
+                        aria-label="Buscar etiqueta"
+                      />
+                    )}
+                    {etiquetasFiltradas.length === 0 && <p className={styles.megaMenuVacio}>No encontramos etiquetas con ese nombre.</p>}
+                    {etiquetasFiltradas.map((t) => (
+                      <button key={t.id} type="button" className={styles.mobileSub} onClick={() => irAFiltro('tag', t.id)}>
+                        {t.nombre} <span className={styles.catCount}>{t.count}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {!minorista && (
+                <button type="button" className={styles.mobileInfoBtn} onClick={() => { setMenuAbierto(false); abrirInfoCompra(); }}>
+                  <span aria-hidden>ⓘ</span> Info de compra
+                </button>
+              )}
+              <BotonCuenta className={styles.cuentaMovil} />
+            </nav>
+          </div>
+        </>
       )}
     </header>
   );

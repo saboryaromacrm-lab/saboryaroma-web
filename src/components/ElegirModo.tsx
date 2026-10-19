@@ -75,8 +75,8 @@ export function ModoSwitch() {
   if (!config.minoristaActiva) return null;
   const otro: Modo = modo === 'minorista' ? 'mayorista' : 'minorista';
   return (
-    <button type="button" className={styles.switch} onClick={() => cambiar(otro)}>
-      Cambiar a {ETIQUETA_MODO[otro]}
+    <button type="button" className={styles.switch} onClick={() => cambiar(otro)} aria-label={`Cambiar a ${ETIQUETA_MODO[otro]}`}>
+      ⇄ <span className={styles.switchVerbo}>Cambiar a </span>{ETIQUETA_MODO[otro]}
     </button>
   );
 }

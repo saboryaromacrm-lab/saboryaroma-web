@@ -165,6 +165,12 @@
 @media (max-width: 1024px) {
   .grid { grid-template-columns: 1fr 1fr; }
   .colAbout { grid-column: 1 / -1; max-width: none; }
+  /* En pantallas táctiles, enlaces de 40 px de alto: con el dedo, los de 19 px se tocaban de a dos. */
+  .links { gap: 0; }
+  .links a, .contact a { display: inline-flex; align-items: center; min-height: 40px; }
+  .contact { gap: var(--space-1); }
+  .contact li { align-items: center; }
+  .contact li svg { margin-top: 0; }
 }
 
 @media (max-width: 640px) {
@@ -174,5 +180,8 @@
   .social { justify-content: center; }
   .contact { align-items: center; }
   .contact li { text-align: left; }
-  .whatsapp { bottom: env(safe-area-inset-bottom, 14px); right: 14px; width: 50px; height: 50px; }
+  /* La distancia del borde SE SUMA a la zona segura: `env(…, 14px)` daba 0 en los celulares sin muesca y el botón quedaba pegado al borde. */
+  .whatsapp { bottom: calc(14px + env(safe-area-inset-bottom, 0px)); right: 14px; width: 50px; height: 50px; }
+  /* Alto fijo en vez de proporción: con `aspect-ratio` 16/5, el mínimo de 180 px de alto exigía 576 px de ancho y el mapa se salía por la derecha. */
+  .mapWrapper { aspect-ratio: auto; height: 220px; }
 }

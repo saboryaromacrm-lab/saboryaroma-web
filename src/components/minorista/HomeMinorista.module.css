@@ -96,17 +96,25 @@
 @keyframes flotar { 0%, 100% { transform: rotate(var(--giro)) translateY(0); } 50% { transform: rotate(var(--giro)) translateY(-10px); } }
 @keyframes aparecer { from { opacity: 0; transform: rotate(var(--giro)) scale(0.92); } to { opacity: 1; transform: rotate(var(--giro)) scale(1); } }
 
-/* Los puntos que eligen el producto grande: abajo, al centro del hero. */
-.puntos { position: absolute; left: 50%; bottom: 16px; transform: translateX(-50%); display: flex; gap: 8px; z-index: 3; }
+/* Los puntos que eligen el producto grande: abajo, al centro del hero. El botón
+   es el blanco para el dedo (28 px) y el puntito de 12 px se dibuja adentro. */
+.puntos { position: absolute; left: 50%; bottom: 8px; transform: translateX(-50%); display: flex; z-index: 3; }
 .punto {
-  width: 12px; height: 12px; padding: 0;
-  border: 0; border-radius: 50%;
-  background: rgba(11, 59, 46, 0.25);
+  display: flex; align-items: center; justify-content: center;
+  width: 28px; height: 28px; padding: 0;
+  border: 0; background: none;
   cursor: pointer;
+}
+.punto::before {
+  content: '';
+  width: 12px; height: 12px;
+  border-radius: 50%;
+  background: rgba(11, 59, 46, 0.25);
   transition: transform 0.15s, background 0.15s;
 }
-.punto:hover { transform: scale(1.2); }
-.puntoActivo { background: var(--color-primary); }
+.punto:hover::before { transform: scale(1.2); }
+.puntoActivo::before { background: var(--color-primary); }
+.punto:focus-visible { outline: 2px solid var(--color-primary); outline-offset: -4px; border-radius: 50%; }
 
 /* ---- Secciones ---- */
 .seccion { margin-top: clamp(32px, 5vw, 56px); }
@@ -116,7 +124,7 @@
 .fuego { display: inline-block; animation: fuego 1.4s ease-in-out infinite; }
 @keyframes fuego { 0%, 100% { transform: scale(1) rotate(-4deg); } 50% { transform: scale(1.18) rotate(4deg); } }
 @media (prefers-reduced-motion: reduce) { .fuego, .grande, .chica { animation: none; } .grande, .chica { transform: rotate(var(--giro)); } }
-.verTodo { font-weight: 800; color: var(--color-primary); white-space: nowrap; }
+.verTodo { display: inline-flex; align-items: center; min-height: 40px; font-weight: 800; color: var(--color-primary); white-space: nowrap; }
 
 .gridOfertas, .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-5); }
 /* Sin ingresar (0178): el mismo marco cálido, con la invitación a ingresar en vez de las tarjetas. */
@@ -199,7 +207,9 @@
   .heroTexto { text-align: center; }
   .sub { margin-inline: auto; }
   .heroBotones, .sellos { justify-content: center; }
-  .puntos { position: static; transform: none; justify-content: center; margin-top: 4px; }
+  .puntos { position: static; transform: none; justify-content: center; }
+  /* La chica de abajo termina dentro de la escena: si no, flota encima de los puntos. */
+  .chica5 { top: 70%; }
   .beneficiosGrid { grid-template-columns: 1fr; }
 }
 @media (max-width: 640px) {

@@ -112,10 +112,12 @@
   background: rgba(255, 255, 255, 0.14);
   color: inherit;
   font: inherit; font-weight: 700; font-size: 12px;
-  padding: 3px 10px; border-radius: 999px; cursor: pointer;
-  white-space: nowrap;
+  min-height: 32px; padding: 4px 12px; border-radius: 999px; cursor: pointer;
+  white-space: nowrap; flex-shrink: 0;
 }
 .switch:hover { background: rgba(255, 255, 255, 0.28); }
+/* En un celular angosto el botón queda en «⇄ Mayorista»: el aviso de al lado entra entero. */
+@media (max-width: 360px) { .switchVerbo { display: none; } }
 
 @media (prefers-reduced-motion: reduce) {
   .opcion, .opcion::after { transition: none; }
