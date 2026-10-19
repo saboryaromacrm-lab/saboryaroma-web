@@ -21,7 +21,7 @@ type Clave = 'cat' | 'sub' | 'marca' | 'tag';
 const GRUPOS: { titulo: string; clave: Clave }[] = [
   { titulo: 'Categoría', clave: 'cat' },
   { titulo: 'Marca', clave: 'marca' },
-  { titulo: 'Dieta', clave: 'tag' },
+  { titulo: 'Etiquetas', clave: 'tag' },
 ];
 
 /**
@@ -29,7 +29,7 @@ const GRUPOS: { titulo: string; clave: Clave }[] = [
  * compartir el link filtrado. Cada grupo es CONTEXTUAL: sus opciones y contadores
  * se recalculan según lo elegido en los OTROS grupos (no el propio, para poder
  * seguir viendo y sacando la propia selección) — al elegir Marca=NutriSol,
- * Categoría y Dieta solo muestran lo que existe dentro de esa marca.
+ * Categoría y Etiquetas solo muestran lo que existe dentro de esa marca.
  */
 export function ShopFilters({ categorias, subcategorias, marcas, etiquetas, productos }: Props) {
   const router = useRouter();

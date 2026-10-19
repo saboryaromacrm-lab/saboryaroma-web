@@ -160,7 +160,7 @@
 .megaMenuSearch:focus { border-color: var(--color-accent); }
 .megaMenuVacio { font-size: var(--font-size-sm); color: var(--color-gray-500); padding: var(--space-2) 0; }
 /*
- * CATEGORÍAS, MARCAS Y DIETA: UN SOLO ESTILO (2/10/2026). Panel ancho
+ * CATEGORÍAS, MARCAS Y ETIQUETAS: UN SOLO ESTILO (2/10/2026). Panel ancho
  * pero en COLUMNAS DE DIARIO: cada categoría es un bloque (título + sus
  * subcategorías) que no se parte entre columnas, y los bloques se acomodan
  * solos de arriba abajo — una categoría con 12 subcategorías y otra con 2
@@ -197,11 +197,11 @@
   cursor: pointer;
 }
 .catTitulo:hover { color: var(--color-accent-dark); }
-/* El título que no lleva a ningún lado (la letra de Marcas, «Dieta»): mismo aspecto, sin mano ni hover. */
+/* El título que no lleva a ningún lado (la letra de Marcas, «Etiquetas»): mismo aspecto, sin mano ni hover. */
 .catTituloFijo { cursor: default; }
 .catTituloFijo:hover { color: var(--color-primary); }
-/* Dieta: menos opciones, panel más angosto y dos columnas adentro de su bloque. */
-.megaMenuDieta { width: 460px; max-width: 94vw; }
+/* Etiquetas: menos opciones, panel más angosto y dos columnas adentro de su bloque. */
+.megaMenuEtiquetas { width: 460px; max-width: 94vw; }
 .catsGridChico { column-width: 170px; column-gap: var(--space-6); }
 .catsGridChico .catSub { break-inside: avoid; width: calc(100% + 12px); }
 .catSub {
