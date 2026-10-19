@@ -49,6 +49,8 @@ interface Config {
   presupuestoValidezDias: number;
   /** Minorista: envío a domicilio gratis desde este monto (0 = se coordina). */
   envioGratisDesde: number;
+  /** Minorista (0185): la clave de Google Maps; vacía = el checkout sin mapa. */
+  mapsKey: string;
   /** El modo minorista está encendido: se puede elegir modo. */
   minoristaActiva: boolean;
 }
@@ -124,9 +126,9 @@ function configDeCatalogo(c: Catalogo | null): Config {
       montoMinimo: c.montoMinimo, montoMinimoCamioneta: c.montoMinimoCamioneta,
       envioCamionetaActivo: c.envioCamionetaActivo !== false,
       reglasMarca: c.reglasMarca, presupuestoValidezDias: c.presupuestoValidezDias,
-      envioGratisDesde: c.envioGratisDesde ?? 0, minoristaActiva: c.minoristaActiva === true,
+      envioGratisDesde: c.envioGratisDesde ?? 0, mapsKey: c.mapsKey ?? '', minoristaActiva: c.minoristaActiva === true,
     }
-    : { montoMinimo: 0, montoMinimoCamioneta: 0, envioCamionetaActivo: true, reglasMarca: [], presupuestoValidezDias: 7, envioGratisDesde: 0, minoristaActiva: false };
+    : { montoMinimo: 0, montoMinimoCamioneta: 0, envioCamionetaActivo: true, reglasMarca: [], presupuestoValidezDias: 7, envioGratisDesde: 0, mapsKey: '', minoristaActiva: false };
 }
 
 /**

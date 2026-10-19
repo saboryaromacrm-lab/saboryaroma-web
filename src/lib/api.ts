@@ -1,4 +1,4 @@
-import type { Catalogo, Entrega, EntregaMinorista } from './types';
+import type { Catalogo, CotizacionEnvio, Entrega, EntregaMinorista, Punto } from './types';
 import type { Modo } from './modo';
 
 /*
@@ -173,11 +173,24 @@ export const registrarMinorista = (datos: RegistroMinorista) => postJson<EstadoM
 export interface PedidoMinoristaDto {
   entrega: EntregaMinorista;
   direccion?: DireccionEntrega | { guardada: true };
+  /** Dónde recibe, marcado en el mapa (0185): de ahí sale el barrio. */
+  ubicacion?: Punto;
   observaciones?: string;
   items: { productoId: number; cantidad: number; variante?: string }[];
 }
 
-export async function crearPedidoMinorista(dto: PedidoMinoristaDto, tokenMin: string): Promise<{ ok: true; codigo: string; total: number }> {
+/** Cuánto sale recibir en casa (0185): el barrio del punto, el envío, el descuento y las promos. */
+export async function cotizarEnvio(dto: Omit<PedidoMinoristaDto, 'entrega' | 'observaciones'>, tokenMin: string): Promise<CotizacionEnvio> {
+  return manejar<CotizacionEnvio>(await pedir(
+    `${API}/tienda/minorista/envio`,
+    { method: 'POST', headers: { 'Content-Type': 'application/json', ...conSesion(undefined, tokenMin) }, body: JSON.stringify(dto) },
+    TIMEOUT_CATALOGO_MS,
+    'No pudimos calcular el envío. Probá de nuevo en un momento.',
+  ));
+}
+
+/** `total` es la mercadería; `envio`, lo del envío (0 = gratis; null = se coordina; ausente en una API anterior al 0185). */
+export async function crearPedidoMinorista(dto: PedidoMinoristaDto, tokenMin: string): Promise<{ ok: true; codigo: string; total: number; envio?: number | null }> {
   const r = await pedir(
     `${API}/tienda/minorista/pedidos`,
     { method: 'POST', headers: { 'Content-Type': 'application/json', ...conSesion(undefined, tokenMin) }, body: JSON.stringify(dto) },

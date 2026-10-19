@@ -209,6 +209,8 @@ export interface Catalogo {
   minoristaActiva?: boolean;
   /** Minorista: envío a domicilio gratis desde este monto (0 = se coordina). */
   envioGratisDesde?: number;
+  /** Minorista (0185): la clave de Google Maps del navegador; vacía o ausente = el checkout sin mapa. */
+  mapsKey?: string;
   /** La compra mínima mayorista, en los dos modos (para el cartel de elegir modo). Ausente = API anterior. */
   minimoMayorista?: number;
   /**
@@ -271,3 +273,28 @@ export interface ItemCarrito {
 export type Entrega = 'retiro' | 'cadete' | 'camioneta';
 /** Minorista (0173): retiro en el local o envío a domicilio. */
 export type EntregaMinorista = 'retiro' | 'envio';
+
+/** Un punto del mapa (0185). */
+export interface Punto { lat: number; lng: number }
+
+/**
+ * Lo que sale recibir en casa (0185), según el barrio del punto marcado. Lo
+ * calcula el servidor con la misma cuenta del pedido: lo que se ve es lo que se cobra.
+ */
+export interface CotizacionEnvio {
+  /** Hay punto (marcado o el de la dirección guardada): sin él no hay barrio. */
+  conPunto: boolean;
+  barrio: string | null;
+  /** 0 = gratis; null = se coordina por WhatsApp. */
+  envio: number | null;
+  /** % del barrio sobre los productos sin oferta, y cuánto es en pesos. */
+  descuentoPct: number;
+  descuento: number;
+  /** Las promos del barrio que se están usando, en palabras. */
+  promos: string[];
+  /** La promo de hoy que se alcanza comprando un poco más. */
+  proxima: { texto: string; faltan: number } | null;
+  subtotal: number;
+  /** Productos − descuento + envío. */
+  total: number;
+}
