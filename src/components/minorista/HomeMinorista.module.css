@@ -75,14 +75,18 @@
 /*
  * Las fotos: una grande girada y cinco chicas flotando alrededor, un par
  * cortadas por el borde. `mix-blend-mode: multiply` funde el fondo blanco de
- * las fotos con el degradé (va en el enlace, sin `filter`: un filtro lo aísla
- * del fondo y el blanco vuelve a verse).
+ * las fotos con el degradé (va en el botón, sin `filter`: un filtro lo aísla
+ * del fondo y el blanco vuelve a verse). Cada una abre su producto.
  */
 .heroFotos { min-width: 0; }
 .escena { position: relative; aspect-ratio: 1 / 0.92; width: 100%; }
 .grande, .chica {
   position: absolute;
   display: block;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
   mix-blend-mode: multiply;
   animation: flotar 6s ease-in-out infinite;
 }

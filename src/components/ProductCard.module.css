@@ -11,7 +11,8 @@
 }
 .card:hover { box-shadow: var(--shadow-card-hover); transform: translateY(-2px); }
 
-.imageWrap { position: relative; aspect-ratio: 1 / 1; background: var(--color-gray-100); }
+/* `--foto-max`: quien muestra la tarjeta puede ponerle tope al alto de la foto (la ventanita del producto, para que «Agregar» quede a la vista). */
+.imageWrap { position: relative; aspect-ratio: 1 / 1; max-height: var(--foto-max, none); background: var(--color-gray-100); }
 .image { width: 100%; height: 100%; object-fit: contain; padding: var(--space-3); }
 
 .ofertaBadge {
