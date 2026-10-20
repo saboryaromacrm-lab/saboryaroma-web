@@ -2,25 +2,12 @@
 
 import Link from 'next/link';
 import { useCart } from '@/lib/cart';
-import { linkRed, linkWhatsApp, telefonoArgentino } from '@/lib/format';
-import { horarioLegible } from '@/lib/horarios';
+import { linkRed, linkWhatsApp, whatsappLegible } from '@/lib/format';
+import { direccionDe, direccionParaMapa, mapaLink } from '@/lib/locales';
+import { Locales } from './Locales';
 import styles from './Footer.module.css';
 
-/*
- * EL MAPA SIGUE A LA DIRECCIÓN (8/10/2026). Antes era un mapa fijo armado a
- * mano con la ubicación vieja: el dueño cambió la dirección en el ERP
- * (Configuración › Tienda online) a «Sarmiento 1314», el texto cambió y el mapa
- * no. Ahora el mapa y «Abrir en Google Maps» se arman con la MISMA dirección
- * que se muestra arriba. Una dirección sin ciudad («Sarmiento 1314») se busca
- * en Formosa: si no, Google la puede encontrar en cualquier provincia.
- */
-function direccionParaMapa(ubicacion: string) {
-  const d = ubicacion.trim();
-  if (!d) return 'Formosa, Argentina';
-  return /formosa/i.test(d) ? d : `${d}, Formosa, Argentina`;
-}
-const mapaEmbed = (dir: string) => `https://www.google.com/maps?q=${encodeURIComponent(dir)}&hl=es&z=16&output=embed`;
-const mapaLink = (dir: string) => `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(dir)}`;
+const mapaEmbed = (dir: string) => `https://www.google.com/maps?q=${encodeURIComponent(direccionParaMapa(dir))}&hl=es&z=16&output=embed`;
 
 /** Mientras el catálogo carga se muestra la info real de siempre: sin saltos. */
 const CONTACTO_DEFAULT = {
@@ -35,13 +22,12 @@ export function Footer() {
   // Contacto y redes: editables desde el CRM (Web › Configuración del sitio).
   const contacto = { ...CONTACTO_DEFAULT, ...(catalogo?.sitio?.contacto ?? {}) };
   const wa = linkWhatsApp(contacto.whatsapp);
-  const waNum = telefonoArgentino(contacto.whatsapp);
-  const waLegible = waNum ? `+54 9 ${waNum.slice(0, 4)} ${waNum.slice(4)}` : contacto.whatsapp;
+  const waLegible = whatsappLegible(contacto.whatsapp);
   const instagram = linkRed(contacto.instagram, 'instagram.com');
   /* Los locales con su horario (20/10/2026): el mapa va al primero con dirección; sin locales, a la ubicación de contacto. */
   const locales = catalogo?.sitio?.locales ?? [];
-  const direccionDe = (l: { direccion: string; localidad: string }) => [l.direccion, l.localidad].filter(Boolean).join(', ');
-  const dirMapa = direccionParaMapa(direccionDe(locales.find((l) => l.direccion) ?? { direccion: '', localidad: '' }) || String(contacto.ubicacion || ''));
+  const conDireccion = locales.find((l) => l.direccion);
+  const dirMapa = (conDireccion ? direccionDe(conDireccion) : '') || String(contacto.ubicacion || '');
   const facebook = linkRed(contacto.facebook, 'facebook.com');
 
   return (
@@ -97,6 +83,7 @@ export function Footer() {
             <ul className={styles.links}>
               <li><Link href="/">Inicio</Link></li>
               <li><Link href="/tienda">Tienda</Link></li>
+              <li><Link href="/nosotros">Nosotros y preguntas frecuentes</Link></li>
               <li><Link href="/carrito">Carrito</Link></li>
             </ul>
           </div>
@@ -146,26 +133,7 @@ export function Footer() {
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" /><circle cx="12" cy="10" r="3" /></svg>
             {locales.length > 1 ? 'Nuestros locales' : locales.length ? 'Nuestro local' : 'Nuestra Ubicación'}
           </h4>
-          {locales.length > 0 && (
-            <ul className={styles.locales}>
-              {locales.map((l, i) => {
-                const dir = direccionDe(l);
-                const horario = horarioLegible(l);
-                return (
-                  <li key={`${i}-${l.nombre}`} className={styles.local}>
-                    <strong className={styles.localNombre}>{l.nombre || 'Sabor y Aroma'}</strong>
-                    {dir && <a href={mapaLink(direccionParaMapa(dir))} target="_blank" rel="noopener noreferrer">{dir}</a>}
-                    {l.telefono && <a href={`tel:${l.telefono.replace(/\D/g, '')}`}>{l.telefono}</a>}
-                    {horario.length > 0 && (
-                      <dl className={styles.horario}>
-                        {horario.map((h) => <div key={h.dias}><dt>{h.dias}</dt><dd>{h.horas}</dd></div>)}
-                      </dl>
-                    )}
-                  </li>
-                );
-              })}
-            </ul>
-          )}
+          <Locales locales={locales} />
           <div className={styles.mapWrapper}>
             <iframe
               src={mapaEmbed(dirMapa)}

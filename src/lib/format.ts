@@ -37,6 +37,12 @@ export function telLegible(tel: string): string {
   return /^\d{10}$/.test(tel) ? `${tel.slice(0, 3)} ${tel.slice(3, 6)}-${tel.slice(6)}` : tel;
 }
 
+/** «+54 9 3704 621563»: el WhatsApp configurado como se lee (si no es válido, tal cual). */
+export function whatsappLegible(numero: string): string {
+  const n = telefonoArgentino(numero);
+  return n ? `+54 9 ${n.slice(0, 4)} ${n.slice(4)}` : numero;
+}
+
 export function linkWhatsApp(numero: string): string {
   const n = telefonoArgentino(numero);
   return `https://wa.me/${n ? `549${n}` : '5493704621563'}`;

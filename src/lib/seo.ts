@@ -8,7 +8,7 @@
 import type { Metadata } from 'next';
 import { imgSrc } from './api';
 import { linkRed, telefonoArgentino } from './format';
-import { horarioSchema } from './horarios';
+import { horarioSchema } from './locales';
 import { rutaProducto, SITE_URL } from './rutas';
 import type { ItemCatalogo, SitioConfig } from './types';
 

@@ -1,4 +1,26 @@
+/**
+ * LOS LOCALES (20/10/2026): su dirección para el mapa y su horario, para leer
+ * (el pie, /nosotros, /llms.txt) y para Google (schema.org).
+ */
 import type { LocalSitio } from './types';
+
+/** «Sarmiento 1314, Formosa». */
+export const direccionDe = (l: Pick<LocalSitio, 'direccion' | 'localidad'>) => [l.direccion, l.localidad].filter(Boolean).join(', ');
+
+/*
+ * EL MAPA SIGUE A LA DIRECCIÓN (8/10/2026). Antes era un mapa fijo armado a
+ * mano con la ubicación vieja: el dueño cambió la dirección en el ERP
+ * (Configuración › Tienda online) a «Sarmiento 1314», el texto cambió y el mapa
+ * no. Ahora el mapa y «Abrir en Google Maps» se arman con la MISMA dirección
+ * que se muestra arriba. Una dirección sin ciudad («Sarmiento 1314») se busca
+ * en Formosa: si no, Google la puede encontrar en cualquier provincia.
+ */
+export function direccionParaMapa(ubicacion: string) {
+  const d = ubicacion.trim();
+  if (!d) return 'Formosa, Argentina';
+  return /formosa/i.test(d) ? d : `${d}, Formosa, Argentina`;
+}
+export const mapaLink = (dir: string) => `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(direccionParaMapa(dir))}`;
 
 /** Los días como los guarda el ERP, con su nombre corto y el de schema.org (Google). */
 const DIAS = [

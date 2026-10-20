@@ -1,0 +1,42 @@
+.pagina { background: var(--color-gray-50); padding-bottom: 48px; }
+.cuerpo { display: flex; flex-direction: column; gap: var(--space-8); max-width: 860px; padding-block: var(--space-6); }
+
+.titulo { margin: 0 0 var(--space-3); font-size: 28px; line-height: 1.2; color: var(--color-black); text-wrap: balance; }
+.subtitulo { margin: 0 0 var(--space-3); font-size: 20px; color: var(--color-primary); }
+.texto { margin: 0 0 var(--space-3); max-width: 65ch; font-size: var(--font-size-base); line-height: 1.7; color: var(--color-gray-750); }
+
+.acciones { display: flex; flex-wrap: wrap; gap: var(--space-3); margin-top: var(--space-4); }
+.boton {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 10px 18px;
+  border-radius: var(--radius-full);
+  background: var(--color-primary);
+  color: var(--color-white);
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+}
+.boton:hover { background: var(--color-primary-dark); }
+.whatsapp { background: #25d366; }
+.whatsapp:hover { background: #1ebe5b; }
+
+.faq { display: flex; flex-direction: column; gap: var(--space-2); }
+.pregunta {
+  background: var(--color-white);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+}
+.pregunta summary {
+  min-height: 48px;
+  padding: 12px 16px;
+  font-weight: 700;
+  color: var(--color-black);
+  cursor: pointer;
+}
+.pregunta summary:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; border-radius: var(--radius-lg); }
+.pregunta p { margin: 0; padding: 0 16px 14px; line-height: 1.6; color: var(--color-gray-750); }
+
+@media (max-width: 640px) {
+  .titulo { font-size: 22px; }
+}

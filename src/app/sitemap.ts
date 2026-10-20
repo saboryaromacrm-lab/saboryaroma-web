@@ -21,6 +21,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   return [
     { url: url('/'), changeFrequency: 'daily', priority: 1 },
     { url: url('/tienda'), changeFrequency: 'daily', priority: 0.9 },
+    { url: url('/nosotros'), changeFrequency: 'monthly', priority: 0.8 },
     ...cat.categorias.map((c) => ({ url: url(`/tienda?cat=${c.id}`), changeFrequency: 'weekly' as const, priority: 0.7 })),
     ...(cat.subcategorias ?? []).filter((s) => s.categoriaId).map((s) => ({
       url: url(`/tienda?cat=${s.categoriaId}&sub=${s.id}`), changeFrequency: 'weekly' as const, priority: 0.6,

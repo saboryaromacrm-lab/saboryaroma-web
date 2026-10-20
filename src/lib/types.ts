@@ -154,6 +154,8 @@ export interface SitioConfig {
   seo?: SeoSitio;
   /** Los locales con su horario (20/10/2026); vacío = el pie no muestra locales. */
   locales?: LocalSitio[];
+  /** Quiénes somos y las preguntas frecuentes (20/10/2026): /nosotros y /llms.txt. */
+  nosotros?: { texto: string; faq: { pregunta: string; respuesta: string }[] };
 }
 
 /** El título y la descripción del sitio en Google y en WhatsApp, y la imagen para compartir ('' = sin imagen). */
