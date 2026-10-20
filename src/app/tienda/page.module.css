@@ -8,8 +8,9 @@
  * la grilla sobre un crema cálido.
  */
 .nutriPage { background: linear-gradient(180deg, #fdf1e2 0%, #fbf7f0 420px); }
-/* NutriRescate (20/10/2026): la grilla sobre un verde muy suave, debajo del banner. */
+/* NutriRescate (20/10/2026): la grilla sobre un verde muy suave, con aire debajo del banner. */
 .rescatePage { background: linear-gradient(180deg, #eef6e4 0%, var(--color-gray-50) 480px); }
+.rescatePage .layout { padding-top: clamp(28px, 4vw, 48px); }
 .nutriHero {
   position: relative;
   overflow: hidden;

@@ -82,6 +82,8 @@ export function useCompraProducto<T extends HTMLElement = HTMLDivElement>(produc
   const paso = unidad === 'kg' ? 0.5 : 1;
   const precioEfectivo = fuente.oferta?.precioOferta ?? fuente.precio;
   const tieneDescuento = fuente.oferta?.precioOferta != null;
+  /** Cuánto baja frente al precio de lista, en % entero (20/10/2026: la oferta se tiene que leer de un vistazo). */
+  const ahorroPct = tieneDescuento && fuente.precio > 0 ? Math.round((1 - precioEfectivo / fuente.precio) * 100) : 0;
   const enStock = fuente.enStock;
 
   /*
@@ -91,9 +93,12 @@ export function useCompraProducto<T extends HTMLElement = HTMLDivElement>(produc
    */
   const multi = esMultiUnidad(fuente.oferta) ? fuente.oferta : null;
   const porUnidad = variante?.paquetesPorUnidad ?? 1;
+  const cadaUna = multi ? totalConOferta(multi, fuente.precio / porUnidad, loteDe(multi)) / loteDe(multi) : 0;
   const promo = multi && {
     texto: textoPromo(multi, money),
-    cadaUna: totalConOferta(multi, fuente.precio / porUnidad, loteDe(multi)) / loteDe(multi),
+    cadaUna,
+    lote: loteDe(multi),
+    ahorroPct: fuente.precio > 0 ? Math.round((1 - cadaUna / (fuente.precio / porUnidad)) * 100) : 0,
   };
 
   /*
@@ -142,7 +147,7 @@ export function useCompraProducto<T extends HTMLElement = HTMLDivElement>(produc
   return {
     modo, conPrecios, cantidad, setCantidad, paso, restar, sumar, sumarBloqueado,
     variante, grupos, grupo, elegir, elegirGrupo, precioDe,
-    fuente, unidad, precioEfectivo, tieneDescuento, enStock, promo,
+    fuente, unidad, precioEfectivo, tieneDescuento, ahorroPct, enStock, promo,
     yaEnCarrito, disponible, conTope, puedoSumar, sinMargen, recortado,
     cajaQueConviene, agregado, agregarAlCarrito, raizRef,
   };

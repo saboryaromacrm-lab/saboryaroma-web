@@ -9,3 +9,4 @@
 }
 .titulo { display: block; font-size: 16px; font-weight: 800; letter-spacing: -0.01em; }
 .precio { display: block; margin-top: 2px; font-size: 14px; font-weight: 600; opacity: 0.95; }
+.precio strong { font-weight: 900; }

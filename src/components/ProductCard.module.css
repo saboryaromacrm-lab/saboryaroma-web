@@ -27,7 +27,6 @@
   font-size: 10.5px; font-weight: 800; letter-spacing: 0.02em;
   padding: 4px 8px; border-radius: var(--radius-full);
 }
-.priceOld { font-size: var(--font-size-sm); font-weight: 600; color: var(--color-gray-500); text-decoration: line-through; margin-right: 6px; }
 
 .tags { position: absolute; top: 8px; left: 8px; display: flex; flex-wrap: wrap; gap: 4px; max-width: calc(100% - 16px); }
 .tag {
@@ -75,6 +74,20 @@
 .nameLink { color: inherit; }
 .nameLink:hover { text-decoration: underline; }
 .price { font-size: var(--font-size-lg); font-weight: 800; color: var(--color-primary); margin-bottom: var(--space-2); }
+/* El precio de lista, arriba del de la oferta: chico, gris y con un tachado fino. */
+.precioLista { margin-top: 2px; font-size: 12.5px; font-weight: 500; color: var(--color-gray-500); }
+.precioLista s { margin-left: 3px; text-decoration-thickness: 1px; text-decoration-color: rgba(107, 114, 128, 0.7); }
+/* Cuánto baja: una píldora cálida al lado del precio. */
+.ahorroPct {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  background: #fff1df;
+  color: var(--color-oferta-dark);
+  font-size: 12px; font-weight: 800; letter-spacing: 0;
+  vertical-align: 0.25em;
+}
 .perKg { font-size: var(--font-size-xs); font-weight: 500; color: var(--color-gray-500); }
 
 .actions { display: flex; flex-direction: column; gap: 8px; margin-top: auto; }
@@ -292,7 +305,6 @@
 :global(html[data-modo='minorista']) .brand { color: var(--color-primary-light); }
 :global(html[data-modo='minorista']) .name { font-size: var(--font-size-base); font-weight: 700; }
 :global(html[data-modo='minorista']) .price { font-size: 1.55rem; letter-spacing: -0.02em; }
-:global(html[data-modo='minorista']) .priceOld { font-size: var(--font-size-base); }
 :global(html[data-modo='minorista']) .opcion { border-radius: 14px; padding: 6px 12px; }
 :global(html[data-modo='minorista']) .opcionPrecio { display: block; font-weight: 600; font-size: 11px; opacity: 0.8; }
 :global(html[data-modo='minorista']) .addBtn { border-radius: var(--radius-full); font-size: var(--font-size-base); padding: 12px; }

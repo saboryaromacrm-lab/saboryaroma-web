@@ -125,9 +125,10 @@ export function ProductRow({ producto }: { producto: ItemCatalogo }) {
         </div>
       ) : (<>
       <div className={styles.precio}>
-        {c.tieneDescuento && <s className={styles.precioViejo}>{money(fuente.precio)}</s>}
-        <span className={styles.precioValor}>{money(precioEfectivo)}</span>
-        {porQue && <span className={styles.precioRef}>{porQue}</span>}
+        {/* Como la tarjeta (20/10/2026): el de lista tachado fino; en una promo de varias unidades, lo que sale cada una llevando el lote. */}
+        {(c.tieneDescuento || c.promo) && <span className={styles.precioViejo}>Lista <s>{money(fuente.precio)}</s></span>}
+        <span className={styles.precioValor}>{money(c.promo ? c.promo.cadaUna : precioEfectivo)}</span>
+        {c.promo ? <span className={styles.precioRef}>c/u llevando {c.promo.lote}</span> : porQue && <span className={styles.precioRef}>{porQue}</span>}
       </div>
 
       <div className={styles.compra}>

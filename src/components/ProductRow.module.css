@@ -84,7 +84,8 @@
 
 /* ---- Precio ---- */
 .precio { grid-area: precio; display: flex; flex-direction: column; align-items: flex-end; line-height: 1.2; min-width: 96px; }
-.precioViejo { font-size: 12px; font-weight: 600; color: var(--color-gray-500); }
+.precioViejo { font-size: 12px; font-weight: 500; color: var(--color-gray-500); }
+.precioViejo s { margin-left: 3px; text-decoration-thickness: 1px; text-decoration-color: rgba(107, 114, 128, 0.7); }
 .precioValor { font-size: 19px; font-weight: 800; color: var(--color-primary); font-variant-numeric: tabular-nums; white-space: nowrap; }
 .precioRef { font-size: 11.5px; color: var(--color-gray-500); white-space: nowrap; }
 

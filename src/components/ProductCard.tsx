@@ -24,7 +24,7 @@ import styles from './ProductCard.module.css';
 export function ProductCard({ producto, ficha = false }: { producto: ItemCatalogo; ficha?: boolean }) {
   const {
     modo, conPrecios, cantidad, restar, sumar, sumarBloqueado, variante, grupos, grupo, elegir, elegirGrupo, precioDe,
-    fuente, unidad, precioEfectivo, tieneDescuento, enStock, promo, yaEnCarrito, disponible, conTope, puedoSumar,
+    fuente, unidad, precioEfectivo, tieneDescuento, ahorroPct, enStock, promo, yaEnCarrito, disponible, conTope, puedoSumar,
     sinMargen, recortado, cajaQueConviene, agregado, agregarAlCarrito, raizRef: cardRef,
   } = useCompraProducto<HTMLDivElement>(producto);
   const imgRef = useRef<HTMLImageElement>(null);
@@ -135,14 +135,24 @@ export function ProductCard({ producto, ficha = false }: { producto: ItemCatalog
           </div>
         )}
         {/* Sin haber ingresado, en lugar del precio, el botón para ingresar (0155). */}
-        {!conPrecios ? <PrecioOculto /> : <div className={styles.price}>
-          {tieneDescuento && <span className={styles.priceOld}>{money(fuente.precio)}</span>}
+        {/*
+          * EL PRECIO CON OFERTA (20/10/2026, pedido del dueño: «aclará el precio
+          * de lista y tachalo delicadamente, que se vea bien la oferta»): arriba,
+          * chico y tachado fino, el de lista; abajo el que se paga, con cuánto
+          * baja. En las promos de varias unidades el que se paga lo dice el cartel
+          * naranja (cada una, llevando el lote): el de lista no queda grande y suelto.
+          */}
+        {conPrecios && (tieneDescuento || promo) && (
+          <span className={styles.precioLista}>Precio de lista <s>{money(fuente.precio)}</s></span>
+        )}
+        {!conPrecios ? <PrecioOculto /> : !promo && <div className={styles.price}>
           {money(precioEfectivo)}{unidad === 'kg' && <span className={styles.perKg}> /kg</span>}
           {variante && (variante.paquetesPorUnidad ?? 1) > 1 ? (
             <span className={styles.perKg}> · {money(precioEfectivo / (variante.paquetesPorUnidad ?? 1))} c/u</span>
           ) : variante && variante.kgPorUnidad !== 1 && (
             <span className={styles.perKg}> · {money((precioEfectivo) / variante.kgPorUnidad)} /kg</span>
           )}
+          {ahorroPct > 0 && <span className={styles.ahorroPct}>−{ahorroPct}%</span>}
         </div>}
         {conPrecios && promo && <PromoLote promo={promo} />}
         {/* Cuánto se ahorra frente al minorista (el precio de mostrador), con la cantidad elegida. */}

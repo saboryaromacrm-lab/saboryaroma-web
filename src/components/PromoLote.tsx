@@ -13,7 +13,9 @@ export default function PromoLote({ promo }: { promo: Promo }) {
   return (
     <div className={styles.promo}>
       <strong className={styles.titulo}>{promo.texto},</strong>
-      <span className={styles.precio}>{money(promo.cadaUna)} cada una</span>
+      <span className={styles.precio}>
+        {money(promo.cadaUna)} cada una{promo.ahorroPct > 0 && <> · <strong>ahorrás {promo.ahorroPct}%</strong></>}
+      </span>
     </div>
   );
 }
