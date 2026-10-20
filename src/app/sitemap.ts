@@ -2,6 +2,7 @@ import type { MetadataRoute } from 'next';
 import { estaCerrada, getCatalogo } from '@/lib/api';
 import { MODO_INICIAL } from '@/lib/modo';
 import { rutaProducto, SITE_URL } from '@/lib/rutas';
+import { URL_NUTRIRESCATE } from '@/lib/nutrirescate';
 
 /* Se arma al pedirlo, con el catálogo de ese momento: al construir la imagen la API no está. */
 export const dynamic = 'force-dynamic';
@@ -22,6 +23,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: url('/'), changeFrequency: 'daily', priority: 1 },
     { url: url('/tienda'), changeFrequency: 'daily', priority: 0.9 },
     { url: url('/nosotros'), changeFrequency: 'monthly', priority: 0.8 },
+    ...(cat.items.some((p) => p.porVencer) ? [{ url: url(URL_NUTRIRESCATE), changeFrequency: 'daily' as const, priority: 0.8 }] : []),
     ...cat.categorias.map((c) => ({ url: url(`/tienda?cat=${c.id}`), changeFrequency: 'weekly' as const, priority: 0.7 })),
     ...(cat.subcategorias ?? []).filter((s) => s.categoriaId).map((s) => ({
       url: url(`/tienda?cat=${s.categoriaId}&sub=${s.id}`), changeFrequency: 'weekly' as const, priority: 0.6,

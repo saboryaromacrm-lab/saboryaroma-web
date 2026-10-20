@@ -6,6 +6,8 @@ import { ProductCarousel } from '@/components/ProductCarousel';
 import { HeroSlider } from '@/components/HeroSlider';
 import { MarcasCarousel } from '@/components/MarcasCarousel';
 import { HomeMinorista } from '@/components/minorista/HomeMinorista';
+import { NutriRescateBanner } from '@/components/NutriRescate';
+import { enRescate } from '@/lib/nutrirescate';
 import { metaPagina } from '@/lib/seo';
 import styles from './page.module.css';
 
@@ -33,12 +35,19 @@ export default async function HomePage() {
   const seleccion = destacados.length ? destacados : cat.items.slice(0, 8);
   const enOferta = cat.items.filter((p) => p.oferta);
   const reingresados = cat.items.filter((p) => p.reingreso && !p.oferta);
+  const rescate = enRescate(cat.items);
 
   return (
     <div>
       <HeroSlider sitio={cat.sitio} />
 
       <ProductCarousel id="ofertas" variant="ofertas" titulo="Ofertas" subtitulo="Precios especiales por tiempo limitado" productos={enOferta} />
+      {/* NutriRescate (20/10/2026): lo próximo a vencer, si hay. */}
+      {rescate.length > 0 && (
+        <div className={`container ${styles.rescate}`}>
+          <NutriRescateBanner items={rescate} conPrecios={cat.conPrecios !== false} enPortada />
+        </div>
+      )}
       <ProductCarousel titulo="Volvieron a stock" subtitulo="Productos que estaban agotados y ya podés volver a pedir" productos={reingresados} />
 
       {cat.categorias.length > 0 && (

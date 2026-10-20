@@ -7,6 +7,8 @@ import { ShopFilters } from '@/components/ShopFilters';
 import { Migas } from '@/components/Migas';
 import { IngresarParaComprar } from '@/components/Ingreso';
 import { LEMA_NUTRIOFERTAS, NUTRIOFERTAS, mayorDescuento } from '@/lib/nutriofertas';
+import { NUTRIRESCATE, URL_NUTRIRESCATE, enRescate } from '@/lib/nutrirescate';
+import { NutriRescateBanner } from '@/components/NutriRescate';
 import { esMultiUnidad } from '@/lib/oferta';
 import { metaPagina, productoSchema } from '@/lib/seo';
 import type { Catalogo, ItemCatalogo } from '@/lib/types';
@@ -16,7 +18,7 @@ type Params = Record<string, string | undefined>;
 
 const idsDe = (v?: string) => new Set((v ?? '').split(',').filter(Boolean).map(Number));
 /** Los parámetros que eligen qué se ve, en orden fijo: para comparar la dirección pedida con la canónica. */
-const FILTROS = ['cat', 'sub', 'marca', 'tag', 'oferta', 'q'];
+const FILTROS = ['cat', 'sub', 'marca', 'tag', 'oferta', 'rescate', 'q'];
 const firma = (p: Params) => FILTROS.filter((k) => p[k]).map((k) => `${k}=${p[k]}`).join('&');
 
 /**
@@ -37,6 +39,8 @@ function paginaDe(cat: Catalogo, sp: Params) {
   const soloOfertas = sp.oferta === '1';
   /** En la minorista es la página de NutriOfertas: con su propio encabezado y su fondo (17/10/2026). */
   const nutri = soloOfertas && cat.modo === 'minorista';
+  /** `?rescate=1`: NutriRescate, lo próximo a vencer (20/10/2026), en los dos modos. */
+  const soloRescate = sp.rescate === '1';
 
   const items = cat.items.filter((p: ItemCatalogo) => {
     if (cats.size && (!p.categoriaId || !cats.has(p.categoriaId))) return false;
@@ -45,6 +49,7 @@ function paginaDe(cat: Catalogo, sp: Params) {
     if (tags.size && !p.etiquetas.some((e) => tags.has(e.id))) return false;
     if (q && !norm(p.nombre).includes(q) && !norm(p.marca).includes(q)) return false;
     if (soloOfertas && !p.oferta) return false;
+    if (soloRescate && !p.porVencer) return false;
     return true;
   });
 
@@ -63,6 +68,8 @@ function paginaDe(cat: Catalogo, sp: Params) {
     miga = `Resultados para "${busqueda}"`; nombre = miga;
   } else if (soloOfertas) {
     miga = nutri ? NUTRIOFERTAS : 'Ofertas'; nombre = miga; ruta = '/tienda?oferta=1';
+  } else if (soloRescate) {
+    miga = NUTRIRESCATE; nombre = miga; ruta = URL_NUTRIRESCATE;
   } else if (subUnica && cats.size <= 1 && !marcasSel.size && !tags.size) {
     const padre = cat.categorias.find((c) => c.id === subUnica.categoriaId);
     if (padre) migaPadre = { texto: padre.nombre, href: `/tienda?cat=${padre.id}` };
@@ -78,7 +85,8 @@ function paginaDe(cat: Catalogo, sp: Params) {
   }
   const canonica = Object.fromEntries(new URLSearchParams(ruta.split('?')[1] ?? ''));
   const indexar = !busqueda && firma(canonica) === firma(sp);
-  return { items, miga, migaPadre, nombre, ruta, indexar, soloOfertas, nutri };
+  /* En NutriRescate, solo lo que tiene stock y lo que vence antes, primero. */
+  return { items: soloRescate ? enRescate(items) : items, miga, migaPadre, nombre, ruta, indexar, soloOfertas, nutri, soloRescate };
 }
 
 export async function generateMetadata({ searchParams }: { searchParams: Promise<Params> }) {
@@ -90,7 +98,9 @@ export async function generateMetadata({ searchParams }: { searchParams: Promise
     titulo: pg.nombre,
     descripcion: pg.ruta === '/tienda'
       ? `Catálogo completo de Sabor y Aroma (Formosa): ${n} naturales, sin TACC y orgánicos para comprar online.`
-      : `${pg.nombre} en Sabor y Aroma (Formosa): ${n} para comprar online. Retirás en el local o te lo llevamos.`,
+      : pg.soloRescate
+        ? `${NUTRIRESCATE}: productos próximos a vencer con precio reducido en Sabor y Aroma (Formosa). Aprovechalos y ayudanos a no desperdiciar alimentos.`
+        : `${pg.nombre} en Sabor y Aroma (Formosa): ${n} para comprar online. Retirás en el local o te lo llevamos.`,
     ruta: pg.ruta,
     indexar: pg.indexar,
   });
@@ -150,13 +160,13 @@ export default async function TiendaPage({
     );
   }
 
-  const { items, miga, migaPadre, nombre, soloOfertas, nutri } = paginaDe(cat, sp);
+  const { items, miga, migaPadre, nombre, soloOfertas, nutri, soloRescate } = paginaDe(cat, sp);
   const titulo = soloOfertas ? `🔥 ${nombre}` : nombre;
   /** Sin ingresar no viajan precios ni ofertas (0155 / 0178): la página de ofertas invita a ingresar. */
   const sinSesion = cat.conPrecios === false;
 
   return (
-    <div className={`${styles.shopPage} ${nutri ? styles.nutriPage : ''}`}>
+    <div className={`${styles.shopPage} ${nutri ? styles.nutriPage : ''} ${soloRescate ? styles.rescatePage : ''}`}>
       <script
         type="application/ld+json"
         // eslint-disable-next-line react/no-danger
@@ -170,7 +180,9 @@ export default async function TiendaPage({
       ]}
       />
 
-      {nutri ? (
+      {soloRescate ? (
+        <NutriRescateBanner items={items} conPrecios={!sinSesion} />
+      ) : nutri ? (
         <NutriOfertasHero items={items} sinSesion={sinSesion} />
       ) : (
         <div className={styles.headerBar}>
@@ -188,7 +200,7 @@ export default async function TiendaPage({
           {soloOfertas && sinSesion ? (
             <IngresarParaComprar />
           ) : items.length === 0 ? (
-            <p className={styles.vacio}>No se encontraron productos que coincidan con tu selección.</p>
+            <p className={styles.vacio}>{soloRescate ? `Hoy no hay productos en ${NUTRIRESCATE}.` : 'No se encontraron productos que coincidan con tu selección.'}</p>
           ) : cat.vistaLista ? (
             <div className={styles.lista}>
               <div className={styles.listaCabecera} aria-hidden="true">

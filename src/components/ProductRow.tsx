@@ -3,6 +3,7 @@
 import { useRef } from 'react';
 import Link from 'next/link';
 import { rutaProducto } from '@/lib/rutas';
+import { textoVence } from '@/lib/nutrirescate';
 import { useCompraProducto } from '@/lib/useCompraProducto';
 import { COLORES_TAG, COLOR_TAG_DEFAULT } from '@/lib/etiquetas';
 import { money, cant } from '@/lib/format';
@@ -44,6 +45,7 @@ export function ProductRow({ producto }: { producto: ItemCatalogo }) {
           {producto.marca && <span className={styles.marca}>{producto.marca}</span>}
           {fuente.oferta && <span className={styles.chipOferta}>{fuente.oferta.badge}</span>}
           {!fuente.oferta && producto.reingreso && <span className={styles.chipVolvio}>¡Volvió!</span>}
+          {producto.porVencer && <span className={styles.chipVence}>⏳ {textoVence(producto.venceEl)}</span>}
         </div>
         <h3 className={styles.nombre}><Link href={rutaProducto(producto)} className={styles.nombreLink}>{producto.nombre}</Link></h3>
         {(etiquetas.length > 0 || c.grupos.length === 1) && (

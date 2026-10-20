@@ -4,6 +4,7 @@ import { useRef } from 'react';
 import Link from 'next/link';
 import { imgSrc } from '@/lib/api';
 import { rutaProducto } from '@/lib/rutas';
+import { textoVence } from '@/lib/nutrirescate';
 import { useCompraProducto } from '@/lib/useCompraProducto';
 import { COLORES_TAG, COLOR_TAG_DEFAULT } from '@/lib/etiquetas';
 import { money, cant } from '@/lib/format';
@@ -66,6 +67,8 @@ export function ProductCard({ producto, ficha = false }: { producto: ItemCatalog
       </div>
 
       <div className={styles.content}>
+        {/* NutriRescate (20/10/2026): cuándo vence, a la vista antes que el nombre. */}
+        {producto.porVencer && <span className={styles.vence}>⏳ {textoVence(producto.venceEl)}</span>}
         {producto.marca && <span className={styles.brand}>{producto.marca}</span>}
         {ficha
           ? <h1 className={styles.name}>{producto.nombre}</h1>

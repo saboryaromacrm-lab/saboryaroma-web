@@ -1,0 +1,116 @@
+/*
+ * NUTRIRESCATE (20/10/2026): el verde de la casa (el de cada modo) con lima, y
+ * hojas de fondo apenas visibles. Del original se tomó la idea —sello a la
+ * izquierda, el porqué a la derecha— y se la vistió con la marca.
+ */
+.banner {
+  --nr-lima: #d7f36b;
+  position: relative;
+  overflow: hidden;
+  color: #fff;
+  background:
+    radial-gradient(460px 260px at 88% 10%, rgba(215, 243, 107, 0.22), transparent 65%),
+    radial-gradient(380px 220px at 4% 105%, rgba(255, 255, 255, 0.12), transparent 70%),
+    linear-gradient(125deg, var(--color-primary-dark) 0%, var(--color-primary) 55%, var(--color-primary-light) 100%);
+}
+/* Las hojas de fondo: un SVG repetido, apenas visible. */
+.banner::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: 0.08;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140' viewBox='0 0 140 140'%3E%3Cg fill='none' stroke='%23fff' stroke-width='3'%3E%3Cpath d='M30 70c0-22 18-36 40-36 0 22-18 36-40 36Zm0 0 40-36'/%3E%3Cpath d='M92 120c0-14 11-23 26-23 0 14-11 23-26 23Zm0 0 26-23'/%3E%3C/g%3E%3C/svg%3E");
+  pointer-events: none;
+}
+/* En la portada es una tarjeta, no una franja. */
+.enPortada { border-radius: var(--radius-xl); box-shadow: 0 18px 40px -22px rgba(7, 38, 25, 0.55); }
+
+.inner {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  align-items: center;
+  gap: clamp(20px, 4vw, 56px);
+  padding-block: clamp(28px, 4vw, 44px);
+}
+.enPortada .inner { padding-inline: clamp(20px, 4vw, 44px); }
+
+.marca { display: flex; align-items: center; gap: clamp(14px, 2.5vw, 28px); }
+
+.sello {
+  flex-shrink: 0;
+  width: clamp(130px, 16vw, 190px);
+  height: auto;
+  color: #fff;
+  overflow: visible;
+  filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.18));
+}
+.selloAro { fill: currentColor; font-size: 14px; font-weight: 800; letter-spacing: 2.2px; }
+.selloHoja { fill: var(--nr-lima); }
+.selloNutri { fill: var(--nr-lima); font-size: 25px; font-weight: 800; letter-spacing: -0.5px; }
+.selloRescate { fill: currentColor; font-size: 27px; font-weight: 900; letter-spacing: -0.5px; }
+
+/* El nombre: «Nutri» lleno de lima y «RESCATE» calado en blanco, como el título del original. */
+.titulo {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  font-size: clamp(32px, 4.6vw, 58px);
+  font-weight: 900;
+  line-height: 0.95;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+.nutri { color: var(--nr-lima); }
+.rescate { color: transparent; -webkit-text-stroke: 2px #fff; }
+@supports not (-webkit-text-stroke: 1px) {
+  .rescate { color: #fff; }
+}
+
+.texto { display: flex; flex-direction: column; align-items: flex-start; gap: 12px; }
+.lema { margin: 0; max-width: 46ch; font-size: clamp(17px, 1.7vw, 21px); font-weight: 700; line-height: 1.4; text-wrap: balance; }
+.compromiso { margin: 0; max-width: 46ch; font-size: clamp(15px, 1.4vw, 17px); line-height: 1.5; opacity: 0.9; }
+
+.datos { list-style: none; margin: 4px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+.datos li {
+  padding: 7px 14px;
+  border-radius: var(--radius-full);
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  font-size: 14px; font-weight: 600;
+}
+.datos strong { font-weight: 900; color: var(--nr-lima); }
+.vacio { margin: 0; font-size: 15px; font-weight: 600; opacity: 0.9; }
+
+.cta {
+  display: inline-flex;
+  align-items: center;
+  min-height: 46px;
+  margin-top: 4px;
+  padding: 11px 22px;
+  border-radius: var(--radius-full);
+  background: var(--nr-lima);
+  color: var(--color-primary-dark);
+  font-size: 15px; font-weight: 900;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.cta:hover { transform: translateY(-2px); box-shadow: 0 10px 20px -10px rgba(0, 0, 0, 0.45); }
+.cta:focus-visible { outline: 3px solid #fff; outline-offset: 3px; }
+
+.condiciones { font-size: 13px; }
+.condiciones summary { cursor: pointer; font-weight: 700; text-decoration: underline; text-underline-offset: 3px; }
+.condiciones summary:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+.condiciones p { margin: 8px 0 0; max-width: 52ch; line-height: 1.5; opacity: 0.9; }
+
+@media (max-width: 820px) {
+  .inner { grid-template-columns: minmax(0, 1fr); justify-items: center; text-align: center; }
+  .marca { flex-direction: column; }
+  .titulo { align-items: center; }
+  .texto { align-items: center; }
+  .datos { justify-content: center; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cta { transition: none; }
+  .cta:hover { transform: none; }
+}

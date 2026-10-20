@@ -1,3 +1,5 @@
+/* NutriRescate en la portada mayorista (20/10/2026): con aire arriba, después de las ofertas. */
+.rescate { margin-top: var(--space-8); }
 .sectionTitle { font-size: 26px; font-weight: 700; color: var(--color-black); margin: 0 0 4px; }
 .sectionSub { color: var(--color-gray-550); margin: 0 0 var(--space-5); }
 

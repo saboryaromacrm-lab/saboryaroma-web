@@ -8,6 +8,8 @@ import { HeroFotos } from './HeroFotos';
 import { EnvioGratisBanner } from './EnvioGratisBanner';
 import { IngresarParaComprar } from '@/components/Ingreso';
 import { LEMA_NUTRIOFERTAS, NUTRIOFERTAS, URL_NUTRIOFERTAS } from '@/lib/nutriofertas';
+import { enRescate } from '@/lib/nutrirescate';
+import { NutriRescateBanner } from '@/components/NutriRescate';
 import type { Catalogo, ItemCatalogo, PortadaMinorista } from '@/lib/types';
 import styles from './HomeMinorista.module.css';
 
@@ -58,6 +60,7 @@ function fotosDelHero(items: ItemCatalogo[]) {
 export function HomeMinorista({ cat }: { cat: Catalogo }) {
   const p = cat.sitio.minorista ?? VACIO;
   const enOferta = cat.items.filter((x) => x.oferta && x.enStock);
+  const rescate = enRescate(cat.items);
   /* Sin ingresar no viajan precios ni ofertas (0178): las NutriOfertas se anuncian e invitan a ingresar. */
   const sinSesion = cat.conPrecios === false;
   const destacados = cat.items.filter((x) => x.destacado);
@@ -141,6 +144,13 @@ export function HomeMinorista({ cat }: { cat: Catalogo }) {
             </div>
           )}
         </section>
+      )}
+
+      {/* NutriRescate (20/10/2026): lo próximo a vencer, si hay, como tarjeta que lleva a su sección. */}
+      {rescate.length > 0 && (
+        <div className={`container ${styles.seccion}`}>
+          <NutriRescateBanner items={rescate} conPrecios={!sinSesion} enPortada />
+        </div>
       )}
 
       {seleccion.length > 0 && (

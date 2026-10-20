@@ -27,6 +27,9 @@ export interface OfertaItem {
   porcentaje?: number;
   /** Pack: lo que vale el grupo de `lleva`. */
   precioPack?: number;
+  /** Promo por vencimiento (NutriRescate, 20/10/2026) y hasta cuándo vale, `AAAA-MM-DD`. */
+  porVencer?: boolean;
+  venceEl?: string | null;
 }
 
 /**
@@ -106,6 +109,13 @@ export interface ItemCatalogo {
   reingreso: boolean;
   /** Solo el granel: las opciones del selector (bolsa del producto y paquetes con lista mayorista). */
   variantes?: Variante[];
+  /**
+   * NUTRIRESCATE (20/10/2026): alguna opción tiene una promo por vencimiento,
+   * y la fecha más cercana (`AAAA-MM-DD`, null = sin fecha). Viaja aun sin
+   * sesión: la sección muestra qué hay, el precio queda para quien ingresó.
+   */
+  porVencer?: boolean;
+  venceEl?: string | null;
 }
 
 export interface ReglaMarca {

@@ -34,7 +34,7 @@
 .nombreLink { color: inherit; }
 .nombreLink:hover { text-decoration: underline; }
 .chips { display: flex; flex-wrap: wrap; gap: 4px; }
-.chip, .chipMas, .chipTamano, .chipOferta, .chipVolvio {
+.chip, .chipMas, .chipTamano, .chipOferta, .chipVolvio, .chipVence {
   font-size: 10px; font-weight: 800; letter-spacing: 0.02em; white-space: nowrap;
   padding: 2px 7px; border-radius: var(--radius-full);
 }
@@ -42,6 +42,7 @@
 .chipTamano { background: var(--color-gray-150); color: var(--color-gray-700); }
 .chipOferta { background: var(--color-oferta); color: var(--color-white); }
 .chipVolvio { background: var(--color-primary); color: var(--color-white); }
+.chipVence { background: #fff1df; color: var(--color-oferta-dark); }
 
 /* Tamaños del granel: píldoras; la elegida llena. */
 .opciones { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }

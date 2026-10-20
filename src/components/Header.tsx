@@ -11,6 +11,7 @@ import { MiniCart } from '@/components/MiniCart';
 import { BotonCuenta } from '@/components/Ingreso';
 import { ModoSwitch } from '@/components/ElegirModo';
 import { NUTRIOFERTAS, URL_NUTRIOFERTAS } from '@/lib/nutriofertas';
+import { NUTRIRESCATE, URL_NUTRIRESCATE } from '@/lib/nutrirescate';
 import type { Termino } from '@/lib/types';
 import styles from './Header.module.css';
 
@@ -45,6 +46,8 @@ export function Header() {
   const minorista = modo === 'minorista';
   /** Minorista con ofertas vigentes: el acceso a NutriOfertas va en el encabezado y en el menú del celular. */
   const conNutriOfertas = minorista && (catalogo?.items.some((p) => p.oferta) ?? false);
+  /** Con algo próximo a vencer en stock (20/10/2026), NutriRescate en el menú, en los dos modos. */
+  const conRescate = catalogo?.items.some((p) => p.porVencer && p.enStock) ?? false;
   const router = useRouter();
   const pathname = usePathname();
   const [menuAbierto, setMenuAbierto] = useState(false);
@@ -453,6 +456,7 @@ export function Header() {
                 </div>
               )}
             </div>
+            {conRescate && <Link href={URL_NUTRIRESCATE} className={styles.navLink}>⏳ {NUTRIRESCATE}</Link>}
           </nav>
 
           <div className={styles.actions}>
@@ -562,6 +566,9 @@ export function Header() {
               <Link href="/tienda" className={styles.mobileNavLink} onClick={() => setMenuAbierto(false)}>Tienda</Link>
               {conNutriOfertas && (
                 <Link href={URL_NUTRIOFERTAS} className={styles.mobileNavLink} onClick={() => setMenuAbierto(false)}>🔥 {NUTRIOFERTAS}</Link>
+              )}
+              {conRescate && (
+                <Link href={URL_NUTRIRESCATE} className={styles.mobileNavLink} onClick={() => setMenuAbierto(false)}>⏳ {NUTRIRESCATE}</Link>
               )}
 
               <div className={styles.mobileAccordion}>

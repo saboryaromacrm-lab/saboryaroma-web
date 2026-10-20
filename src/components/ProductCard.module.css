@@ -61,6 +61,16 @@
   overflow: hidden;
   min-height: 2.6em;
 }
+/* NutriRescate (20/10/2026): cuándo vence, en una píldora cálida arriba de la marca. */
+.vence {
+  align-self: flex-start;
+  margin-bottom: 4px;
+  padding: 3px 9px;
+  border-radius: var(--radius-full);
+  background: #fff1df;
+  color: var(--color-oferta-dark);
+  font-size: 11px; font-weight: 800;
+}
 /* El nombre lleva a la página del producto (20/10/2026): se ve igual que siempre; el subrayado avisa al pasar. */
 .nameLink { color: inherit; }
 .nameLink:hover { text-decoration: underline; }
