@@ -1,4 +1,4 @@
-import type { Catalogo, CotizacionEnvio, Entrega, EntregaMinorista, Punto, SitioConfig } from './types';
+import type { Catalogo, CotizacionEnvio, Entrega, EntregaMinorista, Punto, SitioConfig, MedioPagoTienda } from './types';
 import { leerCookie } from './cookies';
 import type { Modo } from './modo';
 
@@ -191,10 +191,16 @@ export interface PedidoMinoristaDto {
   ubicacion?: Punto;
   observaciones?: string;
   items: { productoId: number; cantidad: number; variante?: string }[];
+  /** El cupón (0190) y cómo dice que va a pagar (lo pide el cupón que exige un medio). */
+  cupon?: string;
+  medioPago?: MedioPagoTienda;
 }
 
-/** Cuánto sale recibir en casa (0185): el barrio del punto, el envío, el descuento y las promos. */
-export async function cotizarEnvio(dto: Omit<PedidoMinoristaDto, 'entrega' | 'observaciones'>, tokenMin: string): Promise<CotizacionEnvio> {
+/**
+ * Cuánto sale el pedido (0185): el barrio del punto, el envío, el descuento y las
+ * promos; desde 0190, también retirando, por el cupón.
+ */
+export async function cotizarEnvio(dto: Omit<PedidoMinoristaDto, 'observaciones'>, tokenMin: string): Promise<CotizacionEnvio> {
   return manejar<CotizacionEnvio>(await pedir(
     `${API}/tienda/minorista/envio`,
     { method: 'POST', headers: { 'Content-Type': 'application/json', ...conSesion(undefined, tokenMin) }, body: JSON.stringify(dto) },

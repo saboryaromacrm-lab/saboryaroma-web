@@ -56,6 +56,22 @@
 .envioResumen strong { color: var(--color-primary); }
 .envioPromo { font-weight: 700; color: #047857; }
 .envioProxima { font-size: 13px; color: #b45309; }
+/* El cupón (0190): el campo con «Aplicar» y, aplicado, el código con lo que descuenta o por qué no vale. */
+.cuponFila { display: flex; gap: 8px; }
+.cuponFila input { flex: 1; min-width: 0; text-transform: uppercase; letter-spacing: 0.04em; }
+.cuponAplicar, .cuponQuitar {
+  border: 1px solid var(--color-primary); background: var(--color-white); color: var(--color-primary);
+  font-weight: 700; font-size: var(--font-size-sm); padding: 0 16px; border-radius: var(--radius-md); cursor: pointer;
+}
+.cuponAplicar:disabled { opacity: 0.5; cursor: default; }
+.cupon {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  padding: 10px 14px; border-radius: var(--radius-md); font-size: var(--font-size-sm);
+  border: 1px solid var(--color-gray-250); background: var(--color-white);
+}
+.cupon[data-estado='ok'] { border-color: #bbf7d0; background: #f0fdf4; color: #047857; }
+.cupon[data-estado='error'] { border-color: var(--color-error); background: var(--color-error-light); color: var(--color-error); }
+.cuponQuitar { padding: 6px 12px; flex: none; }
 .summaryTotal { display: flex; justify-content: space-between; font-size: var(--font-size-lg); font-weight: 800; padding-top: var(--space-3); color: var(--color-primary); }
 
 @media (max-width: 900px) {

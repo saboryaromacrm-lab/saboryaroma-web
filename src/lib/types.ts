@@ -326,7 +326,16 @@ export interface CotizacionEnvio {
   promos: string[];
   /** La promo de hoy que se alcanza comprando un poco más. */
   proxima: { texto: string; faltan: number } | null;
+  /** El cupón que se escribió (0190): si vale, cuánto descuenta y qué pide; si no, por qué. Sin cupón, null. */
+  cupon?: CuponCotizado | null;
   subtotal: number;
-  /** Productos − descuento + envío. */
+  /** Productos − descuento del barrio − cupón + envío. */
   total: number;
 }
+
+/** Cómo se paga en la tienda (se coordina por WhatsApp). */
+export type MedioPagoTienda = 'efectivo' | 'transferencia';
+
+export type CuponCotizado =
+  | { codigo: string; vale: true; descuento: number; envioGratis: boolean; medios: MedioPagoTienda[]; descripcion: string }
+  | { codigo: string; vale: false; motivo: string };

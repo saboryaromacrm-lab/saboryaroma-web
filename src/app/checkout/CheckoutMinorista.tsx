@@ -12,6 +12,10 @@
  * descuento del barrio y las promos del día (la misma cuenta del pedido). Sin
  * clave, o si el mapa no carga, todo sigue como antes: gratis desde el monto
  * configurado o se coordina.
+ *
+ * EL CUPÓN (0190): se escribe y se aplica; el servidor dice si vale y cuánto
+ * descuenta (con la misma cuenta del pedido). Si el cupón vale solo pagando de
+ * una forma, se pregunta cómo va a pagar.
  */
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
@@ -22,13 +26,15 @@ import { leerToken } from '@/lib/sesion';
 import { money, telLegible } from '@/lib/format';
 import { IngresarParaComprar } from '@/components/Ingreso';
 import { UbicacionEnvio } from '@/components/minorista/UbicacionEnvio';
-import type { CotizacionEnvio, EntregaMinorista, ItemCarrito, Punto } from '@/lib/types';
+import type { CotizacionEnvio, EntregaMinorista, ItemCarrito, MedioPagoTienda, Punto } from '@/lib/types';
 import styles from './page.module.css';
 
 /** Pausa antes de recalcular el envío: el mapa se mueve de a muchos pasitos. */
 const ESPERA_COTIZAR_MS = 400;
 
 const lineasDe = (items: ItemCarrito[]) => items.map((it) => ({ productoId: it.productoId, cantidad: it.cantidad, ...(it.variante ? { variante: it.variante } : {}) }));
+
+const MEDIOS: Record<MedioPagoTienda, string> = { efectivo: 'Efectivo', transferencia: 'Transferencia' };
 
 /** El envío en palabras: 0 = gratis; null = se coordina. */
 const textoCosto = (envio: number | null) => (envio === 0 ? 'gratis' : envio != null ? money(envio) : 'a coordinar por WhatsApp');
@@ -47,6 +53,10 @@ export function CheckoutMinorista() {
   /** El mapa no cargó (sin conexión o clave rechazada): sigue con la dirección escrita, como antes. */
   const [sinMapa, setSinMapa] = useState(false);
   const [cotizacion, setCotizacion] = useState<CotizacionEnvio | null>(null);
+  /** Lo que se escribe en el campo y el cupón que se aplicó (0190). */
+  const [cuponTexto, setCuponTexto] = useState('');
+  const [cupon, setCupon] = useState('');
+  const [medioPago, setMedioPago] = useState<MedioPagoTienda | ''>('');
   const [confirmar, setConfirmar] = useState(false);
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState('');
@@ -58,17 +68,31 @@ export function CheckoutMinorista() {
   const usaGuardada = conEnvio && aGuardada && !!comprador?.direccion;
   const conMapa = config.mapsKey !== '' && !sinMapa;
 
-  /* Cuánto sale recibir en casa: con el punto marcado o a la dirección guardada (el servidor sabe su punto). */
+  /*
+   * Cuánto sale: con envío, con el punto marcado o a la dirección guardada (el
+   * servidor sabe su punto); con un cupón, siempre (también retirando).
+   */
+  const cotizaEnvio = conEnvio && (usaGuardada || !!punto);
   useEffect(() => {
-    if (!conEnvio || !comprador || !items.length || (!usaGuardada && !punto)) { setCotizacion(null); return undefined; }
+    if (!comprador || !items.length || (!cotizaEnvio && !cupon)) { setCotizacion(null); return undefined; }
     let vigente = true;
     const t = setTimeout(() => {
-      cotizarEnvio({ direccion: usaGuardada ? { guardada: true } : undefined, ubicacion: punto ?? undefined, items: lineasDe(items) }, leerToken('minorista'))
+      cotizarEnvio({
+        entrega,
+        direccion: conEnvio && usaGuardada ? { guardada: true } : undefined,
+        ubicacion: conEnvio ? punto ?? undefined : undefined,
+        items: lineasDe(items),
+        ...(cupon ? { cupon, ...(medioPago ? { medioPago } : {}) } : {}),
+      }, leerToken('minorista'))
         .then((c) => { if (vigente) setCotizacion(c); })
         .catch(() => { if (vigente) setCotizacion(null); });
     }, ESPERA_COTIZAR_MS);
     return () => { vigente = false; clearTimeout(t); };
-  }, [conEnvio, usaGuardada, punto, items, comprador]);
+  }, [entrega, conEnvio, cotizaEnvio, usaGuardada, punto, items, comprador, cupon, medioPago]);
+
+  /* El cupón pide un solo medio: queda elegido solo. */
+  const unicoMedio = cotizacion?.cupon?.vale && cotizacion.cupon.medios.length === 1 ? cotizacion.cupon.medios[0] : null;
+  useEffect(() => { if (unicoMedio) setMedioPago(unicoMedio); }, [unicoMedio]);
 
   if (resultado) {
     return (
@@ -110,8 +134,11 @@ export function CheckoutMinorista() {
       : envioGratis ? '¡Tu envío es gratis!' : `Gratis desde ${money(config.envioGratisDesde)} — te faltan ${money(config.envioGratisDesde - total)}.`;
   /** El mapa: a otra dirección siempre; a la guardada, solo si es de antes del mapa (no tiene punto). */
   const muestraMapa = conEnvio && conMapa && (!usaGuardada || !!punto || cotizacion?.conPunto === false);
-  const cot = conEnvio ? cotizacion : null;
+  const cot = cotizacion;
   const aPagar = cot ? cot.total : total;
+  const cup = cot?.cupon ?? null;
+  const aplicarCupon = () => { setCupon(cuponTexto.trim().toUpperCase()); setError(''); };
+  const quitarCupon = () => { setCupon(''); setCuponTexto(''); setMedioPago(''); };
 
   /** Primer paso: validar y mostrar los datos para confirmar. */
   const revisar = (e: React.FormEvent) => {
@@ -123,6 +150,14 @@ export function CheckoutMinorista() {
     }
     if (muestraMapa && !punto) {
       setError('Marcá en el mapa dónde recibís: buscá tu dirección o mové el mapa hasta tu casa.');
+      return;
+    }
+    if (cupon && cup && !cup.vale) {
+      setError(`El cupón ${cup.codigo} no vale: ${cup.motivo} Quitalo para seguir sin él.`);
+      return;
+    }
+    if (cup?.vale && cup.medios.length && !medioPago) {
+      setError('Elegí cómo vas a pagar: el cupón vale con ese medio.');
       return;
     }
     setConfirmar(true);
@@ -142,6 +177,8 @@ export function CheckoutMinorista() {
             : { calle: calle.trim(), localidad: localidad.trim(), referencia: referencia.trim() || undefined },
         ubicacion: conEnvio ? punto ?? undefined : undefined,
         items: lineasDe(items),
+        ...(cup?.vale ? { cupon: cup.codigo } : {}),
+        ...(medioPago ? { medioPago } : {}),
       }, leerToken('minorista'));
       pedidoEnviado(r.codigo);
       setResultado({ codigo: r.codigo, total: r.total + (r.envio ?? 0), telefono: comprador.telefono });
@@ -254,6 +291,47 @@ export function CheckoutMinorista() {
           )}
 
           <div className={styles.field}>
+            <label htmlFor="cupon">¿Tenés un cupón de descuento?</label>
+            {cupon ? (
+              <div className={styles.cupon} data-estado={!cup ? 'cargando' : cup.vale ? 'ok' : 'error'} aria-live="polite">
+                <span>
+                  <strong>{cupon}</strong>
+                  {!cup ? ' · revisando…'
+                    : cup.vale
+                      ? (cup.envioGratis ? ' · ¡envío gratis!' : ` · −${money(cup.descuento)}`)
+                      : ` · ${cup.motivo}`}
+                  {cup?.vale && cup.descripcion && <span className={styles.hint}>{cup.descripcion}</span>}
+                </span>
+                <button type="button" className={styles.cuponQuitar} onClick={quitarCupon}>Quitar</button>
+              </div>
+            ) : (
+              <div className={styles.cuponFila}>
+                <input
+                  id="cupon" maxLength={30} value={cuponTexto} autoComplete="off" spellCheck={false}
+                  onChange={(e) => setCuponTexto(e.target.value.toUpperCase())}
+                  onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); if (cuponTexto.trim()) aplicarCupon(); } }}
+                  placeholder="Escribí el código"
+                />
+                <button type="button" className={styles.cuponAplicar} onClick={aplicarCupon} disabled={!cuponTexto.trim()}>Aplicar</button>
+              </div>
+            )}
+          </div>
+
+          {cup?.vale && cup.medios.length > 0 && (
+            <div className={styles.field}>
+              <label>¿Cómo vas a pagar? *<span className={styles.hint}>El cupón vale pagando con {cup.medios.map((m) => MEDIOS[m].toLowerCase()).join(' o ')}.</span></label>
+              <div className={styles.entregas}>
+                {cup.medios.map((m) => (
+                  <label key={m} className={styles.entregaOpt} data-selected={medioPago === m}>
+                    <input type="radio" name="medio" checked={medioPago === m} onChange={() => setMedioPago(m)} />
+                    <span>{MEDIOS[m]}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <div className={styles.field}>
             <label htmlFor="obs">Notas del pedido</label>
             <textarea id="obs" rows={3} maxLength={500} value={observaciones} onChange={(e) => setObservaciones(e.target.value)} placeholder="Horario de entrega preferido, indicaciones especiales, etc." />
           </div>
@@ -287,6 +365,8 @@ export function CheckoutMinorista() {
                 {conEnvio && (<><dt>Dirección</dt><dd>{usaGuardada ? `Tu dirección guardada (${comprador.direccion})` : [calle.trim(), localidad.trim(), referencia.trim()].filter(Boolean).join(' · ')}</dd></>)}
                 {observaciones.trim() && (<><dt>Notas</dt><dd>{observaciones.trim()}</dd></>)}
                 {cot && cot.descuento > 0 && (<><dt>Descuento</dt><dd>−{money(cot.descuento)} (barrio {cot.barrio})</dd></>)}
+                {cup?.vale && (<><dt>Cupón</dt><dd>{cup.codigo} · {cup.envioGratis ? 'envío gratis' : `−${money(cup.descuento)}`}</dd></>)}
+                {medioPago && (<><dt>Pago</dt><dd>{MEDIOS[medioPago]}</dd></>)}
                 <dt>Total</dt><dd><strong>{money(aPagar)}</strong>{cot?.envio ? ' con envío' : ''}</dd>
               </dl>
               {error && <div className={styles.error}>{error}</div>}
@@ -311,7 +391,10 @@ export function CheckoutMinorista() {
           {cot && cot.descuento > 0 && (
             <div className={styles.summaryItem}><span>Descuento del barrio</span><span>−{money(cot.descuento)}</span></div>
           )}
-          {cot && (
+          {cup?.vale && cup.descuento > 0 && (
+            <div className={styles.summaryItem}><span>Cupón {cup.codigo}</span><span>−{money(cup.descuento)}</span></div>
+          )}
+          {cot && conEnvio && (
             <div className={styles.summaryItem}><span>Envío</span><span>{cot.envio === 0 ? 'Gratis' : cot.envio != null ? money(cot.envio) : 'A coordinar'}</span></div>
           )}
           <div className={styles.summaryTotal}>
