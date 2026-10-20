@@ -29,19 +29,21 @@
 
 .inner {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  justify-content: center;
+  align-items: baseline;
   flex-wrap: wrap;
-  gap: 16px;
+  gap: 8px 12px;
   max-width: 1400px;
   margin: 0 auto;
 }
 
 .izq {
   display: flex;
+  flex-wrap: wrap;
   align-items: baseline;
-  gap: 12px;
+  gap: 8px 12px;
 }
+.por { color: #7a8a9a; font-size: 0.85rem; }
 
 /*
  * El hover del original —escala y resplandor— hecho con CSS en vez de con
@@ -67,7 +69,9 @@
 
 .sep { color: #5a6875; font-size: 0.8rem; }
 .lema { margin: 0; color: #7a8a9a; font-size: 0.85rem; }
-.anio { color: #4a5565; font-size: 0.8rem; }
+.anio { color: #7a8a9a; font-size: 0.8rem; }
+/* Centrada y con el año en la misma línea (20/10/2026): a la derecha lo tapaba el botón flotante de WhatsApp. */
+.anio::before { content: '·'; margin-right: 12px; color: #5a6875; }
 
 /* En el teléfono la franja se aprieta: 40 px de costado se comen el ancho. */
 @media (max-width: 600px) {
@@ -75,5 +79,10 @@
   .firma { padding: 8px 20px 72px; }
   /* El enlace, de 40 px de alto para el dedo (el relleno de la franja baja lo mismo). */
   .marca { padding-block: 8px; }
-  .inner { justify-content: center; text-align: center; }
+  .inner { text-align: center; gap: 4px 12px; }
+  .izq { justify-content: center; }
+  /* En el teléfono va en renglones («Desarrollado por Coftech», «Soluciones digitales», el año): sin los separadores de la línea única. */
+  .sep, .anio::before { display: none; }
+  .lema { flex-basis: 100%; }
+  .sinBoton { padding-bottom: 12px; }
 }

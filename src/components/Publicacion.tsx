@@ -7,23 +7,27 @@
  */
 import { imgSrc, type TiendaCerrada } from '@/lib/api';
 import { linkWhatsApp } from '@/lib/format';
+import { FirmaCoftech } from './FirmaCoftech';
 import styles from './Publicacion.module.css';
 
 const NO_INDEXAR = <meta name="robots" content="noindex, nofollow" />;
 
-/** Ninguna tienda abierta para quien mira: el logo, que ya viene, y el WhatsApp. */
+/** Ninguna tienda abierta para quien mira: el logo, que ya viene, el WhatsApp y la firma al pie. */
 export function Proximamente({ sitio }: { sitio: TiendaCerrada['sitio'] }) {
   return (
-    <main className={styles.proximamente}>
-      {NO_INDEXAR}
-      <div className={styles.caja}>
-        {sitio.logoUrl && <img src={imgSrc(sitio.logoUrl)} alt="Sabor y Aroma" className={styles.logo} />}
-        <p className={styles.eyebrow}>Tienda online</p>
-        <h1 className={styles.titulo}>Muy pronto</h1>
-        <p className={styles.texto}>Estamos preparando nuestra tienda online para que compres desde acá. Mientras tanto, escribinos y te atendemos.</p>
-        <a href={linkWhatsApp(sitio.contacto.whatsapp)} className={styles.cta} target="_blank" rel="noopener noreferrer">Escribinos por WhatsApp</a>
-      </div>
-    </main>
+    <div className={styles.pagina}>
+      <main className={styles.proximamente}>
+        {NO_INDEXAR}
+        <div className={styles.caja}>
+          {sitio.logoUrl && <img src={imgSrc(sitio.logoUrl)} alt="Sabor y Aroma" className={styles.logo} />}
+          <p className={styles.eyebrow}>Tienda online</p>
+          <h1 className={styles.titulo}>Muy pronto</h1>
+          <p className={styles.texto}>Estamos preparando nuestra tienda online para que compres desde acá. Mientras tanto, escribinos y te atendemos.</p>
+          <a href={linkWhatsApp(sitio.contacto.whatsapp)} className={styles.cta} target="_blank" rel="noopener noreferrer">Escribinos por WhatsApp</a>
+        </div>
+      </main>
+      <FirmaCoftech sinBotonFlotante />
+    </div>
   );
 }
 

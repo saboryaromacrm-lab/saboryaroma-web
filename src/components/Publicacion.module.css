@@ -1,6 +1,7 @@
-/* «Muy pronto»: a pantalla completa, con los colores de la casa. */
+/* «Muy pronto»: a pantalla completa, con los colores de la casa, y la firma al pie. */
+.pagina { min-height: 100dvh; display: flex; flex-direction: column; }
 .proximamente {
-  min-height: 100dvh;
+  flex: 1;
   display: flex; align-items: center; justify-content: center;
   padding: 24px 16px;
   background: linear-gradient(135deg, #f6fbe8 0%, #f7f1e6 55%, #fbe2c4 100%);

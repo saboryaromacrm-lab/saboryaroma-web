@@ -22,6 +22,11 @@ import styles from './FirmaCoftech.module.css';
  * depender de que fonts.gstatic.com conteste. Un tipo de letra no es motivo
  * para que no salga una versión.
  *
+ * «DESARROLLADO POR» (20/10/2026, pedido del dueño): la firma dice quién hizo
+ * el sitio —«Desarrollado por Coftech | Soluciones digitales · © 2026»—, todo
+ * centrado: a la derecha, el año quedaba bajo el botón flotante de WhatsApp.
+ * Va también al pie de «Muy pronto».
+ *
  * SIN HOOKS Y SIN HANDLERS: el hover es CSS. El original lo guardaba en un
  * `useState`, y eso habría obligado a mandar JavaScript al navegador para un
  * efecto que el navegador ya sabe hacer. Así, esto se renderiza en el servidor
@@ -32,11 +37,13 @@ const ANIO = new Date().getFullYear();
 
 const WHATSAPP = 'https://wa.me/5493704819019?text=Hola,%20me%20contacto%20desde%20su%20aplicaci%C3%B3n.';
 
-export function FirmaCoftech() {
+/** `sinBotonFlotante`: en «Muy pronto» no está el botón de WhatsApp, así que abajo no hace falta dejarle lugar. */
+export function FirmaCoftech({ sinBotonFlotante = false }: { sinBotonFlotante?: boolean }) {
   return (
-    <footer className={styles.firma}>
+    <footer className={`${styles.firma} ${sinBotonFlotante ? styles.sinBoton : ''}`}>
       <div className={styles.inner}>
         <div className={styles.izq}>
+          <span className={styles.por}>Desarrollado por</span>
           <a
             className={styles.marca}
             href={WHATSAPP}
