@@ -1,4 +1,5 @@
-import type { Catalogo, CotizacionEnvio, Entrega, EntregaMinorista, Punto } from './types';
+import type { Catalogo, CotizacionEnvio, Entrega, EntregaMinorista, Punto, SitioConfig } from './types';
+import { leerCookie } from './cookies';
 import type { Modo } from './modo';
 
 /*
@@ -64,13 +65,26 @@ async function manejar<T>(r: Response): Promise<T> {
 export const COOKIE_SESION = 'sa_sesion';
 /** La del comprador minorista (0178): otra cookie, así entrar en un modo no saca del otro. */
 export const COOKIE_SESION_MIN = 'sa_sesion_min';
+/**
+ * LA VISTA PREVIA (20/10/2026): la cookie que deja el link del ERP. Con ella la
+ * API muestra (y deja comprar de prueba en) las tiendas en preparación. La
+ * lee el navegador para cada pedido a la API y el servidor de Next al armar la página.
+ */
+export const COOKIE_VISTA_PREVIA = 'sa_vista_previa';
 /** Las cabeceras con que viaja cada token a la API. */
 const SESION = 'X-Tienda-Sesion';
 const SESION_MIN = 'X-Tienda-Sesion-Min';
-const conSesion = (token?: string, tokenMin?: string): Record<string, string> => ({
+const VISTA_PREVIA = 'X-Tienda-Vista-Previa';
+/** En el navegador la vista previa va sola en todo pedido; el servidor de Next la pasa (no ve `document`). */
+const conSesion = (token?: string, tokenMin?: string, previa = leerCookie(COOKIE_VISTA_PREVIA)): Record<string, string> => ({
   ...(token ? { [SESION]: token } : {}),
   ...(tokenMin ? { [SESION_MIN]: tokenMin } : {}),
+  ...(previa ? { [VISTA_PREVIA]: previa } : {}),
 });
+
+/** Ninguna tienda abierta para quien mira (20/10/2026): solo lo de la página de «Próximamente». */
+export interface TiendaCerrada { cerrada: true; sitio: Pick<SitioConfig, 'logoUrl' | 'contacto'> }
+export const estaCerrada = (c: Catalogo | TiendaCerrada): c is TiendaCerrada => 'cerrada' in c;
 
 /**
  * Catálogo completo de la tienda, en su modo (0173). Sin caché de este lado:
@@ -79,14 +93,14 @@ const conSesion = (token?: string, tokenMin?: string): Record<string, string> =>
  * datos de quien ingresó; sin ella, sin nada de plata (`conPrecios: false`).
  * Van las dos sesiones: la API usa la del modo que contesta.
  */
-export async function getCatalogo(token?: string, modo: Modo = 'mayorista', tokenMin?: string): Promise<Catalogo> {
+export async function getCatalogo(token?: string, modo: Modo = 'mayorista', tokenMin?: string, previa?: string): Promise<Catalogo | TiendaCerrada> {
   const r = await pedir(
     `${API}/tienda/catalogo${modo === 'minorista' ? '?modo=minorista' : ''}`,
-    { cache: 'no-store', headers: conSesion(token, tokenMin) },
+    { cache: 'no-store', headers: conSesion(token, tokenMin, previa) },
     TIMEOUT_CATALOGO_MS,
     'No se pudo conectar con la tienda.',
   );
-  return manejar<Catalogo>(r);
+  return manejar<Catalogo | TiendaCerrada>(r);
 }
 
 /**

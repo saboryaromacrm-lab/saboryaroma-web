@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next';
-import { catalogoConSesion, modoElegido } from '@/lib/catalogoServidor';
+import { estadoTienda, modoElegido } from '@/lib/catalogoServidor';
+import { estaCerrada } from '@/lib/api';
 import { MODO_INICIAL } from '@/lib/modo';
 import { CartProvider } from '@/lib/cart';
 import { ElegirModo } from '@/components/ElegirModo';
@@ -13,6 +14,7 @@ import { IngresoMinorista } from '@/components/minorista/IngresoMinorista';
 import { PwaRegister } from '@/components/PwaRegister';
 import { AnalyticsTracker } from '@/components/AnalyticsTracker';
 import { FaviconSetter } from '@/components/FaviconSetter';
+import { AvisoVistaPrevia, Proximamente } from '@/components/Publicacion';
 import './globals.css';
 
 /** Origen público del sitio: en producción se setea NEXT_PUBLIC_SITE_URL. */
@@ -35,7 +37,7 @@ export const metadata: Metadata = {
     title: 'Sabor y Aroma — Tienda online',
     description: 'Productos naturales y saludables, por menor y por mayor, en Formosa.',
   },
-  robots: { index: true, follow: true },
+  /* Sin `robots`: indexar es lo que hacen los buscadores si no se dice nada, y así no choca con el «noindex» de la tienda en preparación (Publicacion.tsx). */
 };
 
 export const viewport: Viewport = {
@@ -73,7 +75,16 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   // el fetch idéntico que cada página vuelve a hacer para su propio contenido
   // (Request Memoization), y este resultado se lo pasamos al carrito para que
   // no tenga que volver a pedirlo desde el navegador.
-  const [catalogoInicial, elegido] = await Promise.all([catalogoConSesion().catch(() => null), modoElegido()]);
+  const [estado, elegido] = await Promise.all([estadoTienda().catch(() => null), modoElegido()]);
+  /* Ninguna tienda abierta para quien mira (20/10/2026): «Próximamente», sin las páginas ni el carrito. */
+  if (estado && estaCerrada(estado)) {
+    return (
+      <html lang="es-AR">
+        <body><Proximamente sitio={estado.sitio} /></body>
+      </html>
+    );
+  }
+  const catalogoInicial = estado;
   /*
    * EL MODO (0173): el que dice el catálogo (la API baja a mayorista si el
    * minorista está apagado); sin catálogo, el elegido o el inicial. `data-modo`
@@ -106,6 +117,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           <ElegirModo abiertoAlEntrar={elegir} />
           <FaviconSetter />
         </CartProvider>
+        {catalogoInicial?.vistaPrevia && <AvisoVistaPrevia />}
         <PwaRegister />
         <AnalyticsTracker />
       </body>

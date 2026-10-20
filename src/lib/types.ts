@@ -216,6 +216,8 @@ export interface Catalogo {
   envioGratisDesde?: number;
   /** Minorista (0185): la clave de Google Maps del navegador; vacía o ausente = el checkout sin mapa. */
   mapsKey?: string;
+  /** Se está viendo una tienda en preparación con el link de vista previa (20/10/2026): lo que se compre es de prueba. */
+  vistaPrevia?: boolean;
   /** La compra mínima mayorista, en los dos modos (para el cartel de elegir modo). Ausente = API anterior. */
   minimoMayorista?: number;
   /**

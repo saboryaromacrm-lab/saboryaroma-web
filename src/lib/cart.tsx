@@ -16,7 +16,7 @@
 import {
   createContext, useCallback, useContext, useEffect, useMemo, useState,
 } from 'react';
-import { getCatalogo } from './api';
+import { estaCerrada, getCatalogo } from './api';
 import { esMultiUnidad, totalConOferta } from './oferta';
 import { leerToken } from './sesion';
 import type { Modo } from './modo';
@@ -159,7 +159,7 @@ export function CartProvider({ children, modo, initialCatalogo = null }: {
     setCargado(true);
     if (initialCatalogo) return;
     getCatalogo(leerToken('mayorista'), modo, leerToken('minorista')) // con las sesiones siempre: ver catalogoServidor.ts
-      .then((c) => { setConfig(configDeCatalogo(c)); setCatalogo(c); })
+      .then((c) => { if (!estaCerrada(c)) { setConfig(configDeCatalogo(c)); setCatalogo(c); } })
       .catch(() => { /* el carrito funciona igual sin esto; el checkout revalida */ });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

@@ -9,6 +9,7 @@
  * ya da el DNI (decisión del dueño: se entra solo con el DNI).
  */
 import { COOKIE_SESION, COOKIE_SESION_MIN } from './api';
+import { leerCookie } from './cookies';
 import type { Modo } from './modo';
 
 const NOVENTA_DIAS_S = 90 * 86_400;
@@ -17,11 +18,7 @@ const cookieDe = (modo: Modo) => (modo === 'minorista' ? COOKIE_SESION_MIN : COO
 /** Pidió ingreso y espera: el cartel «tu solicitud está en revisión» hasta que entre o se lo rechace. */
 const SOLICITUD = 'sa_solicitud';
 
-export function leerToken(modo: Modo = 'mayorista'): string {
-  if (typeof document === 'undefined') return '';
-  const m = new RegExp(`(?:^|;\\s*)${cookieDe(modo)}=([^;]+)`).exec(document.cookie);
-  return m ? decodeURIComponent(m[1]) : '';
-}
+export const leerToken = (modo: Modo = 'mayorista'): string => leerCookie(cookieDe(modo));
 
 /** Guarda (o renueva) la cookie por 90 días más. */
 export function guardarToken(token: string, modo: Modo = 'mayorista') {
