@@ -1,0 +1,70 @@
+/* El cartel: verde de la casa, el «gratis» en amarillo y la calle abajo con la moto. */
+.banner {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius-2xl);
+  background:
+    radial-gradient(420px 220px at 100% 0%, rgba(255, 209, 102, 0.18), transparent 70%),
+    linear-gradient(120deg, var(--color-primary) 0%, #14674a 100%);
+  color: var(--color-white);
+  box-shadow: 0 14px 34px rgba(11, 59, 46, 0.22);
+}
+
+.texto { display: flex; flex-direction: column; gap: 10px; padding: clamp(22px, 3.5vw, 36px) clamp(18px, 4vw, 44px) 18px; }
+.eyebrow { margin: 0; font-size: 12px; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase; color: rgba(255, 255, 255, 0.75); }
+.titulo { margin: 0; font-size: clamp(30px, 4.4vw, 50px); font-weight: 900; line-height: 1; letter-spacing: -0.03em; text-transform: uppercase; }
+.titulo span { color: #ffd166; }
+
+.lista { list-style: none; margin: 6px 0 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.linea { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.cuando {
+  padding: 5px 12px;
+  border-radius: var(--radius-full);
+  background: rgba(255, 255, 255, 0.16);
+  font-size: 12.5px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase;
+}
+.cuando[data-hoy='true'] { background: var(--color-oferta); }
+.barrio {
+  padding: 6px 12px;
+  border-radius: var(--radius-full);
+  background: var(--color-white);
+  color: var(--color-primary);
+  font-size: 14px; font-weight: 800;
+}
+.minimo { font-size: 13px; color: rgba(255, 255, 255, 0.85); }
+.nota { margin: 4px 0 0; font-size: 13px; line-height: 1.4; color: rgba(255, 255, 255, 0.8); max-width: 60ch; }
+
+/* La calle: asfalto con la línea punteada, y la moto que la cruza de punta a punta. */
+.calle {
+  --moto: 96px;
+  position: relative;
+  height: calc(var(--moto) * 0.62 + 12px);
+  background: rgba(0, 0, 0, 0.22);
+}
+.calle::after {
+  content: '';
+  position: absolute; left: 0; right: 0; top: 50%;
+  height: 3px;
+  background: repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.45) 0 22px, transparent 22px 44px);
+}
+/* El recorrido mide lo que la calle: correrlo «su ancho + la moto» la lleva de un borde al otro. */
+.recorrido { position: absolute; inset: 0; z-index: 1; animation: andar 7s linear infinite; }
+.moto { position: absolute; left: calc(-1 * var(--moto)); bottom: 4px; width: var(--moto); height: calc(var(--moto) * 0.62); }
+.cuerpo { animation: rebote 0.45s ease-in-out infinite; }
+.rueda { transform-box: fill-box; transform-origin: center; animation: girar 0.5s linear infinite; }
+.velocidad { animation: soplido 0.45s ease-in-out infinite; }
+
+@keyframes andar { from { transform: translateX(0); } to { transform: translateX(calc(100% + var(--moto))); } }
+@keyframes rebote { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-1.5px); } }
+@keyframes girar { to { transform: rotate(360deg); } }
+@keyframes soplido { 0%, 100% { opacity: 0.35; } 50% { opacity: 0.85; } }
+
+/* Menos movimiento: la moto queda quieta a la derecha de la calle. */
+@media (prefers-reduced-motion: reduce) {
+  .recorrido, .cuerpo, .rueda, .velocidad { animation: none; }
+  .recorrido { transform: translateX(calc(80% + var(--moto))); }
+}
+
+@media (min-width: 769px) {
+  .calle { --moto: 124px; }
+}

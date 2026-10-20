@@ -165,7 +165,12 @@ export interface PortadaMinorista {
   beneficios: { titulo: string; items: { icono: string; titulo: string; texto: string }[] };
   /** El cierre: título, texto y el botón de WhatsApp. */
   cierre: { titulo: string; texto: string; cta: string };
+  /** El cartel de envío gratis por barrio (0185); ausente en una API anterior. */
+  enviosGratis?: EnvioGratis[];
 }
+
+/** Una línea del cartel: a qué barrios, cuándo («Hoy», «Siempre», «Los martes») y desde qué compra (0 = sin mínimo). */
+export interface EnvioGratis { barrios: string[]; cuando: string; hoy: boolean; minimo: number }
 
 export interface PopupSitio {
   /** Si aparece solo al entrar. El botón «Info de compra» lo abre igual. */

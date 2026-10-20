@@ -120,8 +120,10 @@
 .puntoActivo::before { background: var(--color-primary); }
 .punto:focus-visible { outline: 2px solid var(--color-primary); outline-offset: -4px; border-radius: 50%; }
 
-/* ---- Secciones ---- */
-.seccion { margin-top: clamp(32px, 5vw, 56px); }
+/* ---- Secciones ----
+ * El aire entre secciones va con el padre adelante (dos clases): con una sola,
+ * el `.container` global (margin: 0 auto) le ganaba y quedaban pegadas. */
+.portada > .seccion { margin-top: clamp(40px, 6vw, 72px); }
 .seccionHead { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 10px 20px; margin-bottom: 18px; }
 .seccionTitulo { margin: 0; font-size: clamp(24px, 3vw, 34px); font-weight: 900; letter-spacing: -0.025em; color: var(--color-primary); }
 .seccionSub { margin: 4px 0 0; color: var(--color-gray-550); }

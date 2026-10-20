@@ -5,6 +5,7 @@ import { ProductCard } from '@/components/ProductCard';
 import { ProductCarousel } from '@/components/ProductCarousel';
 import { MarcasCarousel } from '@/components/MarcasCarousel';
 import { HeroFotos } from './HeroFotos';
+import { EnvioGratisBanner } from './EnvioGratisBanner';
 import { IngresarParaComprar } from '@/components/Ingreso';
 import { LEMA_NUTRIOFERTAS, NUTRIOFERTAS, URL_NUTRIOFERTAS } from '@/lib/nutriofertas';
 import type { Catalogo, ItemCatalogo, PortadaMinorista } from '@/lib/types';
@@ -21,7 +22,7 @@ const FOTOS_HERO = 8;
  */
 const VACIO: PortadaMinorista = {
   avisos: [], hero: { eyebrow: '', titulo: '', texto: '', cta1: { texto: '', url: '/' }, cta2: { texto: '', url: '/' } },
-  sellos: [], beneficios: { titulo: '', items: [] }, cierre: { titulo: '', texto: '', cta: '' },
+  sellos: [], beneficios: { titulo: '', items: [] }, cierre: { titulo: '', texto: '', cta: '' }, enviosGratis: [],
 };
 
 /**
@@ -68,6 +69,7 @@ export function HomeMinorista({ cat }: { cat: Catalogo }) {
   const sellos = [...p.sellos, ...(envioGratis > 0 ? [`Envío gratis desde ${money(envioGratis)}`] : [])].slice(0, 4);
   const wa = linkWhatsApp(cat.sitio.contacto.whatsapp);
   const beneficios = p.beneficios.items.filter((b) => b.titulo);
+  const enviosGratis = p.enviosGratis ?? [];
 
   return (
     <div className={styles.portada}>
@@ -99,7 +101,9 @@ export function HomeMinorista({ cat }: { cat: Catalogo }) {
 
       {cat.categorias.length > 0 && (
         <section className={`container ${styles.seccion}`}>
-          <h2 className={styles.seccionTitulo}>¿Qué buscás?</h2>
+          <div className={styles.seccionHead}>
+            <h2 className={styles.seccionTitulo}>¿Qué buscás?</h2>
+          </div>
           <div className={styles.circulos}>
             {cat.categorias.map((c) => (
               <Link key={c.id} href={`/tienda?cat=${c.id}`} className={styles.circulo}>
@@ -111,6 +115,13 @@ export function HomeMinorista({ cat }: { cat: Catalogo }) {
             ))}
           </div>
         </section>
+      )}
+
+      {/* El envío gratis por barrio (0185): solo si hay alguno cargado en el ERP. */}
+      {enviosGratis.length > 0 && (
+        <div className={`container ${styles.seccion}`}>
+          <EnvioGratisBanner envios={enviosGratis} />
+        </div>
       )}
 
       {(enOferta.length > 0 || sinSesion) && (
