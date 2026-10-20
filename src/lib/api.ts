@@ -83,7 +83,7 @@ const conSesion = (token?: string, tokenMin?: string, previa = leerCookie(COOKIE
 });
 
 /** Ninguna tienda abierta para quien mira (20/10/2026): solo lo de la página de «Próximamente». */
-export interface TiendaCerrada { cerrada: true; sitio: Pick<SitioConfig, 'logoUrl' | 'contacto'> }
+export interface TiendaCerrada { cerrada: true; sitio: Pick<SitioConfig, 'logoUrl' | 'contacto' | 'seo'> }
 export const estaCerrada = (c: Catalogo | TiendaCerrada): c is TiendaCerrada => 'cerrada' in c;
 
 /**

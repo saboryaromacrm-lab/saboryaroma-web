@@ -1,0 +1,60 @@
+.pagina { background: var(--color-gray-50); padding-bottom: 40px; }
+
+/* La ficha a la izquierda y sus datos al costado; en tablet y celular, uno abajo del otro. */
+.cuerpo {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  align-items: start;
+  gap: var(--space-6);
+  padding-block: var(--space-6);
+}
+
+.datos {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-5);
+  background: var(--color-white);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+}
+.lista { display: flex; flex-direction: column; gap: var(--space-3); margin: 0; }
+.lista dt {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-gray-500);
+}
+.lista dd { margin: 2px 0 0; font-size: var(--font-size-sm); font-weight: 600; color: var(--color-black); }
+.lista a { color: var(--color-primary); }
+.lista a:hover { text-decoration: underline; }
+.etiquetas { display: flex; flex-wrap: wrap; gap: 6px; }
+.lista .etiqueta {
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+  background: var(--color-gray-150);
+  color: var(--color-gray-750);
+  font-size: 12px;
+}
+
+.consulta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 10px 14px;
+  border-radius: var(--radius-md);
+  background: #25d366;
+  color: var(--color-white);
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  text-align: center;
+}
+.consulta:hover { background: #1ebe5b; }
+.volver { font-size: var(--font-size-sm); font-weight: 600; color: var(--color-primary); }
+.volver:hover { text-decoration: underline; }
+
+@media (max-width: 1024px) {
+  .cuerpo { grid-template-columns: minmax(0, 1fr); gap: var(--space-4); padding-block: var(--space-4); }
+}

@@ -1,7 +1,9 @@
 'use client';
 
 import { useRef } from 'react';
+import Link from 'next/link';
 import { imgSrc } from '@/lib/api';
+import { rutaProducto } from '@/lib/rutas';
 import { useCompraProducto } from '@/lib/useCompraProducto';
 import { COLORES_TAG, COLOR_TAG_DEFAULT } from '@/lib/etiquetas';
 import { money, cant } from '@/lib/format';
@@ -14,8 +16,11 @@ import styles from './ProductCard.module.css';
  * LA TARJETA CON FOTO. La regla de compra (tamaños, formas, tope de stock,
  * empujón a la caja, alta al carrito) vive en `useCompraProducto`, compartida
  * con la vista de lista sin foto (4/10/2026); acá solo se dibuja.
+ *
+ * El nombre lleva a la página del producto (20/10/2026). `ficha`: la tarjeta
+ * ES esa página — el nombre es el título y, desde tablet, la foto va al lado.
  */
-export function ProductCard({ producto }: { producto: ItemCatalogo }) {
+export function ProductCard({ producto, ficha = false }: { producto: ItemCatalogo; ficha?: boolean }) {
   const {
     modo, conPrecios, cantidad, restar, sumar, sumarBloqueado, variante, grupos, grupo, elegir, elegirGrupo, precioDe,
     fuente, unidad, precioEfectivo, tieneDescuento, enStock, promo, yaEnCarrito, disponible, conTope, puedoSumar,
@@ -27,14 +32,14 @@ export function ProductCard({ producto }: { producto: ItemCatalogo }) {
   const tagsAMostrar = producto.etiquetas.slice(0, 2);
 
   return (
-    <div ref={cardRef} className={styles.card}>
+    <div ref={cardRef} className={`${styles.card} ${ficha ? styles.ficha : ''}`}>
       <div className={styles.imageWrap}>
         <img
           ref={imgRef}
           src={imgSrc(producto.imagenUrl) || '/placeholder-producto.svg'}
           alt={producto.nombre}
           className={styles.image}
-          loading="lazy"
+          loading={ficha ? 'eager' : 'lazy'}
         />
         {fuente.oferta && <span className={styles.ofertaBadge}>{fuente.oferta.badge}</span>}
         {!fuente.oferta && producto.reingreso && <span className={styles.reingresoBadge}>¡Volvió!</span>}
@@ -62,7 +67,9 @@ export function ProductCard({ producto }: { producto: ItemCatalogo }) {
 
       <div className={styles.content}>
         {producto.marca && <span className={styles.brand}>{producto.marca}</span>}
-        <h3 className={styles.name}>{producto.nombre}</h3>
+        {ficha
+          ? <h1 className={styles.name}>{producto.nombre}</h1>
+          : <h3 className={styles.name}><Link href={rutaProducto(producto)} className={styles.nameLink}>{producto.nombre}</Link></h3>}
         {/* Paso 1, el TAMAÑO: un botón por tamaño (cómodo con el dedo), el elegido marcado. */}
         {grupos.length > 1 && (
           <div className={styles.opciones} role="radiogroup" aria-label={`Tamaño de ${producto.nombre}`}>

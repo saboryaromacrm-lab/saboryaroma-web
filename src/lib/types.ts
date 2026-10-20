@@ -150,6 +150,19 @@ export interface SitioConfig {
   popup?: PopupSitio;
   /** Los textos de la portada minorista (17/10/2026), editables en el ERP. Opcional: una API anterior no lo manda. */
   minorista?: PortadaMinorista;
+  /** Lo que ven Google y quien recibe el link (20/10/2026). Opcional: una API anterior no lo manda. */
+  seo?: SeoSitio;
+  /** Los locales con su horario (20/10/2026); vacío = el pie no muestra locales. */
+  locales?: LocalSitio[];
+}
+
+/** El título y la descripción del sitio en Google y en WhatsApp, y la imagen para compartir ('' = sin imagen). */
+export interface SeoSitio { titulo: string; descripcion: string; imagenUrl: string }
+
+/** Un local: el horario de cada día es «08:00-13:00, 17:00-21:00» ('' = cerrado). */
+export interface LocalSitio {
+  nombre: string; direccion: string; localidad: string; telefono: string;
+  lun: string; mar: string; mie: string; jue: string; vie: string; sab: string; dom: string;
 }
 
 /** Un botón de la portada: texto y ruta interna del sitio. */

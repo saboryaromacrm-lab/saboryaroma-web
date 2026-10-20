@@ -100,6 +100,34 @@
   gap: 8px;
 }
 .mapTitle svg { color: var(--color-accent); }
+/* LOS LOCALES (20/10/2026): una tarjeta por local —dirección, teléfono, horario— arriba del mapa. */
+.locales {
+  list-style: none;
+  margin: 0 0 var(--space-4);
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: var(--space-3);
+}
+.local {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  padding: 14px 16px;
+  background: var(--color-white);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-600);
+}
+.local a { color: var(--color-gray-600); transition: color 0.2s ease; }
+.local a:hover { color: var(--color-accent-dark); }
+.localNombre { font-size: 15px; color: var(--color-primary); }
+.horario { margin: 6px 0 0; display: grid; grid-template-columns: auto 1fr; gap: 2px 12px; }
+.horario div { display: contents; }
+.horario dt { font-weight: 700; color: var(--color-gray-700); }
+.horario dd { margin: 0; font-variant-numeric: tabular-nums; }
 .mapWrapper {
   border-radius: var(--radius-lg);
   overflow: hidden;

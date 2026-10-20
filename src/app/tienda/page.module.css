@@ -1,20 +1,5 @@
 .shopPage { background: var(--color-gray-50); padding-bottom: 60px; }
 
-.breadcrumbBar { background: var(--color-white); border-bottom: 1px solid var(--color-gray-250); }
-.breadcrumbInner {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  padding-top: 12px;
-  padding-bottom: 12px;
-  font-size: 13px;
-  color: var(--color-gray-550);
-}
-.breadcrumbInner a { color: var(--color-primary); transition: color 0.15s; }
-.breadcrumbInner a:hover { color: var(--color-primary-dark); text-decoration: underline; }
-.sep { margin: 0 8px; color: var(--color-gray-400); }
-.current { color: var(--color-gray-750); }
-
 .headerBar { background: var(--color-white); border-bottom: 1px solid var(--color-gray-250); padding: 20px 0; }
 
 /*
@@ -92,7 +77,6 @@
   .grid { grid-template-columns: repeat(2, 1fr); }
 }
 @media (max-width: 768px) {
-  .breadcrumbBar { display: none; }
   .headerBar { padding: 12px 0; }
   .nutriInner { padding-block: 22px 20px; }
   .nutriDatos li { font-size: 13px; padding: 6px 12px; }

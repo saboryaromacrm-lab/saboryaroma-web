@@ -5,6 +5,9 @@ import { MODO_INICIAL } from '@/lib/modo';
 import { CartProvider } from '@/lib/cart';
 import { ElegirModo } from '@/components/ElegirModo';
 import { jsonLdString } from '@/lib/jsonLd';
+import { imgSrc } from '@/lib/api';
+import { jsonLdNegocio, NOMBRE, seoDe } from '@/lib/seo';
+import { SITE_URL } from '@/lib/rutas';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { FirmaCoftech } from '@/components/FirmaCoftech';
@@ -17,64 +20,39 @@ import { FaviconSetter } from '@/components/FaviconSetter';
 import { AvisoVistaPrevia, Proximamente } from '@/components/Publicacion';
 import './globals.css';
 
-/** Origen público del sitio: en producción se setea NEXT_PUBLIC_SITE_URL. */
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3002';
-
-export const metadata: Metadata = {
-  metadataBase: new URL(SITE_URL),
-  title: {
-    default: 'Sabor y Aroma — Tienda online',
-    template: '%s · Sabor y Aroma',
-  },
-  description: 'Dietética y distribuidora saludable en Formosa. Productos naturales, orgánicos y libres de gluten, por menor y por mayor.',
-  keywords: ['dietética', 'mayorista', 'minorista', 'productos naturales', 'sin TACC', 'orgánico', 'Formosa', 'distribuidora'],
-  manifest: '/manifest.webmanifest',
-  appleWebApp: { capable: true, statusBarStyle: 'default', title: 'Sabor y Aroma' },
-  openGraph: {
-    type: 'website',
-    locale: 'es_AR',
-    siteName: 'Sabor y Aroma',
-    title: 'Sabor y Aroma — Tienda online',
-    description: 'Productos naturales y saludables, por menor y por mayor, en Formosa.',
-  },
-  /* Sin `robots`: indexar es lo que hacen los buscadores si no se dice nada, y así no choca con el «noindex» de la tienda en preparación (Publicacion.tsx). */
-};
+/**
+ * Lo de todo el sitio: el título y la descripción que se cargan en el ERP
+ * (Tienda online › Configuración › General) y la imagen para compartir. Cada
+ * página pone lo suyo encima (`metaPagina`).
+ */
+export async function generateMetadata(): Promise<Metadata> {
+  const estado = await estadoTienda().catch(() => null);
+  const seo = seoDe(estado?.sitio);
+  const imagen = imgSrc(seo.imagenUrl);
+  return {
+    metadataBase: new URL(SITE_URL),
+    title: { default: seo.titulo, template: `%s · ${NOMBRE}` },
+    description: seo.descripcion,
+    manifest: '/manifest.webmanifest',
+    appleWebApp: { capable: true, statusBarStyle: 'default', title: NOMBRE },
+    openGraph: {
+      type: 'website', locale: 'es_AR', siteName: NOMBRE, title: seo.titulo, description: seo.descripcion,
+      ...(imagen ? { images: [imagen] } : {}),
+    },
+    twitter: { card: imagen ? 'summary_large_image' : 'summary' },
+    /* Sin `robots`: indexar es lo que hacen los buscadores si no se dice nada, y así no choca con el «noindex» de la tienda en preparación (Publicacion.tsx). */
+  };
+}
 
 export const viewport: Viewport = {
   themeColor: '#086633',
 };
 
-/**
- * Datos estructurados para los buscadores (JSON-LD): quiénes somos y qué es
- * este sitio. Los productos van aparte, en la página de la tienda.
- */
-const JSON_LD = {
-  '@context': 'https://schema.org',
-  '@graph': [
-    {
-      '@type': 'Organization',
-      '@id': `${SITE_URL}/#organizacion`,
-      name: 'Sabor y Aroma',
-      url: SITE_URL,
-      description: 'Distribuidora mayorista de productos naturales y saludables en Formosa, Argentina.',
-      address: { '@type': 'PostalAddress', addressLocality: 'Formosa', addressCountry: 'AR' },
-    },
-    {
-      '@type': 'WebSite',
-      '@id': `${SITE_URL}/#sitio`,
-      url: SITE_URL,
-      name: 'Sabor y Aroma — Tienda mayorista online',
-      publisher: { '@id': `${SITE_URL}/#organizacion` },
-      inLanguage: 'es-AR',
-    },
-  ],
-};
-
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  // Un solo pedido del catálogo para todo el árbol: Next dedupea automáticamente
-  // el fetch idéntico que cada página vuelve a hacer para su propio contenido
-  // (Request Memoization), y este resultado se lo pasamos al carrito para que
-  // no tenga que volver a pedirlo desde el navegador.
+  // Un solo pedido del catálogo para todo el árbol: `estadoTienda` lo pide una
+  // vez por request (cache de React) y lo comparten el layout, la página y sus
+  // metadatos; este resultado se lo pasamos al carrito para que no tenga que
+  // volver a pedirlo desde el navegador.
   const [estado, elegido] = await Promise.all([estadoTienda().catch(() => null), modoElegido()]);
   /* Ninguna tienda abierta para quien mira (20/10/2026): «Próximamente», sin las páginas ni el carrito. */
   if (estado && estaCerrada(estado)) {
@@ -97,10 +75,11 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   return (
     <html lang="es-AR" data-modo={modo}>
       <body>
+        {/* Para los buscadores (JSON-LD): la empresa, el sitio y los locales con su horario. Los productos, en sus páginas. */}
         <script
           type="application/ld+json"
           // eslint-disable-next-line react/no-danger
-          dangerouslySetInnerHTML={{ __html: jsonLdString(JSON_LD) }}
+          dangerouslySetInnerHTML={{ __html: jsonLdString(jsonLdNegocio(catalogoInicial?.sitio)) }}
         />
         {/* `key={modo}`: al cambiar de modo el carrito arranca de cero con el guardado de ese modo. */}
         <CartProvider key={modo} modo={modo} initialCatalogo={catalogoInicial}>

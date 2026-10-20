@@ -30,6 +30,9 @@
   color: var(--color-black);
   overflow-wrap: anywhere;
 }
+/* El nombre lleva a la página del producto (20/10/2026). */
+.nombreLink { color: inherit; }
+.nombreLink:hover { text-decoration: underline; }
 .chips { display: flex; flex-wrap: wrap; gap: 4px; }
 .chip, .chipMas, .chipTamano, .chipOferta, .chipVolvio {
   font-size: 10px; font-weight: 800; letter-spacing: 0.02em; white-space: nowrap;

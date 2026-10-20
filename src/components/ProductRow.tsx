@@ -1,6 +1,8 @@
 'use client';
 
 import { useRef } from 'react';
+import Link from 'next/link';
+import { rutaProducto } from '@/lib/rutas';
 import { useCompraProducto } from '@/lib/useCompraProducto';
 import { COLORES_TAG, COLOR_TAG_DEFAULT } from '@/lib/etiquetas';
 import { money, cant } from '@/lib/format';
@@ -43,7 +45,7 @@ export function ProductRow({ producto }: { producto: ItemCatalogo }) {
           {fuente.oferta && <span className={styles.chipOferta}>{fuente.oferta.badge}</span>}
           {!fuente.oferta && producto.reingreso && <span className={styles.chipVolvio}>¡Volvió!</span>}
         </div>
-        <h3 className={styles.nombre}>{producto.nombre}</h3>
+        <h3 className={styles.nombre}><Link href={rutaProducto(producto)} className={styles.nombreLink}>{producto.nombre}</Link></h3>
         {(etiquetas.length > 0 || c.grupos.length === 1) && (
           <div className={styles.chips}>
             {c.grupos.length === 1 && c.grupos[0].etiqueta && <span className={styles.chipTamano}>{c.grupos[0].etiqueta}</span>}

@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useCart } from '@/lib/cart';
 import { linkRed, linkWhatsApp, telefonoArgentino } from '@/lib/format';
+import { horarioLegible } from '@/lib/horarios';
 import styles from './Footer.module.css';
 
 /*
@@ -37,7 +38,10 @@ export function Footer() {
   const waNum = telefonoArgentino(contacto.whatsapp);
   const waLegible = waNum ? `+54 9 ${waNum.slice(0, 4)} ${waNum.slice(4)}` : contacto.whatsapp;
   const instagram = linkRed(contacto.instagram, 'instagram.com');
-  const dirMapa = direccionParaMapa(String(contacto.ubicacion || ''));
+  /* Los locales con su horario (20/10/2026): el mapa va al primero con dirección; sin locales, a la ubicación de contacto. */
+  const locales = catalogo?.sitio?.locales ?? [];
+  const direccionDe = (l: { direccion: string; localidad: string }) => [l.direccion, l.localidad].filter(Boolean).join(', ');
+  const dirMapa = direccionParaMapa(direccionDe(locales.find((l) => l.direccion) ?? { direccion: '', localidad: '' }) || String(contacto.ubicacion || ''));
   const facebook = linkRed(contacto.facebook, 'facebook.com');
 
   return (
@@ -48,9 +52,10 @@ export function Footer() {
         <div className={`container ${styles.grid}`}>
           <div className={styles.colAbout}>
             <div className={styles.logo}>Sabor y Aroma</div>
+            {/* La descripción del sitio, la misma que ve Google (ERP › Tienda online › Configuración). */}
             <p className={styles.about}>
-              Tu tienda mayorista de productos saludables. Ofrecemos la mejor selección de
-              alimentos naturales, orgánicos y libres de gluten.
+              {catalogo?.sitio?.seo?.descripcion
+                || 'Productos saludables: la mejor selección de alimentos naturales, orgánicos y libres de gluten.'}
             </p>
             <div className={styles.social}>
               <a
@@ -139,8 +144,28 @@ export function Footer() {
         <div className="container">
           <h4 className={styles.mapTitle}>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" /><circle cx="12" cy="10" r="3" /></svg>
-            Nuestra Ubicación
+            {locales.length > 1 ? 'Nuestros locales' : locales.length ? 'Nuestro local' : 'Nuestra Ubicación'}
           </h4>
+          {locales.length > 0 && (
+            <ul className={styles.locales}>
+              {locales.map((l, i) => {
+                const dir = direccionDe(l);
+                const horario = horarioLegible(l);
+                return (
+                  <li key={`${i}-${l.nombre}`} className={styles.local}>
+                    <strong className={styles.localNombre}>{l.nombre || 'Sabor y Aroma'}</strong>
+                    {dir && <a href={mapaLink(direccionParaMapa(dir))} target="_blank" rel="noopener noreferrer">{dir}</a>}
+                    {l.telefono && <a href={`tel:${l.telefono.replace(/\D/g, '')}`}>{l.telefono}</a>}
+                    {horario.length > 0 && (
+                      <dl className={styles.horario}>
+                        {horario.map((h) => <div key={h.dias}><dt>{h.dias}</dt><dd>{h.horas}</dd></div>)}
+                      </dl>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+          )}
           <div className={styles.mapWrapper}>
             <iframe
               src={mapaEmbed(dirMapa)}

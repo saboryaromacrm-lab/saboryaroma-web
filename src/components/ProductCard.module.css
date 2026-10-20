@@ -61,6 +61,9 @@
   overflow: hidden;
   min-height: 2.6em;
 }
+/* El nombre lleva a la página del producto (20/10/2026): se ve igual que siempre; el subrayado avisa al pasar. */
+.nameLink { color: inherit; }
+.nameLink:hover { text-decoration: underline; }
 .price { font-size: var(--font-size-lg); font-weight: 800; color: var(--color-primary); margin-bottom: var(--space-2); }
 .perKg { font-size: var(--font-size-xs); font-weight: 500; color: var(--color-gray-500); }
 
@@ -286,6 +289,23 @@
 :global(html[data-modo='minorista']) .addBtn[data-added='true'] { background: var(--color-primary-light); }
 :global(html[data-modo='minorista']) .qty { border-radius: var(--radius-full); }
 :global(html[data-modo='minorista']) .qty button { border-radius: var(--radius-full); }
+
+/*
+ * LA FICHA (20/10/2026): la misma tarjeta en la página del producto. El
+ * nombre es el título, entero; desde tablet la foto va al lado de la compra.
+ * `.ficha .content .name` le gana al tamaño del modo minorista de arriba.
+ */
+.ficha:hover { transform: none; box-shadow: var(--shadow-card); }
+.ficha .content .name {
+  display: block; overflow: visible; min-height: 0;
+  margin-bottom: var(--space-2);
+  font-size: 1.5rem; line-height: 1.25;
+}
+@media (min-width: 768px) {
+  .ficha { flex-direction: row; }
+  .ficha .imageWrap { flex: 0 0 48%; aspect-ratio: auto; min-height: 380px; }
+  .ficha .content { padding: var(--space-6); }
+}
 
 /* En la tarjeta angosta el cartel de la oferta va en un renglón y no tapa la foto (19/10/2026). */
 @container (max-width: 220px) {

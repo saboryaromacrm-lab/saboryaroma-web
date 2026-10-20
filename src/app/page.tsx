@@ -6,7 +6,13 @@ import { ProductCarousel } from '@/components/ProductCarousel';
 import { HeroSlider } from '@/components/HeroSlider';
 import { MarcasCarousel } from '@/components/MarcasCarousel';
 import { HomeMinorista } from '@/components/minorista/HomeMinorista';
+import { metaPagina } from '@/lib/seo';
 import styles from './page.module.css';
+
+/** La portada: el título y la descripción del sitio, como dirección única para Google. */
+export async function generateMetadata() {
+  return metaPagina((await catalogoConSesion().catch(() => null))?.sitio, { ruta: '/' });
+}
 
 export default async function HomePage() {
   const cat = await catalogoConSesion().catch(() => null);
