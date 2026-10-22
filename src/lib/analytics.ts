@@ -12,6 +12,9 @@
  *  - `agregar_carrito`: el clic en Agregar.
  *  - `busqueda`: lo que se escribió en el buscador.
  *  - `pedido`: el pedido que se mandó (0179), para cerrar el embudo por sesión.
+ *  - `llegada`: UNA vez por sesión, de dónde vino (0194): solo el DOMINIO del
+ *    sitio que lo trajo (nunca la dirección completa), los `utm_*` del link y
+ *    si vino de un anuncio. El canal lo decide el servidor.
  *
  * Cada lote dice en qué MODO de la tienda pasó (mayorista o minorista, 0179):
  * las métricas del ERP van separadas por modo.
@@ -28,7 +31,11 @@ const FLUSH_MS = 15000;
 /** Menos de esto no es "mirar": es scrollear por encima. */
 const MIN_SEGUNDOS = 1;
 
-type Evento = { tipo: string; ruta?: string; productoId?: number; segundos?: number };
+type Evento = {
+  tipo: string; ruta?: string; productoId?: number; segundos?: number;
+  /* Solo en `llegada` (0194). */
+  referente?: string; utmSource?: string; utmMedium?: string; utmCampaign?: string; clic?: string; meta?: boolean; propio?: string;
+};
 
 const cola: Evento[] = [];
 const dwellAcumulado = new Map<number, number>(); // productoId → segundos ya juntados
@@ -82,10 +89,33 @@ function flush(alSalir = false) {
   } catch { /* idem */ }
 }
 
+/**
+ * De dónde llegó esta sesión (0194): una sola vez (la marca vive en
+ * sessionStorage, igual que la sesión). Sin sessionStorage no se manda: mejor
+ * sin dato que contar la misma visita en cada página.
+ */
+function registrarLlegada() {
+  try {
+    if (sessionStorage.getItem('sa_llegada')) return;
+    sessionStorage.setItem('sa_llegada', '1');
+  } catch { return; }
+  const q = new URLSearchParams(location.search);
+  const p = (k: string) => (q.get(k) ?? '').slice(0, 60);
+  let referente = '';
+  try { referente = document.referrer ? new URL(document.referrer).hostname : ''; } catch { /* sin dato */ }
+  cola.push({
+    tipo: 'llegada', ruta: location.pathname, referente, propio: location.hostname,
+    utmSource: p('utm_source'), utmMedium: p('utm_medium'), utmCampaign: p('utm_campaign'),
+    clic: q.has('gclid') || q.has('gbraid') || q.has('wbraid') ? 'google' : q.has('ttclid') ? 'tiktok' : '',
+    meta: q.has('fbclid'),
+  });
+}
+
 /** Arranca el ciclo de envío. Idempotente: el tracker lo llama una vez. */
 export function iniciarAnalytics() {
   if (iniciado || typeof window === 'undefined') return;
   iniciado = true;
+  registrarLlegada();
   setInterval(() => flush(false), FLUSH_MS);
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'hidden') flush(true);
