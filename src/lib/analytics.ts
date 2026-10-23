@@ -34,7 +34,7 @@ const MIN_SEGUNDOS = 1;
 type Evento = {
   tipo: string; ruta?: string; productoId?: number; segundos?: number;
   /* Solo en `llegada` (0194). */
-  referente?: string; utmSource?: string; utmMedium?: string; utmCampaign?: string; clic?: string; meta?: boolean; propio?: string;
+  referente?: string; utmSource?: string; utmMedium?: string; utmCampaign?: string; clic?: string; meta?: boolean; propio?: string; link?: string;
 };
 
 const cola: Evento[] = [];
@@ -108,6 +108,8 @@ function registrarLlegada() {
     utmSource: p('utm_source'), utmMedium: p('utm_medium'), utmCampaign: p('utm_campaign'),
     clic: q.has('gclid') || q.has('gbraid') || q.has('wbraid') ? 'google' : q.has('ttclid') ? 'tiktok' : '',
     meta: q.has('fbclid'),
+    /* El link medible por el que entró (0195): lo pone la redirección de /l/<código>. */
+    link: p('l'),
   });
 }
 

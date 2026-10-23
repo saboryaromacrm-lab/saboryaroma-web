@@ -7,7 +7,8 @@
 export type Modo = 'mayorista' | 'minorista';
 
 export const COOKIE_MODO = 'sa_modo';
-const UN_ANIO_S = 365 * 86_400;
+/** Cuánto dura la elección: la usan el navegador y el link medible (/l/<código>). */
+export const DURACION_MODO_S = 365 * 86_400;
 
 /** Lo que haya en la cookie, solo si es un modo válido. */
 export const modoDe = (v: unknown): Modo | null => (v === 'minorista' || v === 'mayorista' ? v : null);
@@ -17,7 +18,7 @@ export const MODO_INICIAL: Modo = 'minorista';
 
 export function guardarModo(modo: Modo) {
   const seguro = location.protocol === 'https:' ? '; Secure' : '';
-  document.cookie = `${COOKIE_MODO}=${modo}; Max-Age=${UN_ANIO_S}; Path=/; SameSite=Lax${seguro}`;
+  document.cookie = `${COOKIE_MODO}=${modo}; Max-Age=${DURACION_MODO_S}; Path=/; SameSite=Lax${seguro}`;
 }
 
 export const ETIQUETA_MODO: Record<Modo, string> = { minorista: 'Minorista', mayorista: 'Mayorista' };

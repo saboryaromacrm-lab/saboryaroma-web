@@ -93,6 +93,15 @@ export const estaCerrada = (c: Catalogo | TiendaCerrada): c is TiendaCerrada => 
  * datos de quien ingresó; sin ella, sin nada de plata (`conPrecios: false`).
  * Van las dos sesiones: la API usa la del modo que contesta.
  */
+/**
+ * A dónde lleva un link medible (0195): el modo, la página y el canal. null si
+ * el código no existe o está desactivado (la tienda abre la portada igual).
+ */
+export async function resolverLink(codigo: string): Promise<{ modo: Modo; destino: string; canal: string } | null> {
+  const r = await pedir(`${API}/tienda/links/${encodeURIComponent(codigo)}`, { cache: 'no-store' }, TIMEOUT_CATALOGO_MS, 'No se pudo conectar con la tienda.');
+  return r.ok ? r.json() : null;
+}
+
 export async function getCatalogo(token?: string, modo: Modo = 'mayorista', tokenMin?: string, previa?: string): Promise<Catalogo | TiendaCerrada> {
   const r = await pedir(
     `${API}/tienda/catalogo${modo === 'minorista' ? '?modo=minorista' : ''}`,

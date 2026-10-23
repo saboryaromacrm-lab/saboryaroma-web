@@ -7,7 +7,7 @@ export default function robots(): MetadataRoute.Robots {
       userAgent: '*',
       allow: '/',
       // Páginas del comprador, sin valor para el índice.
-      disallow: ['/carrito', '/checkout'],
+      disallow: ['/carrito', '/checkout', '/l/'],
     },
     sitemap: `${SITE_URL}/sitemap.xml`,
   };
