@@ -3,11 +3,12 @@ import { imgSrc } from '@/lib/api';
 import { catalogoConSesion } from '@/lib/catalogoServidor';
 import { ProductCard } from '@/components/ProductCard';
 import { ProductCarousel } from '@/components/ProductCarousel';
-import { HeroSlider } from '@/components/HeroSlider';
+import { HeroMayorista } from '@/components/HeroMayorista';
 import { MarcasCarousel } from '@/components/MarcasCarousel';
 import { HomeMinorista } from '@/components/minorista/HomeMinorista';
 import { NutriRescateBanner } from '@/components/NutriRescate';
 import { enRescate } from '@/lib/nutrirescate';
+import { bannersMayorista } from '@/lib/bannersMayorista';
 import { metaPagina } from '@/lib/seo';
 import styles from './page.module.css';
 
@@ -39,15 +40,9 @@ export default async function HomePage() {
 
   return (
     <div>
-      <HeroSlider sitio={cat.sitio} />
+      <HeroMayorista banners={bannersMayorista(cat)} />
 
       <ProductCarousel id="ofertas" variant="ofertas" titulo="Ofertas" subtitulo="Precios especiales por tiempo limitado" productos={enOferta} />
-      {/* NutriRescate (20/10/2026): lo próximo a vencer, si hay. */}
-      {rescate.length > 0 && (
-        <div className={`container ${styles.rescate}`}>
-          <NutriRescateBanner items={rescate} conPrecios={cat.conPrecios !== false} enPortada />
-        </div>
-      )}
       <ProductCarousel titulo="Volvieron a stock" subtitulo="Productos que estaban agotados y ya podés volver a pedir" productos={reingresados} />
 
       {cat.categorias.length > 0 && (
@@ -87,6 +82,13 @@ export default async function HomePage() {
       )}
 
       <MarcasCarousel marcas={cat.marcas} />
+
+      {/* NutriRescate (20/10/2026): lo próximo a vencer, si hay. Al final de la portada (23/10/2026, pedido del dueño). */}
+      {rescate.length > 0 && (
+        <div className={`container ${styles.rescate}`}>
+          <NutriRescateBanner items={rescate} conPrecios={cat.conPrecios !== false} enPortada />
+        </div>
+      )}
     </div>
   );
 }
