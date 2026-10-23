@@ -228,3 +228,6 @@
   .circulo { width: 92px; }
   .circuloImg { width: 80px; height: 80px; }
 }
+
+/* Los slides elegidos para la minorista (23/10/2026): el carrusel de las dos tiendas, en una tarjeta redondeada. */
+.banners { border-radius: 28px; }

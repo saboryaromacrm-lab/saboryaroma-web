@@ -3,12 +3,12 @@ import { imgSrc } from '@/lib/api';
 import { catalogoConSesion } from '@/lib/catalogoServidor';
 import { ProductCard } from '@/components/ProductCard';
 import { ProductCarousel } from '@/components/ProductCarousel';
-import { HeroMayorista } from '@/components/HeroMayorista';
+import { CarruselBanners } from '@/components/CarruselBanners';
 import { MarcasCarousel } from '@/components/MarcasCarousel';
 import { HomeMinorista } from '@/components/minorista/HomeMinorista';
 import { NutriRescateBanner } from '@/components/NutriRescate';
 import { enRescate } from '@/lib/nutrirescate';
-import { bannersMayorista } from '@/lib/bannersMayorista';
+import { bannersTienda } from '@/lib/bannersTienda';
 import { metaPagina } from '@/lib/seo';
 import styles from './page.module.css';
 
@@ -40,7 +40,7 @@ export default async function HomePage() {
 
   return (
     <div>
-      <HeroMayorista banners={bannersMayorista(cat)} />
+      <CarruselBanners banners={bannersTienda(cat, 'mayorista')} />
 
       <ProductCarousel id="ofertas" variant="ofertas" titulo="Ofertas" subtitulo="Precios especiales por tiempo limitado" productos={enOferta} />
       <ProductCarousel titulo="Volvieron a stock" subtitulo="Productos que estaban agotados y ya podés volver a pedir" productos={reingresados} />

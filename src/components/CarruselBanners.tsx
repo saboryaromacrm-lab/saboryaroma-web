@@ -4,23 +4,23 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { ProductoModal } from '@/components/ProductoModal';
 import { imgSrc } from '@/lib/api';
-import type { Banner } from '@/lib/bannersMayorista';
+import type { Banner } from '@/lib/bannersTienda';
 import type { ItemCatalogo } from '@/lib/types';
-import styles from './HeroMayorista.module.css';
+import styles from './CarruselBanners.module.css';
 
 const AUTOPLAY_MS = 6500;
 /** Cuántas fotos chicas acompañan a la grande en un banner automático. */
 const CHICAS = 4;
 
 /**
- * EL CARRUSEL DE LA PORTADA MAYORISTA (23/10/2026). Los banners los arma
- * `bannersMayorista` con el catálogo: los automáticos llevan una foto grande,
+ * EL CARRUSEL DE BANNERS DE LA PORTADA (23/10/2026), en las dos tiendas. Los
+ * banners los arma `bannersTienda` con el catálogo: los automáticos llevan una foto grande,
  * otras chicas flotando y, si es de una marca, su logo en una tarjeta blanca;
  * los del ERP con imagen propia se ven a pantalla completa como siempre. Gira
  * solo cada 6,5 s (se frena con el mouse encima o con la pestaña oculta), se
  * pasa con las flechas, los puntos o deslizando; tocar una foto abre el producto.
  */
-export function HeroMayorista({ banners }: { banners: Banner[] }) {
+export function CarruselBanners({ banners, className = '' }: { banners: Banner[]; className?: string }) {
   const [i, setI] = useState(0);
   const [pausa, setPausa] = useState(false);
   const [abierto, setAbierto] = useState<ItemCatalogo | null>(null);
@@ -39,7 +39,7 @@ export function HeroMayorista({ banners }: { banners: Banner[] }) {
 
   return (
     <section
-      className={styles.hero}
+      className={`${styles.hero} ${className}`}
       aria-roledescription="carrusel"
       aria-label="Novedades de la tienda"
       onMouseEnter={() => setPausa(true)}

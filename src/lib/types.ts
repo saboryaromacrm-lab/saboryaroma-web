@@ -133,8 +133,15 @@ export interface SlideSitio {
   cta: string;
   ctaUrl: string;
   posicion: 'left' | 'center' | 'right' | string;
-  /** Imagen subida para ESTE slide ('' = ilustración por defecto del sitio). */
+  /** Imagen subida para ESTE slide ('' = sin imagen: uno de imagen no se muestra). */
   bannerUrl: string;
+  /** Qué muestra (23/10/2026): la imagen subida, una marca o productos elegidos. Ausente = imagen. */
+  contenido?: 'imagen' | 'marca' | 'productos';
+  marcaId?: number;
+  /** Los productos elegidos, «12,45,78». */
+  productoIds?: string;
+  /** En qué tienda va. Ausente = la mayorista (los de antes). */
+  tiendas?: 'mayorista' | 'minorista' | 'ambas';
 }
 
 /** Contacto y redes del sitio, editables desde Web › Configuración del sitio. */

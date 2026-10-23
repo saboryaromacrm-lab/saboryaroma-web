@@ -10,6 +10,8 @@ import { IngresarParaComprar } from '@/components/Ingreso';
 import { LEMA_NUTRIOFERTAS, NUTRIOFERTAS, URL_NUTRIOFERTAS } from '@/lib/nutriofertas';
 import { enRescate } from '@/lib/nutrirescate';
 import { NutriRescateBanner } from '@/components/NutriRescate';
+import { CarruselBanners } from '@/components/CarruselBanners';
+import { bannersTienda } from '@/lib/bannersTienda';
 import type { Catalogo, ItemCatalogo, PortadaMinorista } from '@/lib/types';
 import styles from './HomeMinorista.module.css';
 
@@ -67,6 +69,7 @@ export function HomeMinorista({ cat }: { cat: Catalogo }) {
   const seleccion = destacados.length ? destacados : cat.items.filter((x) => x.enStock).slice(0, 8);
   const reingresados = cat.items.filter((x) => x.reingreso && !x.oferta);
   const fotos = fotosDelHero(cat.items);
+  const banners = bannersTienda(cat, 'minorista');
   const envioGratis = cat.envioGratisDesde ?? 0;
   /* El envío gratis es un sello solo si está configurado: no hace falta escribirlo. */
   const sellos = [...p.sellos, ...(envioGratis > 0 ? [`Envío gratis desde ${money(envioGratis)}`] : [])].slice(0, 4);
@@ -118,6 +121,13 @@ export function HomeMinorista({ cat }: { cat: Catalogo }) {
             ))}
           </div>
         </section>
+      )}
+
+      {/* Los slides elegidos en el ERP para la minorista (23/10/2026): marcas, productos o imagen propia. */}
+      {banners.length > 0 && (
+        <div className={`container ${styles.seccion}`}>
+          <CarruselBanners banners={banners} className={styles.banners} />
+        </div>
       )}
 
       {/* El envío gratis por barrio (0185): solo si hay alguno cargado en el ERP. */}
