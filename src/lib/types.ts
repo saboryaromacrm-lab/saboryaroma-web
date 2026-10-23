@@ -137,6 +137,8 @@ export interface SlideSitio {
   bannerUrl: string;
   /** Qué muestra (23/10/2026): la imagen subida, una marca o productos elegidos. Ausente = imagen. */
   contenido?: 'imagen' | 'marca' | 'productos';
+  /** Las marcas elegidas, «3,7» (hasta 5). `marcaId` es el de antes, de una sola. */
+  marcaIds?: string;
   marcaId?: number;
   /** Los productos elegidos, «12,45,78». */
   productoIds?: string;

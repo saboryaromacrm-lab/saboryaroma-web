@@ -15,7 +15,7 @@ const CHICAS = 4;
 /**
  * EL CARRUSEL DE BANNERS DE LA PORTADA (23/10/2026), en las dos tiendas. Los
  * banners los arma `bannersTienda` con el catálogo: los automáticos llevan una foto grande,
- * otras chicas flotando y, si es de una marca, su logo en una tarjeta blanca;
+ * otras chicas flotando y, si es de marcas, sus logos en tarjetas blancas;
  * los del ERP con imagen propia se ven a pantalla completa como siempre. Gira
  * solo cada 6,5 s (se frena con el mouse encima o con la pestaña oculta), se
  * pasa con las flechas, los puntos o deslizando; tocar una foto abre el producto.
@@ -96,7 +96,11 @@ export function CarruselBanners({ banners, className = '' }: { banners: Banner[]
 function Texto({ b }: { b: Banner }) {
   return (
     <div className={styles.texto}>
-      {b.tipo === 'auto' && b.logo && <LogoMarca src={b.logo} alt={`Logo de ${b.marca}`} />}
+      {b.tipo === 'auto' && b.logos.length > 0 && (
+        <span className={b.logos.length > 1 ? styles.logosVarios : undefined}>
+          {b.logos.map((l) => <LogoMarca key={l.src} src={l.src} alt={`Logo de ${l.marca}`} />)}
+        </span>
+      )}
       {b.badge && <span className={styles.badge}>{b.badge}</span>}
       <h2 className={styles.titulo}>{b.titulo}</h2>
       {b.texto && <p className={styles.bajada}>{b.texto}</p>}

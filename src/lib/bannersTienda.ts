@@ -9,7 +9,7 @@ import type { Modo } from '@/lib/modo';
  * Primero los slides del ERP (Tienda online › Contenido) de ESTA tienda, en su
  * orden:
  *   · imagen propia: se ve si tiene la imagen subida;
- *   · una marca: su logo y las fotos de sus productos con stock;
+ *   · marcas (hasta 5): sus logos y las fotos de sus productos con stock;
  *   · productos elegidos: las fotos de los que tienen stock.
  * Los textos que quedaron vacíos se completan solos; uno de marca o de
  * productos sin nada con foto y stock no se muestra.
@@ -21,7 +21,8 @@ import type { Modo } from '@/lib/modo';
  */
 export type Banner =
   | { tipo: 'imagen'; key: string; imagen: string; badge: string; titulo: string; texto: string; cta: string; url: string; posicion: 'left' | 'center' | 'right' }
-  | { tipo: 'auto'; key: string; tono: Tono; badge: string; titulo: string; texto: string; cta: string; url: string; logo?: string; marca?: string; fotos: ItemCatalogo[] };
+  | { tipo: 'auto'; key: string; tono: Tono; badge: string; titulo: string; texto: string; cta: string; url: string; logos: Logo[]; fotos: ItemCatalogo[] };
+export interface Logo { src: string; marca: string }
 
 /** El fondo de cada banner automático: los colores de la casa, siempre claros (las fotos tienen fondo blanco). */
 export type Tono = 'naranja' | 'verde' | 'crema' | 'lima';
@@ -35,6 +36,12 @@ const POSICIONES = new Set(['left', 'center', 'right']);
 
 const conFoto = (p: ItemCatalogo) => !!p.imagenUrl && p.enStock;
 const plural = (n: number, uno: string, varios: string) => `${n} ${n === 1 ? uno : varios}`;
+/** «3,7», o la `marcaId` de los slides de una sola marca. */
+const marcasDe = (sl: SlideSitio) => (sl.marcaIds ? sl.marcaIds.split(',').map(Number).filter(Boolean) : sl.marcaId ? [sl.marcaId] : []);
+/** «A», «A y B», «A, B y C». */
+const enLista = (xs: string[]) => (xs.length < 2 ? xs.join('') : `${xs.slice(0, -1).join(', ')} y ${xs.at(-1)}`);
+/** Una foto de cada una, por turno: así se ven todas las marcas del banner. */
+const intercalar = <T,>(listas: T[][]) => Array.from({ length: Math.max(0, ...listas.map((l) => l.length)) }, (_, i) => listas.map((l) => l[i])).flat().filter((x): x is T => x != null);
 /** Un slide sin `tiendas` es de antes (23/10/2026): era de la mayorista. */
 const esDe = (sl: SlideSitio, modo: Modo) => (sl.tiendas || 'mayorista') === modo || sl.tiendas === 'ambas';
 
@@ -47,24 +54,28 @@ export function bannersTienda(cat: Catalogo, modo: Modo): Banner[] {
   let tono = 0;
   const siguienteTono = () => TONOS[tono++ % TONOS.length];
 
-  const marcaBanner = (marcaId: number, sl?: SlideSitio): Banner | null => {
-    const m = marcaPorId.get(marcaId);
-    const suyas = porMarca.get(marcaId) ?? [];
-    if (!m || !suyas.length) return null;
+  /* Una o varias marcas: las que no tienen nada con foto y stock quedan afuera; sin ninguna, no hay banner. */
+  const marcasBanner = (ids: number[], sl?: SlideSitio): Banner | null => {
+    const ms = ids.map((id) => marcaPorId.get(id)).filter((m): m is NonNullable<typeof m> => !!m && !!porMarca.get(m.id)?.length);
+    if (!ms.length) return null;
+    const [m] = ms;
+    const una = ms.length === 1;
+    const productos = ms.reduce((t, x) => t + x.count, 0);
+    const nombres = enLista(ms.map((x) => x.nombre));
     return {
       tipo: 'auto', key: sl ? `s${sl.id}` : `m${m.id}`, tono: siguienteTono(),
-      badge: sl?.badge || 'Marca destacada', titulo: sl?.titulo || m.nombre,
+      badge: sl?.badge || (una ? 'Marca destacada' : 'Marcas destacadas'), titulo: sl?.titulo || nombres,
       texto: sl?.texto || (modo === 'minorista'
-        ? `${plural(m.count, 'producto', 'productos')} de ${m.nombre}, al precio del local.`
-        : `${plural(m.count, 'producto', 'productos')} de ${m.nombre} a precio mayorista para tu negocio.`),
-      cta: sl?.cta || `Ver ${m.nombre}`, url: sl?.ctaUrl || `/tienda?marca=${m.id}`,
-      ...(m.imagenUrl ? { logo: imgSrc(m.imagenUrl), marca: m.nombre } : {}),
-      fotos: suyas.slice(0, FOTOS_POR_BANNER),
+        ? `${plural(productos, 'producto', 'productos')} de ${nombres}, al precio del local.`
+        : `${plural(productos, 'producto', 'productos')} de ${nombres} a precio mayorista para tu negocio.`),
+      cta: sl?.cta || (una ? `Ver ${m.nombre}` : 'Ver la tienda'), url: sl?.ctaUrl || (una ? `/tienda?marca=${m.id}` : '/tienda'),
+      logos: ms.filter((x) => x.imagenUrl).map((x) => ({ src: imgSrc(x.imagenUrl), marca: x.nombre })),
+      fotos: intercalar(ms.map((x) => porMarca.get(x.id) ?? [])).slice(0, FOTOS_POR_BANNER),
     };
   };
 
   const deSlide = (sl: SlideSitio): Banner | null => {
-    if (sl.contenido === 'marca') return marcaBanner(sl.marcaId ?? 0, sl);
+    if (sl.contenido === 'marca') return marcasBanner(marcasDe(sl), sl);
     if (sl.contenido === 'productos') {
       const elegidos = String(sl.productoIds ?? '').split(',').map(Number).map((id) => porId.get(id)).filter((p): p is ItemCatalogo => !!p);
       if (!elegidos.length) return null;
@@ -72,7 +83,7 @@ export function bannersTienda(cat: Catalogo, modo: Modo): Banner[] {
       return {
         tipo: 'auto', key: `s${sl.id}`, tono: siguienteTono(), badge: sl.badge, titulo: sl.titulo || 'Elegidos de la casa', texto: sl.texto,
         cta: sl.cta || 'Ver en la tienda', url: sl.ctaUrl || (unaMarca ? `/tienda?marca=${elegidos[0].marcaId}` : '/tienda'),
-        fotos: elegidos.slice(0, FOTOS_POR_BANNER),
+        logos: [], fotos: elegidos.slice(0, FOTOS_POR_BANNER),
       };
     }
     if (!sl.bannerUrl) return null;
@@ -93,7 +104,7 @@ export function bannersTienda(cat: Catalogo, modo: Modo): Banner[] {
     auto.push({
       tipo: 'auto', key: 'ofertas', tono: 'naranja', badge: 'Ofertas activas', titulo: 'Precios especiales por tiempo limitado',
       texto: `${plural(ofertas.length, 'producto', 'productos')} en oferta para tu compra mayorista, hasta agotar stock.`,
-      cta: 'Ver ofertas', url: '/tienda?oferta=1', fotos: ofertas.slice(0, FOTOS_POR_BANNER),
+      cta: 'Ver ofertas', url: '/tienda?oferta=1', logos: [], fotos: ofertas.slice(0, FOTOS_POR_BANNER),
     });
   }
 
@@ -103,7 +114,7 @@ export function bannersTienda(cat: Catalogo, modo: Modo): Banner[] {
       .filter((m) => m.imagenUrl && (porMarca.get(m.id)?.length ?? 0) >= MIN_FOTOS)
       .sort((a, b) => (porMarca.get(b.id)?.length ?? 0) - (porMarca.get(a.id)?.length ?? 0))
       .slice(0, MAX_MARCAS)
-      .forEach((m) => { const b = marcaBanner(m.id); if (b) auto.push(b); });
+      .forEach((m) => { const b = marcasBanner([m.id]); if (b) auto.push(b); });
   }
 
   const volvieron = fotos.filter((p) => p.reingreso && !p.oferta);
@@ -111,7 +122,7 @@ export function bannersTienda(cat: Catalogo, modo: Modo): Banner[] {
     auto.push({
       tipo: 'auto', key: 'volvieron', tono: 'lima', badge: 'Recién llegados', titulo: 'Volvieron a stock',
       texto: 'Lo que estaba agotado ya está otra vez en el depósito. Pedilo antes de que se vuelva a ir.',
-      cta: 'Ver la tienda', url: '/tienda', fotos: volvieron.slice(0, FOTOS_POR_BANNER),
+      cta: 'Ver la tienda', url: '/tienda', logos: [], fotos: volvieron.slice(0, FOTOS_POR_BANNER),
     });
   }
 
@@ -121,7 +132,7 @@ export function bannersTienda(cat: Catalogo, modo: Modo): Banner[] {
     auto.push({
       tipo: 'auto', key: 'catalogo', tono: 'verde', badge: 'Distribuidora saludable', titulo: 'Todo para tu negocio, en un solo pedido',
       texto: `${plural(cat.items.length, 'producto', 'productos')} a precio mayorista${rubros.length ? `: ${rubros.join(', ')} y más` : ''}.`,
-      cta: 'Ver el catálogo', url: '/tienda', fotos: (elegidos.length >= MIN_FOTOS ? elegidos : fotos).slice(0, FOTOS_POR_BANNER),
+      cta: 'Ver el catálogo', url: '/tienda', logos: [], fotos: (elegidos.length >= MIN_FOTOS ? elegidos : fotos).slice(0, FOTOS_POR_BANNER),
     });
   }
 
