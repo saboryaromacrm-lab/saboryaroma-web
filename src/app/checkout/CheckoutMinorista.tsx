@@ -29,7 +29,8 @@ import { textoCuando } from '@/lib/horarioEnvio';
 import { pedidoEnviado } from '@/lib/analytics';
 import { leerToken } from '@/lib/sesion';
 import { money, telLegible } from '@/lib/format';
-import { IngresarParaComprar } from '@/components/Ingreso';
+import { IngresarParaComprar, useSalirDeLaCuenta } from '@/components/Ingreso';
+import { TelefonoConfirmar } from './TelefonoConfirmar';
 import { UbicacionEnvio } from '@/components/minorista/UbicacionEnvio';
 import type { AgendaEnvios, CotizacionEnvio, CuandoEnvio as Cuando, EntregaMinorista, ItemCarrito, MedioPagoTienda, Punto } from '@/lib/types';
 import { CuandoEnvio } from './CuandoEnvio';
@@ -74,6 +75,7 @@ export function CheckoutMinorista() {
   const [error, setError] = useState('');
   const [resultado, setResultado] = useState<{ codigo: string; total: number; telefono: string } | null>(null);
   const enVuelo = useRef(false);
+  const salirDeLaCuenta = useSalirDeLaCuenta();
 
   const conEnvio = entrega === 'envio';
   /** Va a la guardada si tiene una y la eligió; si no, a la que escriba. */
@@ -393,9 +395,15 @@ export function CheckoutMinorista() {
             >
               <h2 id="confirm-titulo" className={styles.confirmTitulo}>¿Están bien tus datos?</h2>
               <p className={styles.confirmSub}>Revisalos antes de enviar: con estos datos te contactamos.</p>
+              <TelefonoConfirmar telefono={comprador.telefono}>
+                Si no es tu número no te vamos a poder avisar.
+                <br />
+                <button type="button" className={styles.telCambiar} disabled={enviando} onClick={() => { setConfirmar(false); salirDeLaCuenta(); }}>
+                  No es mi número: ingresar con otro
+                </button>
+              </TelefonoConfirmar>
               <dl className={styles.confirmDatos}>
                 <dt>Nombre</dt><dd>{quien}</dd>
-                <dt>WhatsApp</dt><dd>{telLegible(comprador.telefono)}</dd>
                 <dt>Entrega</dt>
                 <dd>
                   {!conEnvio ? 'Retiro en el local'

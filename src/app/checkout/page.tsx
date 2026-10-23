@@ -10,6 +10,7 @@ import { money, telefonoArgentino } from '@/lib/format';
 import { IngresarParaComprar } from '@/components/Ingreso';
 import type { Entrega } from '@/lib/types';
 import { CheckoutMinorista } from './CheckoutMinorista';
+import { TelefonoConfirmar } from './TelefonoConfirmar';
 import styles from './page.module.css';
 
 /* `camioneta` es el id interno: el cliente lee «Envío sin costo» (4/10/2026). */
@@ -293,10 +294,10 @@ function CheckoutMayorista() {
             >
               <h2 id="confirm-titulo" className={styles.confirmTitulo}>¿Están bien tus datos?</h2>
               <p className={styles.confirmSub}>Revisalos antes de enviar: con estos datos te contactamos.</p>
+              <TelefonoConfirmar telefono={telefono}>¿Está bien? Si no, tocá «Corregir» y cambialo.</TelefonoConfirmar>
               <dl className={styles.confirmDatos}>
                 <dt>DNI</dt><dd>{cliente.dni}</dd>
                 <dt>Nombre</dt><dd>{cliente.nombre}</dd>
-                <dt>WhatsApp</dt><dd>{telefono}</dd>
                 <dt>Entrega</dt><dd>{etiquetaEntrega}</dd>
                 {conEnvio && (<><dt>Dirección</dt><dd>{[calle.trim(), localidad.trim(), referencia.trim()].filter(Boolean).join(' · ')}</dd></>)}
                 {observaciones.trim() && (<><dt>Notas</dt><dd>{observaciones.trim()}</dd></>)}

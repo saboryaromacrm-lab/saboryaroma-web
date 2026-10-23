@@ -131,6 +131,21 @@
 .confirmDatos dt { color: var(--color-gray-550); font-weight: 600; }
 .confirmDatos dd { margin: 0; color: var(--color-gray-800); overflow-wrap: anywhere; }
 .confirmBotones { display: grid; grid-template-columns: 1fr 1.6fr; gap: 10px; }
+/* El WhatsApp de la confirmación (23/10/2026): grande y en un recuadro que se ve primero. */
+.telConfirmar {
+  display: flex; flex-direction: column; align-items: center; gap: 4px; text-align: center;
+  padding: 14px 12px; border: 2px solid var(--color-accent); border-radius: var(--radius-md); background: #fff7ed;
+}
+.telEtiqueta { font-size: 13px; font-weight: 700; color: var(--color-gray-750); }
+.telNumero {
+  font-size: clamp(28px, 8vw, 36px); font-weight: 800; line-height: 1.15; letter-spacing: 0.02em;
+  color: var(--color-primary-dark); font-variant-numeric: tabular-nums; white-space: nowrap;
+}
+.telAviso { font-size: 13px; color: var(--color-gray-600); }
+.telCambiar {
+  margin-top: 4px; padding: 6px 12px; border: 1px solid var(--color-gray-300); border-radius: var(--radius-full);
+  background: var(--color-white); color: var(--color-gray-750); font-size: 13px; font-weight: 700; cursor: pointer;
+}
 .confirmCorregir {
   border: 1px solid var(--color-gray-300); background: var(--color-white); color: var(--color-gray-750);
   font-weight: 700; font-size: var(--font-size-base); padding: 14px; border-radius: var(--radius-md); cursor: pointer;

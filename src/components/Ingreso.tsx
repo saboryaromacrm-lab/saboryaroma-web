@@ -16,7 +16,7 @@
  * comparten el marco (`VentanaIngreso`), la forma de abrirse y el candado del
  * envío (`useVentanaIngreso`), el botón de la cuenta y el «Ingresá para comprar».
  */
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import { useCart } from '@/lib/cart';
 import { ingresar, registrarse, salir, type EstadoIngreso } from '@/lib/api';
@@ -231,23 +231,29 @@ export function Ingreso() {
   );
 }
 
-/** El botón de la cuenta en el encabezado, en los dos modos: «Ingresar» o «Hola, Juan · Salir». */
-export function BotonCuenta({ className }: { className?: string }) {
+/** Cerrar la sesión del modo en que se está (el encabezado, y «No es mi número» del checkout). */
+export function useSalirDeLaCuenta() {
   const router = useRouter();
-  const { conPrecios, cliente, comprador, modo } = useCart();
+  const { modo } = useCart();
   const saliendo = useRef(false);
-  const quien = modo === 'minorista' ? comprador : cliente;
-  if (!conPrecios || !quien) {
-    return <button type="button" className={`${styles.cuenta} ${className ?? ''}`} onClick={abrirIngreso}>👤 Ingresar</button>;
-  }
-  const salirDeLaCuenta = async () => {
+  return useCallback(async () => {
     if (saliendo.current) return;
     saliendo.current = true;
     await salir(leerToken(modo));
     borrarToken(modo);
     router.refresh();
     saliendo.current = false;
-  };
+  }, [modo, router]);
+}
+
+/** El botón de la cuenta en el encabezado, en los dos modos: «Ingresar» o «Hola, Juan · Salir». */
+export function BotonCuenta({ className }: { className?: string }) {
+  const { conPrecios, cliente, comprador, modo } = useCart();
+  const salirDeLaCuenta = useSalirDeLaCuenta();
+  const quien = modo === 'minorista' ? comprador : cliente;
+  if (!conPrecios || !quien) {
+    return <button type="button" className={`${styles.cuenta} ${className ?? ''}`} onClick={abrirIngreso}>👤 Ingresar</button>;
+  }
   return (
     <span className={`${styles.cuenta} ${styles.cuentaActiva} ${className ?? ''}`}>
       <span className={styles.hola}>👤 Hola, {quien.nombre.split(' ')[0]}</span>
