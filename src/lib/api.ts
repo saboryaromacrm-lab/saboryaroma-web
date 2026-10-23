@@ -1,4 +1,4 @@
-import type { Catalogo, CotizacionEnvio, Entrega, EntregaMinorista, Punto, SitioConfig, MedioPagoTienda } from './types';
+import type { AgendaEnvios, Catalogo, CotizacionEnvio, CuandoEnvio, Entrega, EntregaMinorista, Punto, SitioConfig, MedioPagoTienda } from './types';
 import { leerCookie } from './cookies';
 import type { Modo } from './modo';
 
@@ -203,6 +203,8 @@ export interface PedidoMinoristaDto {
   /** El cupón (0190) y cómo dice que va a pagar (lo pide el cupón que exige un medio). */
   cupon?: string;
   medioPago?: MedioPagoTienda;
+  /** Con envío: para cuándo (23/10/2026). */
+  cuando?: CuandoEnvio;
 }
 
 /**
@@ -215,6 +217,16 @@ export async function cotizarEnvio(dto: Omit<PedidoMinoristaDto, 'observaciones'
     { method: 'POST', headers: { 'Content-Type': 'application/json', ...conSesion(undefined, tokenMin) }, body: JSON.stringify(dto) },
     TIMEOUT_CATALOGO_MS,
     'No pudimos calcular el envío. Probá de nuevo en un momento.',
+  ));
+}
+
+/** Para cuándo puede pedir el envío (23/10/2026): «lo antes posible» si el local está abierto y las franjas de los próximos días. */
+export async function agendaEnvios(): Promise<AgendaEnvios> {
+  return manejar<AgendaEnvios>(await pedir(
+    `${API}/tienda/minorista/horarios-envio`,
+    { headers: conSesion() },
+    TIMEOUT_CATALOGO_MS,
+    'No pudimos traer los horarios de envío. Probá de nuevo en un momento.',
   ));
 }
 

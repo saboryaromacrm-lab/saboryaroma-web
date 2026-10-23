@@ -306,6 +306,21 @@ export type Entrega = 'retiro' | 'cadete' | 'camioneta';
 /** Minorista (0173): retiro en el local o envío a domicilio. */
 export type EntregaMinorista = 'retiro' | 'envio';
 
+/**
+ * ¿PARA CUÁNDO EL ENVÍO? (23/10/2026): lo que ofrece el servidor con el horario
+ * del local. `desde`/`hasta` son instantes ISO.
+ */
+export interface Franja { desde: string; hasta: string }
+export interface AgendaEnvios {
+  /** Hay horario cargado: sin él no hay franjas para elegir. */
+  conHorario: boolean;
+  /** «Lo antes posible» (20 a 40 min), o null si el local está cerrado o por cerrar. */
+  pronto: Franja | null;
+  /** Los próximos días con franjas de 20 minutos (`fecha` = AAAA-MM-DD). */
+  dias: { fecha: string; franjas: Franja[] }[];
+}
+export type CuandoEnvio = { tipo: 'pronto' } | { tipo: 'horario'; desde: string } | { tipo: 'whatsapp' };
+
 /** Un punto del mapa (0185). */
 export interface Punto { lat: number; lng: number }
 

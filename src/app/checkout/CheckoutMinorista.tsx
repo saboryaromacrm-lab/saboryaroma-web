@@ -16,21 +16,31 @@
  * EL CUPÓN (0190): se escribe y se aplica; el servidor dice si vale y cuánto
  * descuenta (con la misma cuenta del pedido). Si el cupón vale solo pagando de
  * una forma, se pregunta cómo va a pagar.
+ *
+ * PARA CUÁNDO (23/10/2026): con envío, al final se pregunta en cuánto lo
+ * quiere (CuandoEnvio). Las opciones se renuevan cada minuto: «lo antes
+ * posible» corre con la hora y las franjas de hoy se van venciendo.
  */
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { totalLinea, useCart } from '@/lib/cart';
-import { cotizarEnvio, crearPedidoMinorista } from '@/lib/api';
+import { agendaEnvios, cotizarEnvio, crearPedidoMinorista } from '@/lib/api';
+import { textoCuando } from '@/lib/horarioEnvio';
 import { pedidoEnviado } from '@/lib/analytics';
 import { leerToken } from '@/lib/sesion';
 import { money, telLegible } from '@/lib/format';
 import { IngresarParaComprar } from '@/components/Ingreso';
 import { UbicacionEnvio } from '@/components/minorista/UbicacionEnvio';
-import type { CotizacionEnvio, EntregaMinorista, ItemCarrito, MedioPagoTienda, Punto } from '@/lib/types';
+import type { AgendaEnvios, CotizacionEnvio, CuandoEnvio as Cuando, EntregaMinorista, ItemCarrito, MedioPagoTienda, Punto } from '@/lib/types';
+import { CuandoEnvio } from './CuandoEnvio';
 import styles from './page.module.css';
 
 /** Pausa antes de recalcular el envío: el mapa se mueve de a muchos pasitos. */
 const ESPERA_COTIZAR_MS = 400;
+/** Cada cuánto se renuevan las opciones de «para cuándo». */
+const RENOVAR_AGENDA_MS = 60_000;
+/** Si no se pudieron traer los horarios: queda coordinarlo por WhatsApp. */
+const SIN_AGENDA: AgendaEnvios = { conHorario: false, pronto: null, dias: [] };
 
 const lineasDe = (items: ItemCarrito[]) => items.map((it) => ({ productoId: it.productoId, cantidad: it.cantidad, ...(it.variante ? { variante: it.variante } : {}) }));
 
@@ -57,6 +67,8 @@ export function CheckoutMinorista() {
   const [cuponTexto, setCuponTexto] = useState('');
   const [cupon, setCupon] = useState('');
   const [medioPago, setMedioPago] = useState<MedioPagoTienda | ''>('');
+  const [agenda, setAgenda] = useState<AgendaEnvios | null>(null);
+  const [cuando, setCuando] = useState<Cuando | null>(null);
   const [confirmar, setConfirmar] = useState(false);
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState('');
@@ -89,6 +101,20 @@ export function CheckoutMinorista() {
     }, ESPERA_COTIZAR_MS);
     return () => { vigente = false; clearTimeout(t); };
   }, [entrega, conEnvio, cotizaEnvio, usaGuardada, punto, items, comprador, cupon, medioPago]);
+
+  /* Las opciones de «para cuándo», al día: lo elegido que dejó de valer se vuelve a elegir. */
+  const traerAgenda = useCallback(async () => {
+    const a = await agendaEnvios().catch(() => SIN_AGENDA);
+    setAgenda(a);
+    setCuando((c) => ((c?.tipo === 'pronto' && !a.pronto)
+      || (c?.tipo === 'horario' && !a.dias.some((d) => d.franjas.some((f) => f.desde === c.desde))) ? null : c));
+  }, []);
+  useEffect(() => {
+    if (!conEnvio) return undefined;
+    traerAgenda();
+    const t = setInterval(traerAgenda, RENOVAR_AGENDA_MS);
+    return () => clearInterval(t);
+  }, [conEnvio, traerAgenda]);
 
   /* El cupón pide un solo medio: queda elegido solo. */
   const unicoMedio = cotizacion?.cupon?.vale && cotizacion.cupon.medios.length === 1 ? cotizacion.cupon.medios[0] : null;
@@ -152,6 +178,10 @@ export function CheckoutMinorista() {
       setError('Marcá en el mapa dónde recibís: buscá tu dirección o mové el mapa hasta tu casa.');
       return;
     }
+    if (conEnvio && !cuando) {
+      setError('¿En cuánto querés tu envío? Elegí una de las opciones.');
+      return;
+    }
     if (cupon && cup && !cup.vale) {
       setError(`El cupón ${cup.codigo} no vale: ${cup.motivo} Quitalo para seguir sin él.`);
       return;
@@ -179,6 +209,7 @@ export function CheckoutMinorista() {
         items: lineasDe(items),
         ...(cup?.vale ? { cupon: cup.codigo } : {}),
         ...(medioPago ? { medioPago } : {}),
+        ...(conEnvio && cuando ? { cuando } : {}),
       }, leerToken('minorista'));
       pedidoEnviado(r.codigo);
       setResultado({ codigo: r.codigo, total: r.total + (r.envio ?? 0), telefono: comprador.telefono });
@@ -187,6 +218,8 @@ export function CheckoutMinorista() {
     } catch (err) {
       setError(err instanceof Error ? err.message : 'No se pudo enviar el pedido.');
       setConfirmar(false);
+      /* Lo elegido pudo dejar de valer mientras confirmaba: las opciones, al día. */
+      if (conEnvio) traerAgenda();
     } finally {
       enVuelo.current = false;
       setEnviando(false);
@@ -333,8 +366,15 @@ export function CheckoutMinorista() {
 
           <div className={styles.field}>
             <label htmlFor="obs">Notas del pedido</label>
-            <textarea id="obs" rows={3} maxLength={500} value={observaciones} onChange={(e) => setObservaciones(e.target.value)} placeholder="Horario de entrega preferido, indicaciones especiales, etc." />
+            <textarea id="obs" rows={3} maxLength={500} value={observaciones} onChange={(e) => setObservaciones(e.target.value)} placeholder="Indicaciones especiales: timbre, a quién entregar, etc." />
           </div>
+
+          {conEnvio && (
+            <div className={styles.field}>
+              <label>¿En cuánto querés tu envío? *</label>
+              <CuandoEnvio agenda={agenda} valor={cuando} onCambio={setCuando} />
+            </div>
+          )}
 
           {error && <div className={styles.error}>{error}</div>}
 
@@ -362,6 +402,7 @@ export function CheckoutMinorista() {
                     : cot ? `Envío a domicilio${cot.barrio ? ` · B° ${cot.barrio}` : ''} (${textoCosto(cot.envio)})`
                       : `Envío a domicilio${envioGratis ? ' (gratis)' : ''}`}
                 </dd>
+                {conEnvio && cuando && (<><dt>Cuándo</dt><dd>{textoCuando(cuando, agenda)}</dd></>)}
                 {conEnvio && (<><dt>Dirección</dt><dd>{usaGuardada ? `Tu dirección guardada (${comprador.direccion})` : [calle.trim(), localidad.trim(), referencia.trim()].filter(Boolean).join(' · ')}</dd></>)}
                 {observaciones.trim() && (<><dt>Notas</dt><dd>{observaciones.trim()}</dd></>)}
                 {cot && cot.descuento > 0 && (<><dt>Descuento</dt><dd>−{money(cot.descuento)} (barrio {cot.barrio})</dd></>)}
