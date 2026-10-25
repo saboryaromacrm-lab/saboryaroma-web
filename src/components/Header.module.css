@@ -363,7 +363,7 @@
 /* Con el contenedor adelante: pesa más que la regla base del botón (otro archivo de estilos, orden incierto). */
 .actions .cuentaEscritorio { display: none; flex-shrink: 0; }
 @media (min-width: 480px) { .actions .cuentaEscritorio { display: inline-flex; } }
-.mobileMenu .cuentaMovil { display: flex; justify-content: center; width: 100%; margin-top: 8px; padding: 12px 16px; font-size: 15px; }
+.mobileMenu .cuentaMovil { flex: 1 1 auto; justify-content: center; min-width: 0; min-height: 40px; padding: 8px 14px; font-size: 14px; }
 
 .cartDropdown {
   position: absolute;
@@ -448,45 +448,105 @@
   overflow-y: auto;
   overscroll-behavior: contain;
   background: var(--color-white);
-  box-shadow: var(--shadow-card-hover);
-  border-top: 1px solid var(--color-gray-200);
-  padding: var(--space-4) var(--space-4) var(--space-6);
+  box-shadow: 0 18px 40px rgba(7, 38, 25, 0.18);
+  border-top: 1px solid var(--color-gray-150);
+  border-radius: 0 0 var(--radius-xl) var(--radius-xl);
+  padding: 14px var(--space-4) 18px;
   display: flex;
   flex-direction: column;
-  gap: var(--space-4);
+  gap: 14px;
+  animation: menuBaja 0.22s ease-out;
 }
+@keyframes menuBaja { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .mobileMenu { animation: none; } }
 .mobileSearch {
   display: flex;
-  min-height: 44px;
-  border: 1px solid var(--color-gray-300);
+  align-items: center;
+  min-height: 46px;
+  padding-left: 14px;
+  background: var(--color-gray-100);
+  border: 1.5px solid transparent;
   border-radius: var(--radius-full);
   overflow: hidden;
+  transition: border-color 0.15s ease, background 0.15s ease;
 }
-.mobileSearch:focus-within { border-color: var(--color-primary); box-shadow: 0 0 0 1px var(--color-primary); }
-.mobileNav { display: flex; flex-direction: column; gap: var(--space-1); }
-.mobileNavLink {
-  padding: 12px 8px;
-  font-weight: 600;
-  color: var(--color-gray-800);
-  border-bottom: 1px solid var(--color-gray-150);
-}
-.mobileNavLink:hover { color: var(--color-accent-dark); }
+.mobileSearch:focus-within { background: var(--color-white); border-color: var(--color-primary); }
+.mobileSearchIcono { flex: none; color: var(--color-gray-500); }
+.mobileSearch .searchInput { padding-left: 10px; font-size: 15px; }
 
-.mobileAccordion { border-bottom: 1px solid var(--color-gray-150); }
+/*
+ * EL MENÚ DEL CELULAR, RENOVADO (25/10/2026, pedido del dueño: «más moderno,
+ * que encaje con la tienda»): cada renglón con su ícono en una plaquita y la
+ * flechita a la derecha; sin rayas entre renglones, el toque se marca con un
+ * fondo suave. Las ofertas van en tarjetas y el pie junta la cuenta y el cambio
+ * de tienda (chico).
+ */
+.mobileNav { display: flex; flex-direction: column; gap: 2px; }
+.mobileNavLink,
 .mobileAccordionToggle {
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  gap: 12px;
   width: 100%;
-  padding: 12px 8px;
+  min-height: 50px;
+  padding: 6px 8px;
   background: none;
   border: none;
-  font-weight: 600;
-  font-size: var(--font-size-base);
+  border-radius: var(--radius-md);
+  font: inherit;
+  font-size: 16px;
+  font-weight: 650;
   color: var(--color-gray-800);
+  text-align: left;
   cursor: pointer;
+  transition: background 0.15s ease;
 }
-.mobileAccordionToggle:hover { color: var(--color-accent-dark); }
+.mobileNavLink:hover, .mobileNavLink:active,
+.mobileAccordionToggle:hover, .mobileAccordionToggle:active { background: var(--color-gray-50); color: var(--color-primary); }
+.mobileAccordionToggle[aria-expanded='true'] { background: var(--color-gray-50); color: var(--color-primary); }
+.mIcono {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 11px;
+  background: color-mix(in srgb, var(--color-primary) 9%, var(--color-white));
+  color: var(--color-primary);
+}
+:global(html[data-modo='minorista']) .mIcono { background: var(--color-tertiary); }
+.mFlecha { margin-left: auto; font-size: 22px; line-height: 1; color: var(--color-gray-400); }
+.mobileAccordionToggle .navArrow { margin-left: auto; font-size: 11px; }
+.mobileAccordion { display: flex; flex-direction: column; }
+
+.mDestacados { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-top: 10px; }
+.mDestacado {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 64px;
+  padding: 10px 12px;
+  border-radius: var(--radius-lg);
+  text-decoration: none;
+  transition: transform 0.15s ease;
+}
+.mDestacado:active { transform: scale(0.98); }
+.mDestacadoEmoji { font-size: 24px; line-height: 1; }
+.mDestacadoTexto { display: flex; flex-direction: column; min-width: 0; line-height: 1.2; }
+.mDestacadoTexto strong { font-size: 15px; font-weight: 800; }
+.mDestacadoTexto small { font-size: 12px; font-weight: 500; opacity: 0.85; }
+.mOfertas { background: linear-gradient(135deg, var(--color-oferta), var(--color-oferta-dark)); color: var(--color-white); box-shadow: 0 6px 16px rgba(229, 147, 60, 0.3); }
+.mRescate { background: var(--color-tertiary); color: var(--color-primary); border: 1px solid var(--color-secondary); }
+
+.mPie {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  padding-top: 14px;
+  border-top: 1px solid var(--color-gray-150);
+}
 .navArrowOpen { transform: rotate(180deg); color: var(--color-accent); }
 .mobileAccordionContent {
   display: flex;
@@ -668,14 +728,15 @@
 .modoMenu { display: none; }
 @media (max-width: 640px) {
   :global(html[data-modo='minorista']) .modoArriba { display: none; }
+  /* Chico, al lado de la cuenta (25/10/2026, pedido del dueño). */
   .modoMenu {
-    display: flex; align-items: center; justify-content: center; gap: 6px;
-    width: 100%; margin-top: 8px; padding: 12px 16px;
+    flex: none; display: inline-flex; align-items: center; gap: 4px;
+    min-height: 40px; padding: 6px 12px;
     background: var(--color-white); color: var(--color-primary);
-    border: 1.5px solid var(--color-primary); border-radius: var(--radius-md);
-    font: inherit; font-size: 15px; font-weight: 600; cursor: pointer;
+    border: 1px solid color-mix(in srgb, var(--color-primary) 35%, transparent); border-radius: var(--radius-full);
+    font: inherit; font-size: 13px; font-weight: 600; white-space: nowrap; cursor: pointer;
   }
-  .modoMenu:hover { background: #f0f8f3; }
+  .modoMenu:hover { background: var(--color-gray-50); }
   /* El «Cambiar a» que la barra esconde en un celular angosto, acá va siempre. */
   .modoMenu span { display: inline; }
 }

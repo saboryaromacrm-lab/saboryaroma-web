@@ -27,6 +27,25 @@ function abrirInfoCompra() {
 
 const AVISO_MS = 4500;
 
+/** Los íconos del menú del celular: trazos de 24×24 que toman el color del texto. */
+const ICONOS_MENU = {
+  inicio: <path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z" />,
+  tienda: <><path d="M5 8h14l-1.2 12H6.2z" /><path d="M9 8a3 3 0 0 1 6 0" /></>,
+  categorias: <><rect x="3.5" y="3.5" width="7" height="7" rx="2" /><rect x="13.5" y="3.5" width="7" height="7" rx="2" /><rect x="3.5" y="13.5" width="7" height="7" rx="2" /><rect x="13.5" y="13.5" width="7" height="7" rx="2" /></>,
+  marcas: <path d="m12 3.5 2.5 5.2 5.7.8-4.1 4 1 5.7-5.1-2.7-5.1 2.7 1-5.7-4.1-4 5.7-.8z" />,
+  etiquetas: <><path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8z" /><circle cx="7.5" cy="7.5" r="1.4" /></>,
+};
+
+function IconoMenu({ nombre }: { nombre: keyof typeof ICONOS_MENU }) {
+  return (
+    <span className={styles.mIcono} aria-hidden>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        {ICONOS_MENU[nombre]}
+      </svg>
+    </span>
+  );
+}
+
 /**
  * LOS AVISOS DE LA BARRA DE ARRIBA, rotando (17/10/2026): uno cada 4,5 s, con
  * un fundido. Son los que se cargan en el ERP; con uno solo no gira.
@@ -554,6 +573,9 @@ export function Header() {
           <div className={styles.mobileMenuFondo} onClick={() => setMenuAbierto(false)} aria-hidden />
           <div className={styles.mobileMenu}>
             <form onSubmit={buscar} className={styles.mobileSearch}>
+              <svg className={styles.mobileSearchIcono} width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden>
+                <circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" />
+              </svg>
               <input
                 type="search"
                 placeholder="Buscar productos..."
@@ -563,8 +585,8 @@ export function Header() {
               />
             </form>
             <nav className={styles.mobileNav}>
-              <Link href="/" className={styles.mobileNavLink} onClick={() => setMenuAbierto(false)}>Inicio</Link>
-              <Link href="/tienda" className={styles.mobileNavLink} onClick={() => setMenuAbierto(false)}>Tienda</Link>
+              <Link href="/" className={styles.mobileNavLink} onClick={() => setMenuAbierto(false)}><IconoMenu nombre="inicio" />Inicio<span className={styles.mFlecha} aria-hidden>›</span></Link>
+              <Link href="/tienda" className={styles.mobileNavLink} onClick={() => setMenuAbierto(false)}><IconoMenu nombre="tienda" />Tienda<span className={styles.mFlecha} aria-hidden>›</span></Link>
 
               <div className={styles.mobileAccordion}>
                 <button
@@ -573,7 +595,7 @@ export function Header() {
                   onClick={() => setAccordion((v) => (v === 'categorias' ? null : 'categorias'))}
                   aria-expanded={accordion === 'categorias'}
                 >
-                  Categorías <span className={`${styles.navArrow} ${accordion === 'categorias' ? styles.navArrowOpen : ''}`}>▾</span>
+                  <IconoMenu nombre="categorias" />Categorías <span className={`${styles.navArrow} ${accordion === 'categorias' ? styles.navArrowOpen : ''}`}>▾</span>
                 </button>
                 {accordion === 'categorias' && (
                   <div className={`${styles.mobileAccordionContent} ${styles.mobileCats}`}>
@@ -633,7 +655,7 @@ export function Header() {
                   onClick={() => setAccordion((v) => (v === 'marcas' ? null : 'marcas'))}
                   aria-expanded={accordion === 'marcas'}
                 >
-                  Marcas <span className={`${styles.navArrow} ${accordion === 'marcas' ? styles.navArrowOpen : ''}`}>▾</span>
+                  <IconoMenu nombre="marcas" />Marcas <span className={`${styles.navArrow} ${accordion === 'marcas' ? styles.navArrowOpen : ''}`}>▾</span>
                 </button>
                 {accordion === 'marcas' && (
                   <div className={`${styles.mobileAccordionContent} ${styles.mobileCats}`}>
@@ -668,7 +690,7 @@ export function Header() {
                   onClick={() => setAccordion((v) => (v === 'etiquetas' ? null : 'etiquetas'))}
                   aria-expanded={accordion === 'etiquetas'}
                 >
-                  Etiquetas <span className={`${styles.navArrow} ${accordion === 'etiquetas' ? styles.navArrowOpen : ''}`}>▾</span>
+                  <IconoMenu nombre="etiquetas" />Etiquetas <span className={`${styles.navArrow} ${accordion === 'etiquetas' ? styles.navArrowOpen : ''}`}>▾</span>
                 </button>
                 {accordion === 'etiquetas' && (
                   <div className={`${styles.mobileAccordionContent} ${styles.mobileCats}`}>
@@ -692,21 +714,34 @@ export function Header() {
                 )}
               </div>
 
-              {/* NutriOfertas y NutriRescate, al final de la lista (25/10/2026, pedido del dueño). */}
-              {conNutriOfertas && (
-                <Link href={URL_NUTRIOFERTAS} className={styles.mobileNavLink} onClick={() => setMenuAbierto(false)}>🔥 {NUTRIOFERTAS}</Link>
-              )}
-              {conRescate && (
-                <Link href={URL_NUTRIRESCATE} className={styles.mobileNavLink} onClick={() => setMenuAbierto(false)}>⏳ {NUTRIRESCATE}</Link>
+              {/* NutriOfertas y NutriRescate, al final y como tarjetas destacadas (25/10/2026, pedido del dueño). */}
+              {(conNutriOfertas || conRescate) && (
+                <div className={styles.mDestacados}>
+                  {conNutriOfertas && (
+                    <Link href={URL_NUTRIOFERTAS} className={`${styles.mDestacado} ${styles.mOfertas}`} onClick={() => setMenuAbierto(false)}>
+                      <span className={styles.mDestacadoEmoji} aria-hidden>🔥</span>
+                      <span className={styles.mDestacadoTexto}><strong>{NUTRIOFERTAS}</strong><small>Precios especiales</small></span>
+                    </Link>
+                  )}
+                  {conRescate && (
+                    <Link href={URL_NUTRIRESCATE} className={`${styles.mDestacado} ${styles.mRescate}`} onClick={() => setMenuAbierto(false)}>
+                      <span className={styles.mDestacadoEmoji} aria-hidden>⏳</span>
+                      <span className={styles.mDestacadoTexto}><strong>{NUTRIRESCATE}</strong><small>Por vencer, más baratos</small></span>
+                    </Link>
+                  )}
+                </div>
               )}
 
-              {minorista && <ModoSwitch className={styles.modoMenu} alCambiar={() => setMenuAbierto(false)} />}
               {!minorista && (
                 <button type="button" className={styles.mobileInfoBtn} onClick={() => { setMenuAbierto(false); abrirInfoCompra(); }}>
                   <span aria-hidden>ⓘ</span> Info de compra
                 </button>
               )}
-              <BotonCuenta className={styles.cuentaMovil} />
+              {/* Al pie, en una línea: la cuenta y, chico, el cambio de tienda. */}
+              <div className={styles.mPie}>
+                <BotonCuenta className={styles.cuentaMovil} />
+                {minorista && <ModoSwitch className={styles.modoMenu} alCambiar={() => setMenuAbierto(false)} />}
+              </div>
             </nav>
           </div>
         </>
