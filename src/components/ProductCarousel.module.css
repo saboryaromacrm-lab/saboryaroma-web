@@ -69,3 +69,21 @@
   .trackWrap { margin: 0 calc(var(--space-4) * -1); padding: 0 var(--space-4); }
   .slide { flex-basis: 168px; }
 }
+
+/*
+ * COMPACTO (25/10/2026, pedido del dueño: «en el carrito es un anexo nomás,
+ * hacé algo bien delicado»): menos aire, el título en un renglón y tarjetas
+ * angostas. La tarjeta se achica sola (`compacta` en ProductCard).
+ */
+.compacto .ofertasCard { padding: 14px 18px 16px; border-radius: var(--radius-lg); }
+.compacto .ofertasCard .trackWrap { margin: 0 -18px; padding: 0 18px; }
+.compacto .headRow { align-items: center; margin-bottom: 10px; }
+.compacto .title { font-size: var(--font-size-base); font-weight: 700; }
+.compacto .arrows button { width: 30px; height: 30px; font-size: 15px; }
+.compacto .track { gap: 10px; }
+.compacto .slide { flex-basis: 156px; }
+@media (max-width: 640px) {
+  .compacto .ofertasCard { padding: 12px 14px 14px; }
+  .compacto .ofertasCard .trackWrap { margin: 0 -14px; padding: 0 14px; }
+  .compacto .slide { flex-basis: 136px; }
+}

@@ -10,3 +10,8 @@
 .titulo { display: block; font-size: 16px; font-weight: 800; letter-spacing: -0.01em; }
 .precio { display: block; margin-top: 2px; font-size: 14px; font-weight: 600; opacity: 0.95; }
 .precio strong { font-weight: 900; }
+
+/* En la tarjeta compacta (25/10/2026): el mismo cartel, en chico. */
+.compacta { margin: 0 0 6px; padding: 6px 8px; box-shadow: 0 3px 8px rgba(229, 147, 60, 0.25); }
+.compacta .titulo { font-size: 12.5px; }
+.compacta .precio { font-size: 11px; margin-top: 1px; }

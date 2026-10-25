@@ -20,8 +20,9 @@ import styles from './ProductCard.module.css';
  *
  * El nombre lleva a la página del producto (20/10/2026). `ficha`: la tarjeta
  * ES esa página — el nombre es el título y, desde tablet, la foto va al lado.
+ * `compacta`: más chica, para un carrusel que acompaña (las ofertas del carrito).
  */
-export function ProductCard({ producto, ficha = false }: { producto: ItemCatalogo; ficha?: boolean }) {
+export function ProductCard({ producto, ficha = false, compacta = false }: { producto: ItemCatalogo; ficha?: boolean; compacta?: boolean }) {
   const {
     modo, conPrecios, cantidad, restar, sumar, sumarBloqueado, variante, grupos, grupo, elegir, elegirGrupo, precioDe,
     fuente, unidad, precioEfectivo, tieneDescuento, ahorroPct, enStock, promo, yaEnCarrito, disponible, conTope, puedoSumar,
@@ -33,7 +34,7 @@ export function ProductCard({ producto, ficha = false }: { producto: ItemCatalog
   const tagsAMostrar = producto.etiquetas.slice(0, 2);
 
   return (
-    <div ref={cardRef} className={`${styles.card} ${ficha ? styles.ficha : ''}`}>
+    <div ref={cardRef} className={`${styles.card} ${ficha ? styles.ficha : ''} ${compacta ? styles.compacta : ''}`}>
       <div className={styles.imageWrap}>
         <img
           ref={imgRef}
@@ -154,7 +155,7 @@ export function ProductCard({ producto, ficha = false }: { producto: ItemCatalog
           )}
           {ahorroPct > 0 && <span className={styles.ahorroPct}>−{ahorroPct}%</span>}
         </div>}
-        {conPrecios && promo && <PromoLote promo={promo} />}
+        {conPrecios && promo && <PromoLote promo={promo} compacta={compacta} />}
         {/* Cuánto se ahorra frente al minorista (el precio de mostrador), con la cantidad elegida. */}
         {variante?.ahorroMinorista && (
           <div className={styles.ahorroMin}>

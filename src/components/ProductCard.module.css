@@ -333,3 +333,27 @@
 @container (max-width: 220px) {
   :global(html[data-modo='minorista']) .ofertaBadge { top: 8px; left: 8px; max-width: calc(100% - 16px); font-size: 11.5px; padding: 5px 9px; }
 }
+
+/*
+ * LA TARJETA COMPACTA (25/10/2026): la de las ofertas del carrito, que acompaña
+ * y no compite con el pedido. Foto baja, letras y botones más chicos. `.card`
+ * dos veces para ganarle al modo minorista y a la tarjeta angosta de arriba.
+ */
+.card.compacta { border-radius: var(--radius-lg); box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06); }
+.card.compacta:hover { transform: none; }
+.card.compacta .imageWrap { max-height: 88px; }
+.card.compacta .image { padding: 6px; }
+.card.compacta .ofertaBadge { top: 6px; left: 6px; font-size: 10.5px; padding: 3px 8px; transform: rotate(-2deg); box-shadow: 0 3px 8px rgba(229, 147, 60, 0.3); }
+.card.compacta .tags, .card.compacta .enCarritoBadge { display: none; }
+.card.compacta .content { padding: 8px 10px 10px; gap: 1px; }
+.card.compacta .vence { font-size: 10px; padding: 2px 7px; margin-bottom: 2px; }
+.card.compacta .brand { font-size: 9.5px; }
+.card.compacta .name { font-size: 12.5px; font-weight: 600; min-height: 2.5em; margin-bottom: 2px; }
+.card.compacta .precioLista { font-size: 11px; }
+.card.compacta .price { font-size: 1.05rem; margin-bottom: 6px; }
+.card.compacta .ahorroPct { font-size: 10.5px; }
+.card.compacta .actions { gap: 6px; }
+.card.compacta .qty { padding: 2px; }
+.card.compacta .qty button { width: 24px; height: 24px; font-size: 14px; }
+.card.compacta .qty span { font-size: 12.5px; }
+.card.compacta .addBtn { padding: 6px; font-size: 12.5px; }

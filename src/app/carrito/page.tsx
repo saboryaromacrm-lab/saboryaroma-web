@@ -6,7 +6,7 @@ import { money, cant } from '@/lib/format';
 import { faltanParaLote, textoPromo } from '@/lib/oferta';
 import { IngresarParaComprar } from '@/components/Ingreso';
 import { ProductCarousel } from '@/components/ProductCarousel';
-import { LEMA_NUTRIOFERTAS, NUTRIOFERTAS } from '@/lib/nutriofertas';
+import { NUTRIOFERTAS } from '@/lib/nutriofertas';
 import styles from './page.module.css';
 
 /** Barra de avance de una condición: verde cuando se cumple. */
@@ -49,21 +49,21 @@ export default function CarritoPage() {
    * realmente incentive a comprar las ofertas», arriba de todo): todas las
    * vigentes con stock, primero las que el cliente todavía no lleva. Se
    * agregan desde la misma tarjeta de la tienda, sin salir del carrito.
+   * COMPACTO (25/10/2026, pedido del dueño): es un anexo del pedido, así que va
+   * solo con el título y tarjetas chicas.
    */
   const enElCarrito = new Set(items.map((it) => it.productoId));
   const conOferta = (catalogo?.items ?? []).filter((p) => p.oferta && p.enStock);
   const ofertas = [...conOferta.filter((p) => !enElCarrito.has(p.id)), ...conOferta.filter((p) => enElCarrito.has(p.id))];
-  /* En la minorista se llaman NutriOfertas y llevan su lema (17/10/2026). */
+  /* En la minorista se llaman NutriOfertas (17/10/2026). */
   const nutri = modo === 'minorista';
-  const enStock = `${ofertas.length} producto${ofertas.length === 1 ? '' : 's'} con precio especial, mientras dure el stock. Se agregan sin salir del carrito.`;
   const carruselOfertas = (
     <ProductCarousel
       variant="ofertas"
-      badge={nutri ? `🔥 ${NUTRIOFERTAS}` : undefined}
+      compacto
       titulo={nutri
-        ? (items.length ? `¿Sumás alguna de las ${NUTRIOFERTAS}?` : `Empezá por las ${NUTRIOFERTAS}`)
-        : (items.length ? '¿Sumás alguna oferta a tu pedido?' : 'Empezá por las ofertas de hoy')}
-      subtitulo={nutri ? `${LEMA_NUTRIOFERTAS} ${enStock}` : enStock}
+        ? (items.length ? `🔥 ¿Sumás alguna de las ${NUTRIOFERTAS}?` : `🔥 Empezá por las ${NUTRIOFERTAS}`)
+        : (items.length ? '🔥 ¿Sumás alguna oferta a tu pedido?' : '🔥 Empezá por las ofertas de hoy')}
       productos={ofertas}
     />
   );
