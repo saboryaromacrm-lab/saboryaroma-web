@@ -276,7 +276,8 @@ export function Header() {
                   : '🏪 Tienda mayorista — las mejores marcas con nosotros.'}
               </span>
             )}
-          <ModoSwitch />
+          {/* En el celular de la minorista va adentro del menú (25/10/2026, pedido del dueño). */}
+          <span className={styles.modoArriba}><ModoSwitch /></span>
         </p>
       </div>
 
@@ -564,12 +565,6 @@ export function Header() {
             <nav className={styles.mobileNav}>
               <Link href="/" className={styles.mobileNavLink} onClick={() => setMenuAbierto(false)}>Inicio</Link>
               <Link href="/tienda" className={styles.mobileNavLink} onClick={() => setMenuAbierto(false)}>Tienda</Link>
-              {conNutriOfertas && (
-                <Link href={URL_NUTRIOFERTAS} className={styles.mobileNavLink} onClick={() => setMenuAbierto(false)}>🔥 {NUTRIOFERTAS}</Link>
-              )}
-              {conRescate && (
-                <Link href={URL_NUTRIRESCATE} className={styles.mobileNavLink} onClick={() => setMenuAbierto(false)}>⏳ {NUTRIRESCATE}</Link>
-              )}
 
               <div className={styles.mobileAccordion}>
                 <button
@@ -697,6 +692,15 @@ export function Header() {
                 )}
               </div>
 
+              {/* NutriOfertas y NutriRescate, al final de la lista (25/10/2026, pedido del dueño). */}
+              {conNutriOfertas && (
+                <Link href={URL_NUTRIOFERTAS} className={styles.mobileNavLink} onClick={() => setMenuAbierto(false)}>🔥 {NUTRIOFERTAS}</Link>
+              )}
+              {conRescate && (
+                <Link href={URL_NUTRIRESCATE} className={styles.mobileNavLink} onClick={() => setMenuAbierto(false)}>⏳ {NUTRIRESCATE}</Link>
+              )}
+
+              {minorista && <ModoSwitch className={styles.modoMenu} alCambiar={() => setMenuAbierto(false)} />}
               {!minorista && (
                 <button type="button" className={styles.mobileInfoBtn} onClick={() => { setMenuAbierto(false); abrirInfoCompra(); }}>
                   <span aria-hidden>ⓘ</span> Info de compra

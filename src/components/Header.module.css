@@ -658,3 +658,24 @@
 @media (min-width: 1320px) {
   .infoBtn { display: inline-flex; }
 }
+
+/*
+ * EL CAMBIO DE TIENDA EN EL CELULAR DE LA MINORISTA (25/10/2026, pedido del
+ * dueño): sale de la barra de arriba y va adentro del menú, como un botón más.
+ * En tablet y escritorio queda arriba, como siempre.
+ */
+.modoArriba { display: contents; }
+.modoMenu { display: none; }
+@media (max-width: 640px) {
+  :global(html[data-modo='minorista']) .modoArriba { display: none; }
+  .modoMenu {
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+    width: 100%; margin-top: 8px; padding: 12px 16px;
+    background: var(--color-white); color: var(--color-primary);
+    border: 1.5px solid var(--color-primary); border-radius: var(--radius-md);
+    font: inherit; font-size: 15px; font-weight: 600; cursor: pointer;
+  }
+  .modoMenu:hover { background: #f0f8f3; }
+  /* El «Cambiar a» que la barra esconde en un celular angosto, acá va siempre. */
+  .modoMenu span { display: inline; }
+}

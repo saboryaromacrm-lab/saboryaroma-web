@@ -68,14 +68,21 @@ export function ElegirModo({ abiertoAlEntrar }: { abiertoAlEntrar: boolean }) {
   );
 }
 
-/** El botón del cartel de arriba: en qué modo estás y el paso al otro. */
-export function ModoSwitch() {
+/**
+ * El paso al otro modo: en el cartel de arriba y, en el celular de la
+ * minorista, adentro del menú (`className` le da el estilo de ahí y
+ * `alCambiar` cierra el menú).
+ */
+export function ModoSwitch({ className, alCambiar }: { className?: string; alCambiar?: () => void } = {}) {
   const { modo, config } = useCart();
   const cambiar = useCambiarModo();
   if (!config.minoristaActiva) return null;
   const otro: Modo = modo === 'minorista' ? 'mayorista' : 'minorista';
   return (
-    <button type="button" className={styles.switch} onClick={() => cambiar(otro)} aria-label={`Cambiar a ${ETIQUETA_MODO[otro]}`}>
+    <button
+      type="button" className={className ?? styles.switch} aria-label={`Cambiar a ${ETIQUETA_MODO[otro]}`}
+      onClick={() => { alCambiar?.(); cambiar(otro); }}
+    >
       ⇄ <span className={styles.switchVerbo}>Cambiar a </span>{ETIQUETA_MODO[otro]}
     </button>
   );
