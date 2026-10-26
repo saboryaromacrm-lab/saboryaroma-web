@@ -30,8 +30,8 @@
   display: grid;
   grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
   align-items: center;
-  gap: clamp(24px, 4vw, 56px);
-  padding-block: clamp(28px, 4vw, 52px);
+  gap: clamp(32px, 5vw, 80px);
+  padding-block: clamp(44px, 5vw, 76px);
 }
 .enPortada .inner { padding-inline: clamp(20px, 4vw, 44px); }
 
@@ -68,11 +68,11 @@
   .rescate { color: #fff; }
 }
 
-.texto { display: flex; flex-direction: column; align-items: flex-start; gap: 16px; }
+.texto { display: flex; flex-direction: column; align-items: flex-start; gap: 20px; }
 .lema { margin: 0; max-width: 46ch; font-size: clamp(17px, 1.7vw, 21px); font-weight: 700; line-height: 1.4; text-wrap: balance; }
 .compromiso { margin: 0; max-width: 46ch; font-size: clamp(15px, 1.4vw, 17px); line-height: 1.5; opacity: 0.9; }
 
-.datos { list-style: none; margin: 6px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 10px; }
+.datos { list-style: none; margin: 4px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 10px; }
 .datos li {
   padding: 8px 16px;
   border-radius: var(--radius-full);

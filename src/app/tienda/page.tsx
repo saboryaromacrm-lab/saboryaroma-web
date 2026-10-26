@@ -172,13 +172,16 @@ export default async function TiendaPage({
         // eslint-disable-next-line react/no-danger
         dangerouslySetInnerHTML={{ __html: jsonLdString(jsonLdProductos(items)) }}
       />
-      <Migas pasos={[
-        { texto: 'Inicio', href: '/' },
-        { texto: 'Tienda', href: '/tienda' },
-        ...(migaPadre ? [migaPadre] : []),
-        ...(miga ? [{ texto: miga }] : []),
-      ]}
-      />
+      {/* En NutriRescate no van las migas (26/10/2026, pedido del dueño): el banner ya dice dónde está. */}
+      {!soloRescate && (
+        <Migas pasos={[
+          { texto: 'Inicio', href: '/' },
+          { texto: 'Tienda', href: '/tienda' },
+          ...(migaPadre ? [migaPadre] : []),
+          ...(miga ? [{ texto: miga }] : []),
+        ]}
+        />
+      )}
 
       {soloRescate ? (
         <NutriRescateBanner items={items} conPrecios={!sinSesion} />
