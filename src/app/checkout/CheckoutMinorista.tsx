@@ -29,6 +29,8 @@ import { textoCuando } from '@/lib/horarioEnvio';
 import { pedidoEnviado } from '@/lib/analytics';
 import { leerToken } from '@/lib/sesion';
 import { money, telLegible } from '@/lib/format';
+import { NUTRIOFERTAS } from '@/lib/nutriofertas';
+import { NUTRIRESCATE } from '@/lib/nutrirescate';
 import { IngresarParaComprar, useSalirDeLaCuenta } from '@/components/Ingreso';
 import { TelefonoConfirmar } from './TelefonoConfirmar';
 import { UbicacionEnvio } from '@/components/minorista/UbicacionEnvio';
@@ -46,6 +48,12 @@ const SIN_AGENDA: AgendaEnvios = { conHorario: false, pronto: null, dias: [] };
 const lineasDe = (items: ItemCarrito[]) => items.map((it) => ({ productoId: it.productoId, cantidad: it.cantidad, ...(it.variante ? { variante: it.variante } : {}) }));
 
 const MEDIOS: Record<MedioPagoTienda, string> = { efectivo: 'Efectivo', transferencia: 'Transferencia' };
+
+/** A qué no se suma el descuento: las ofertas que no toca y los cupones. */
+function noSeSuma(d: DescuentoAutomatico) {
+  const fuera = [!d.enOfertas && NUTRIOFERTAS, !d.enRescate && NUTRIRESCATE].filter(Boolean);
+  return `No se suma a ${fuera.length ? `${fuera.join(' ni ')} ni a ` : ''}un cupón.`;
+}
 
 /** «−5 %» o, si no es de porcentaje, lo que da. */
 const etiquetaDescuento = (d: DescuentoAutomatico) => (d.porcentaje != null ? `−${d.porcentaje} %` : d.envioGratis ? 'envío gratis' : `−${money(d.descuento)}`);
@@ -396,7 +404,7 @@ export function CheckoutMinorista() {
                   );
                 })}
               </div>
-              {porMedio && <span className={styles.medioNota}>No se suma a los productos en oferta ni a un cupón.</span>}
+              {mejorMedio && <span className={styles.medioNota}>{noSeSuma((medioPago && porMedio?.[medioPago]) || mejorMedio[1])}</span>}
               {conEnvio && medioPago === 'efectivo' && (
                 <p className={styles.medioCadete}>🛵 Con envío a domicilio, le abonás en efectivo al cadete cuando te entrega el pedido.</p>
               )}

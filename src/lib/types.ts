@@ -373,6 +373,9 @@ export interface DescuentoAutomatico {
   /** Lo que descuenta en este pedido, final con IVA. */
   descuento: number;
   envioGratis: boolean;
+  /** Si también corre en los productos de NutriOfertas y de NutriRescate. */
+  enOfertas: boolean;
+  enRescate: boolean;
 }
 
 export type CuponCotizado =
