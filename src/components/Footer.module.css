@@ -37,6 +37,7 @@
 .colAbout { max-width: 340px; }
 
 .logo { color: var(--color-primary); font-size: 26px; font-weight: 800; margin-bottom: var(--space-3); }
+.logoImg { display: inline-block; height: 56px; width: auto; max-width: 100%; vertical-align: middle; }
 .about { font-size: var(--font-size-sm); line-height: 1.7; color: var(--color-gray-600); margin: 0 0 var(--space-5); }
 
 .social { display: flex; gap: 10px; }

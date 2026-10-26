@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useCart } from '@/lib/cart';
+import { imgSrc } from '@/lib/api';
 import { linkRed, linkWhatsApp, whatsappLegible } from '@/lib/format';
 import { direccionDe, direccionParaMapa, mapaLink } from '@/lib/locales';
 import { Locales } from './Locales';
@@ -37,7 +38,12 @@ export function Footer() {
       <div className={styles.main}>
         <div className={`container ${styles.grid}`}>
           <div className={styles.colAbout}>
-            <div className={styles.logo}>Sabor y Aroma</div>
+            {/* El logo de la casa, el mismo del encabezado (26/10/2026); sin logo cargado, el nombre. */}
+            <div className={styles.logo}>
+              {catalogo?.sitio?.logoUrl
+                ? <img src={imgSrc(catalogo.sitio.logoUrl)} alt="Sabor y Aroma" className={styles.logoImg} loading="lazy" />
+                : 'Sabor y Aroma'}
+            </div>
             {/* La descripción del sitio, la misma que ve Google (ERP › Tienda online › Configuración). */}
             <p className={styles.about}>
               {catalogo?.sitio?.seo?.descripcion

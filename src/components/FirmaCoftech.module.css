@@ -73,16 +73,19 @@
 /* Centrada y con el año en la misma línea (20/10/2026): a la derecha lo tapaba el botón flotante de WhatsApp. */
 .anio::before { content: '·'; margin-right: 12px; color: #5a6875; }
 
-/* En el teléfono la franja se aprieta: 40 px de costado se comen el ancho. */
+/*
+ * EN EL TELÉFONO, UNA SOLA LÍNEA Y CHICA (26/10/2026, pedido del dueño: en
+ * renglones se veía muy grande): «Desarrollado por Coftech | Soluciones
+ * digitales»; el año no entra y queda para la computadora.
+ */
 @media (max-width: 600px) {
   /* Abajo queda el lugar del botón flotante de WhatsApp (14 px del borde + 50 px): al final de la página no tapa la firma. */
-  .firma { padding: 8px 20px 72px; }
-  /* El enlace, de 40 px de alto para el dedo (el relleno de la franja baja lo mismo). */
-  .marca { padding-block: 8px; }
-  .inner { text-align: center; gap: 4px 12px; }
-  .izq { justify-content: center; }
-  /* En el teléfono va en renglones («Desarrollado por Coftech», «Soluciones digitales», el año): sin los separadores de la línea única. */
-  .sep, .anio::before { display: none; }
-  .lema { flex-basis: 100%; }
-  .sinBoton { padding-bottom: 12px; }
+  .firma { padding: 6px 12px 64px; }
+  .inner, .izq { flex-wrap: nowrap; gap: 6px; white-space: nowrap; }
+  .por, .lema { font-size: 11.5px; }
+  .sep { font-size: 11px; }
+  /* El enlace, de 40 px de alto para el dedo. */
+  .marca { font-size: 1rem; padding-block: 12px; }
+  .anio { display: none; }
+  .sinBoton { padding-bottom: 8px; }
 }
