@@ -34,6 +34,33 @@
 .entregaOpt input { accent-color: var(--color-primary); }
 .entregaOpt[data-deshabilitada='true'] { opacity: 0.55; cursor: not-allowed; }
 
+/* SUS DIRECCIONES GUARDADAS (0200): el nombre arriba, la dirección a medias abajo, «Borrar» a la derecha. */
+.direccionesAyuda { display: block; margin-top: 2px; font-size: 12px; font-weight: 500; color: var(--color-gray-600); }
+.direccionTexto { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+.direccionDetalle { font-size: 12px; color: var(--color-gray-600); }
+.direccionBorrar {
+  flex: none; border: none; background: none; padding: 6px 4px; cursor: pointer;
+  font: inherit; font-size: 12px; color: var(--color-gray-500); text-decoration: underline;
+}
+.direccionBorrar:hover { color: var(--color-error); }
+.guardarDireccion {
+  display: flex; flex-direction: column; gap: 6px; padding: 10px 12px;
+  border: 1px dashed var(--color-gray-250); border-radius: var(--radius-md); background: var(--color-gray-50);
+}
+.guardarCheck { display: flex; align-items: center; gap: 8px; font-size: var(--font-size-sm); font-weight: 600; cursor: pointer; }
+.guardarCheck input { accent-color: var(--color-primary); }
+.guardarNombres { display: flex; flex-wrap: wrap; gap: 6px; }
+.guardarNombre {
+  min-height: 36px; padding: 0 14px; border: 1px solid var(--color-gray-250); border-radius: var(--radius-full);
+  background: var(--color-white); font: inherit; font-size: 13px; font-weight: 600; cursor: pointer;
+}
+.guardarNombre[data-selected='true'] { border-color: var(--color-primary); background: #f0fdf4; color: var(--color-primary); }
+.guardarOtro {
+  flex: 1 1 140px; min-width: 0; min-height: 36px; padding: 6px 12px;
+  border: 1px solid var(--color-gray-250); border-radius: var(--radius-full); font: inherit; font-size: 13px; outline: none;
+}
+.guardarOtro:focus { border-color: var(--color-primary); }
+
 /*
  * LOS MEDIOS DE PAGO CON DESCUENTO (0199): el que tiene descuento se nota —el
  * % grande a la derecha y cuánto ahorra—, para animar a pagar así.

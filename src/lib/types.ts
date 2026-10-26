@@ -228,8 +228,8 @@ export interface ClienteSesion {
 
 /** El comprador minorista (0173): lo guardado en su último pedido, para no escribirlo de nuevo. */
 /**
- * El comprador minorista que ingresó con su WhatsApp (0178). La dirección viene
- * A MEDIAS (`Av. 25 de…`): con un WhatsApp ajeno no se ven los datos de nadie.
+ * El comprador minorista que ingresó con su WhatsApp (0178). Sus direcciones
+ * vienen A MEDIAS (`Av. 25 de…`): con un WhatsApp ajeno no se ven los datos de nadie.
  */
 export interface CompradorSesion {
   nombre: string;
@@ -237,7 +237,16 @@ export interface CompradorSesion {
   inicial: string;
   /** 10 dígitos (área + abonado). */
   telefono: string;
-  /** La guardada, a medias; '' si no tiene. */
+  /** Las que guardó en su perfil, con nombre (0200), en el orden en que las guardó. */
+  direcciones: DireccionGuardada[];
+  /** Cuántas puede guardar. */
+  maxDirecciones: number;
+}
+
+/** Una dirección guardada del comprador (0200): «Casa», «Trabajo»… La dirección, a medias. */
+export interface DireccionGuardada {
+  id: number;
+  nombre: string;
   direccion: string;
 }
 

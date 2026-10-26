@@ -1,4 +1,4 @@
-import type { AgendaEnvios, Catalogo, CotizacionEnvio, CuandoEnvio, Entrega, EntregaMinorista, Punto, SitioConfig, MedioPagoTienda } from './types';
+import type { AgendaEnvios, Catalogo, CotizacionEnvio, CuandoEnvio, DireccionGuardada, Entrega, EntregaMinorista, Punto, SitioConfig, MedioPagoTienda } from './types';
 import { leerCookie } from './cookies';
 import type { Modo } from './modo';
 
@@ -134,6 +134,8 @@ export interface DireccionEntrega {
   localidad: string;
   /** Entre calles, color de la puerta, "tocar timbre del fondo"… */
   referencia?: string;
+  /** Minorista (0200): guardarla en su perfil con este nombre (el mismo nombre reemplaza la que lo tenía). */
+  guardarComo?: string;
 }
 
 export interface PedidoDto {
@@ -195,7 +197,8 @@ export const registrarMinorista = (datos: RegistroMinorista) => postJson<EstadoM
 /** Quién compra sale de la sesión (0178): acá solo la entrega, a su dirección guardada o a otra. */
 export interface PedidoMinoristaDto {
   entrega: EntregaMinorista;
-  direccion?: DireccionEntrega | { guardada: true };
+  /** La que escribió o, por id, una de sus direcciones guardadas (0200). */
+  direccion?: DireccionEntrega | { guardada: number };
   /** Dónde recibe, marcado en el mapa (0185): de ahí sale el barrio. */
   ubicacion?: Punto;
   observaciones?: string;
@@ -217,6 +220,16 @@ export async function cotizarEnvio(dto: Omit<PedidoMinoristaDto, 'observaciones'
     { method: 'POST', headers: { 'Content-Type': 'application/json', ...conSesion(undefined, tokenMin) }, body: JSON.stringify(dto) },
     TIMEOUT_CATALOGO_MS,
     'No pudimos calcular el envío. Probá de nuevo en un momento.',
+  ));
+}
+
+/** Borrar una de sus direcciones guardadas (0200): devuelve las que le quedan. */
+export async function borrarDireccion(id: number, tokenMin: string): Promise<{ direcciones: DireccionGuardada[] }> {
+  return manejar<{ direcciones: DireccionGuardada[] }>(await pedir(
+    `${API}/tienda/minorista/direcciones/${id}`,
+    { method: 'DELETE', headers: conSesion(undefined, tokenMin) },
+    TIMEOUT_CATALOGO_MS,
+    'No pudimos borrar la dirección. Probá de nuevo en un momento.',
   ));
 }
 

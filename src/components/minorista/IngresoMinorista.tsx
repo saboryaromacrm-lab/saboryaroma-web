@@ -147,6 +147,8 @@ export function IngresoMinorista() {
               <label className={styles.campo}>
                 Dirección *
                 <input maxLength={120} autoComplete="street-address" placeholder="Calle, número y barrio" value={direccion} onChange={(e) => setDireccion(e.target.value)} />
+                {/* Las direcciones guardadas (0200): esta es la primera; en el checkout puede sumar otra. */}
+                <span className={styles.texto}>Queda guardada en tu perfil como «Casa». Al pedir podés sumar otra, como «Trabajo».</span>
               </label>
               {error && <p className={styles.error}>{error}</p>}
               <button type="submit" className={styles.boton}>Revisar mis datos</button>

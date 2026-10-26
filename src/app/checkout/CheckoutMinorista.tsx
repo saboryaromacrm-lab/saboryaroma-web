@@ -24,7 +24,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { totalLinea, useCart } from '@/lib/cart';
-import { agendaEnvios, cotizarEnvio, crearPedidoMinorista } from '@/lib/api';
+import { agendaEnvios, borrarDireccion, cotizarEnvio, crearPedidoMinorista } from '@/lib/api';
 import { textoCuando } from '@/lib/horarioEnvio';
 import { pedidoEnviado } from '@/lib/analytics';
 import { leerToken } from '@/lib/sesion';
@@ -34,7 +34,9 @@ import { NUTRIRESCATE } from '@/lib/nutrirescate';
 import { IngresarParaComprar, useSalirDeLaCuenta } from '@/components/Ingreso';
 import { TelefonoConfirmar } from './TelefonoConfirmar';
 import { UbicacionEnvio } from '@/components/minorista/UbicacionEnvio';
-import type { AgendaEnvios, CotizacionEnvio, CuandoEnvio as Cuando, DescuentoAutomatico, EntregaMinorista, ItemCarrito, MedioPagoTienda, Punto } from '@/lib/types';
+import type {
+  AgendaEnvios, CotizacionEnvio, CuandoEnvio as Cuando, DescuentoAutomatico, DireccionGuardada, EntregaMinorista, ItemCarrito, MedioPagoTienda, Punto,
+} from '@/lib/types';
 import { CuandoEnvio } from './CuandoEnvio';
 import styles from './page.module.css';
 
@@ -58,14 +60,26 @@ function noSeSuma(d: DescuentoAutomatico) {
 /** «−5 %» o, si no es de porcentaje, lo que da. */
 const etiquetaDescuento = (d: DescuentoAutomatico) => (d.porcentaje != null ? `−${d.porcentaje} %` : d.envioGratis ? 'envío gratis' : `−${money(d.descuento)}`);
 
+/** Los nombres que se le ofrecen para guardar una dirección (0200); puede escribir otro. */
+const NOMBRES_DIRECCION = ['Casa', 'Trabajo'];
+const mismoNombre = (a: string, b: string) => a.trim().toLocaleLowerCase('es') === b.trim().toLocaleLowerCase('es');
+const iconoDireccion = (nombre: string) => (/casa|hogar/i.test(nombre) ? '🏠' : /trabajo|oficina|negocio/i.test(nombre) ? '💼' : '📍');
+
 /** El envío en palabras: 0 = gratis; null = se coordina. */
 const textoCosto = (envio: number | null) => (envio === 0 ? 'gratis' : envio != null ? money(envio) : 'a coordinar por WhatsApp');
 
 export function CheckoutMinorista() {
   const { items, total, config, vaciar, conPrecios, comprador } = useCart();
   const [entrega, setEntrega] = useState<EntregaMinorista>('retiro');
-  /** A su dirección guardada o a otra (la otra pasa a ser la guardada). */
-  const [aGuardada, setAGuardada] = useState(true);
+  /*
+   * SUS DIRECCIONES GUARDADAS (0200): a cuál va (su id) u «otra», que puede
+   * guardar en su perfil con un nombre. Sin elegir, la primera. Al borrar una,
+   * la lista que devuelve el servidor reemplaza a la del ingreso.
+   */
+  const [destino, setDestino] = useState<number | 'otra' | null>(null);
+  const [propias, setPropias] = useState<DireccionGuardada[] | null>(null);
+  const [guardar, setGuardar] = useState<boolean | null>(null);
+  const [guardarComo, setGuardarComo] = useState('');
   const [calle, setCalle] = useState('');
   const [localidad, setLocalidad] = useState('');
   const [referencia, setReferencia] = useState('');
@@ -89,8 +103,16 @@ export function CheckoutMinorista() {
   const salirDeLaCuenta = useSalirDeLaCuenta();
 
   const conEnvio = entrega === 'envio';
-  /** Va a la guardada si tiene una y la eligió; si no, a la que escriba. */
-  const usaGuardada = conEnvio && aGuardada && !!comprador?.direccion;
+  const direcciones = propias ?? comprador?.direcciones ?? [];
+  const dest = destino === 'otra' || direcciones.some((d) => d.id === destino) ? destino! : direcciones[0]?.id ?? 'otra';
+  const elegida = direcciones.find((d) => d.id === dest) ?? null;
+  /** Va a una guardada si eligió una; si no, a la que escriba. */
+  const usaGuardada = conEnvio && !!elegida;
+  /* Guardar la que escribe: con lugar, se ofrece guardarla (Casa, Trabajo u otro nombre); con el tope lleno, reemplazar una. */
+  const lleno = direcciones.length >= (comprador?.maxDirecciones ?? 0);
+  const nombresParaGuardar = lleno ? direcciones.map((d) => d.nombre) : NOMBRES_DIRECCION.filter((n) => !direcciones.some((d) => mismoNombre(d.nombre, n)));
+  const guarda = guardar ?? !lleno;
+  const nombreGuardar = guardarComo.trim() || (lleno ? '' : nombresParaGuardar[0] ?? '');
   const conMapa = config.mapsKey !== '' && !sinMapa;
 
   /*
@@ -104,7 +126,7 @@ export function CheckoutMinorista() {
     const t = setTimeout(() => {
       cotizarEnvio({
         entrega,
-        direccion: conEnvio && usaGuardada ? { guardada: true } : undefined,
+        direccion: usaGuardada ? { guardada: elegida.id } : undefined,
         ubicacion: conEnvio ? punto ?? undefined : undefined,
         items: lineasDe(items),
         ...(cupon ? { cupon } : {}),
@@ -114,7 +136,7 @@ export function CheckoutMinorista() {
         .catch(() => { if (vigente) setCotizacion(null); });
     }, ESPERA_COTIZAR_MS);
     return () => { vigente = false; clearTimeout(t); };
-  }, [entrega, conEnvio, usaGuardada, punto, items, comprador, cupon, medioPago]);
+  }, [entrega, conEnvio, usaGuardada, elegida, punto, items, comprador, cupon, medioPago]);
 
   /* Las opciones de «para cuándo», al día: lo elegido que dejó de valer se vuelve a elegir. */
   const traerAgenda = useCallback(async () => {
@@ -200,6 +222,10 @@ export function CheckoutMinorista() {
       setError('Para el envío necesitamos la dirección: calle y número, y el barrio o localidad.');
       return;
     }
+    if (conEnvio && !usaGuardada && guarda && !nombreGuardar) {
+      setError(`Elegí qué dirección guardada reemplazar, o destildá «Guardarla en mi perfil».`);
+      return;
+    }
     if (muestraMapa && !punto) {
       setError('Marcá en el mapa dónde recibís: buscá tu dirección o mové el mapa hasta tu casa.');
       return;
@@ -229,8 +255,11 @@ export function CheckoutMinorista() {
       const r = await crearPedidoMinorista({
         entrega, observaciones,
         direccion: !conEnvio ? undefined
-          : usaGuardada ? { guardada: true }
-            : { calle: calle.trim(), localidad: localidad.trim(), referencia: referencia.trim() || undefined },
+          : usaGuardada ? { guardada: elegida.id }
+            : {
+              calle: calle.trim(), localidad: localidad.trim(), referencia: referencia.trim() || undefined,
+              ...(guarda && nombreGuardar ? { guardarComo: nombreGuardar } : {}),
+            },
         ubicacion: conEnvio ? punto ?? undefined : undefined,
         items: lineasDe(items),
         ...(cup?.vale ? { cupon: cup.codigo } : {}),
@@ -253,7 +282,17 @@ export function CheckoutMinorista() {
   };
 
   /** Cambiar de destino es otra casa: el punto marcado no vale. */
-  const elegirDestino = (guardada: boolean) => { setAGuardada(guardada); setPunto(null); };
+  const elegirDestino = (d: number | 'otra') => { setDestino(d); setPunto(null); };
+  /** Borrar una guardada (con confirmación): queda lo que devuelve el servidor. */
+  const borrar = async (d: DireccionGuardada) => {
+    if (!window.confirm(`¿Borrar «${d.nombre}» de tus direcciones guardadas?`)) return;
+    try {
+      setPropias((await borrarDireccion(d.id, leerToken('minorista'))).direcciones);
+      if (dest === d.id) { setDestino(null); setPunto(null); }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'No se pudo borrar la dirección.');
+    }
+  };
 
   return (
     <div className="container" style={{ paddingTop: '32px', paddingBottom: '60px' }}>
@@ -282,17 +321,31 @@ export function CheckoutMinorista() {
             </div>
           </div>
 
-          {conEnvio && comprador.direccion && (
+          {conEnvio && direcciones.length > 0 && (
             <div className={styles.field}>
-              <label>¿A dónde te lo llevamos? *</label>
+              <label>
+                ¿A dónde te lo llevamos? *
+                <span className={styles.direccionesAyuda}>Tus direcciones guardadas en tu perfil, para no escribirlas en cada pedido.</span>
+              </label>
               <div className={styles.entregas}>
-                <label className={styles.entregaOpt} data-selected={aGuardada}>
-                  <input type="radio" name="destino" checked={aGuardada} onChange={() => elegirDestino(true)} />
-                  <span>A mi dirección guardada<span className={styles.hint}>{comprador.direccion}</span></span>
-                </label>
-                <label className={styles.entregaOpt} data-selected={!aGuardada}>
-                  <input type="radio" name="destino" checked={!aGuardada} onChange={() => elegirDestino(false)} />
-                  <span>A otra dirección<span className={styles.hint}>Pasa a ser tu dirección guardada.</span></span>
+                {direcciones.map((d) => (
+                  <label key={d.id} className={styles.entregaOpt} data-selected={dest === d.id}>
+                    <input type="radio" name="destino" checked={dest === d.id} onChange={() => elegirDestino(d.id)} />
+                    <span className={styles.direccionTexto}>
+                      <strong>{iconoDireccion(d.nombre)} {d.nombre}</strong>
+                      <span className={styles.direccionDetalle}>{d.direccion}</span>
+                    </span>
+                    <button type="button" className={styles.direccionBorrar} onClick={(e) => { e.preventDefault(); borrar(d); }} aria-label={`Borrar ${d.nombre}`}>
+                      Borrar
+                    </button>
+                  </label>
+                ))}
+                <label className={styles.entregaOpt} data-selected={dest === 'otra'}>
+                  <input type="radio" name="destino" checked={dest === 'otra'} onChange={() => elegirDestino('otra')} />
+                  <span className={styles.direccionTexto}>
+                    <strong>➕ Otra dirección</strong>
+                    <span className={styles.direccionDetalle}>Escribila abajo; si querés, queda guardada para la próxima.</span>
+                  </span>
                 </label>
               </div>
             </div>
@@ -326,13 +379,40 @@ export function CheckoutMinorista() {
                   <input id="referencia" maxLength={200} value={referencia} onChange={(e) => setReferencia(e.target.value)} placeholder="Piso y depto, entre calles, portón verde…" />
                 </div>
               </div>
+              <div className={styles.guardarDireccion}>
+                <label className={styles.guardarCheck}>
+                  <input type="checkbox" checked={guarda} onChange={(e) => setGuardar(e.target.checked)} />
+                  Guardarla en mi perfil para los próximos pedidos
+                </label>
+                {guarda && (
+                  <>
+                    <span className={styles.direccionDetalle}>
+                      {lleno ? `Ya tenés ${direcciones.length} guardadas: elegí cuál reemplazar.` : 'Ponele un nombre para reconocerla:'}
+                    </span>
+                    <div className={styles.guardarNombres}>
+                      {nombresParaGuardar.map((n) => (
+                        <button key={n} type="button" className={styles.guardarNombre} data-selected={mismoNombre(nombreGuardar, n)} onClick={() => setGuardarComo(n)}>
+                          {lleno ? `Reemplazar ${n}` : `${iconoDireccion(n)} ${n}`}
+                        </button>
+                      ))}
+                      {!lleno && (
+                        <input
+                          className={styles.guardarOtro} maxLength={30} placeholder="Otro nombre"
+                          value={nombresParaGuardar.some((n) => mismoNombre(n, guardarComo)) ? '' : guardarComo}
+                          onChange={(e) => setGuardarComo(e.target.value)} aria-label="Otro nombre para la dirección"
+                        />
+                      )}
+                    </div>
+                  </>
+                )}
+              </div>
             </>
           )}
 
           {usaGuardada && muestraMapa && (
             <div className={styles.field}>
               <label>
-                Marcá tu casa en el mapa *
+                Marcá «{elegida?.nombre}» en el mapa *
                 <span className={styles.hint}>Una sola vez: así sabemos tu barrio y queda guardado con tu dirección.</span>
               </label>
               <UbicacionEnvio mapsKey={config.mapsKey} punto={punto} onPunto={setPunto} onSinMapa={() => setSinMapa(true)} direccion={null} />
@@ -456,7 +536,15 @@ export function CheckoutMinorista() {
                       : `Envío a domicilio${envioGratis ? ' (gratis)' : ''}`}
                 </dd>
                 {conEnvio && cuando && (<><dt>Cuándo</dt><dd>{textoCuando(cuando, agenda)}</dd></>)}
-                {conEnvio && (<><dt>Dirección</dt><dd>{usaGuardada ? `Tu dirección guardada (${comprador.direccion})` : [calle.trim(), localidad.trim(), referencia.trim()].filter(Boolean).join(' · ')}</dd></>)}
+                {conEnvio && (
+                  <>
+                    <dt>Dirección</dt>
+                    <dd>
+                      {elegida ? `${elegida.nombre} (${elegida.direccion})` : [calle.trim(), localidad.trim(), referencia.trim()].filter(Boolean).join(' · ')}
+                      {!elegida && guarda && nombreGuardar ? ` · se guarda como «${nombreGuardar}»` : ''}
+                    </dd>
+                  </>
+                )}
                 {observaciones.trim() && (<><dt>Notas</dt><dd>{observaciones.trim()}</dd></>)}
                 {cot && cot.descuento > 0 && (<><dt>Descuento</dt><dd>−{money(cot.descuento)} (barrio {cot.barrio})</dd></>)}
                 {cup?.vale && (<><dt>Cupón</dt><dd>{cup.codigo} · {cup.envioGratis ? 'envío gratis' : `−${money(cup.descuento)}`}</dd></>)}
