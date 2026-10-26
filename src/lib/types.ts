@@ -352,6 +352,10 @@ export interface CotizacionEnvio {
   proxima: { texto: string; faltan: number } | null;
   /** El cupón que se escribió (0190): si vale, cuánto descuenta y qué pide; si no, por qué. Sin cupón, null. */
   cupon?: CuponCotizado | null;
+  /** Sin cupón escrito, el descuento automático que corre con el medio elegido (0199). */
+  automatico?: DescuentoAutomatico | null;
+  /** Lo que daría cada medio de pago (0199): el checkout lo muestra para animar a pagar así. Sin automáticos, null. */
+  porMedio?: Partial<Record<MedioPagoTienda, DescuentoAutomatico | null>> | null;
   subtotal: number;
   /** Productos − descuento del barrio − cupón + envío. */
   total: number;
@@ -359,6 +363,17 @@ export interface CotizacionEnvio {
 
 /** Cómo se paga en la tienda (se coordina por WhatsApp). */
 export type MedioPagoTienda = 'efectivo' | 'transferencia';
+
+/** Un descuento automático de la tienda (0199): por ejemplo, 5 % pagando en efectivo. */
+export interface DescuentoAutomatico {
+  codigo: string;
+  descripcion: string;
+  /** El % si es de porcentaje (null si es un monto o envío gratis). */
+  porcentaje: number | null;
+  /** Lo que descuenta en este pedido, final con IVA. */
+  descuento: number;
+  envioGratis: boolean;
+}
 
 export type CuponCotizado =
   | { codigo: string; vale: true; descuento: number; envioGratis: boolean; medios: MedioPagoTienda[]; descripcion: string }

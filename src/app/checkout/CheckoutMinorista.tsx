@@ -32,7 +32,7 @@ import { money, telLegible } from '@/lib/format';
 import { IngresarParaComprar, useSalirDeLaCuenta } from '@/components/Ingreso';
 import { TelefonoConfirmar } from './TelefonoConfirmar';
 import { UbicacionEnvio } from '@/components/minorista/UbicacionEnvio';
-import type { AgendaEnvios, CotizacionEnvio, CuandoEnvio as Cuando, EntregaMinorista, ItemCarrito, MedioPagoTienda, Punto } from '@/lib/types';
+import type { AgendaEnvios, CotizacionEnvio, CuandoEnvio as Cuando, DescuentoAutomatico, EntregaMinorista, ItemCarrito, MedioPagoTienda, Punto } from '@/lib/types';
 import { CuandoEnvio } from './CuandoEnvio';
 import styles from './page.module.css';
 
@@ -46,6 +46,9 @@ const SIN_AGENDA: AgendaEnvios = { conHorario: false, pronto: null, dias: [] };
 const lineasDe = (items: ItemCarrito[]) => items.map((it) => ({ productoId: it.productoId, cantidad: it.cantidad, ...(it.variante ? { variante: it.variante } : {}) }));
 
 const MEDIOS: Record<MedioPagoTienda, string> = { efectivo: 'Efectivo', transferencia: 'Transferencia' };
+
+/** «−5 %» o, si no es de porcentaje, lo que da. */
+const etiquetaDescuento = (d: DescuentoAutomatico) => (d.porcentaje != null ? `−${d.porcentaje} %` : d.envioGratis ? 'envío gratis' : `−${money(d.descuento)}`);
 
 /** El envío en palabras: 0 = gratis; null = se coordina. */
 const textoCosto = (envio: number | null) => (envio === 0 ? 'gratis' : envio != null ? money(envio) : 'a coordinar por WhatsApp');
@@ -83,12 +86,12 @@ export function CheckoutMinorista() {
   const conMapa = config.mapsKey !== '' && !sinMapa;
 
   /*
-   * Cuánto sale: con envío, con el punto marcado o a la dirección guardada (el
-   * servidor sabe su punto); con un cupón, siempre (también retirando).
+   * Cuánto sale, siempre (también retirando): el envío (con el punto marcado o
+   * a la dirección guardada, que el servidor ya conoce), el cupón y los
+   * descuentos por medio de pago (0199).
    */
-  const cotizaEnvio = conEnvio && (usaGuardada || !!punto);
   useEffect(() => {
-    if (!comprador || !items.length || (!cotizaEnvio && !cupon)) { setCotizacion(null); return undefined; }
+    if (!comprador || !items.length) { setCotizacion(null); return undefined; }
     let vigente = true;
     const t = setTimeout(() => {
       cotizarEnvio({
@@ -96,13 +99,14 @@ export function CheckoutMinorista() {
         direccion: conEnvio && usaGuardada ? { guardada: true } : undefined,
         ubicacion: conEnvio ? punto ?? undefined : undefined,
         items: lineasDe(items),
-        ...(cupon ? { cupon, ...(medioPago ? { medioPago } : {}) } : {}),
+        ...(cupon ? { cupon } : {}),
+        ...(medioPago ? { medioPago } : {}),
       }, leerToken('minorista'))
         .then((c) => { if (vigente) setCotizacion(c); })
         .catch(() => { if (vigente) setCotizacion(null); });
     }, ESPERA_COTIZAR_MS);
     return () => { vigente = false; clearTimeout(t); };
-  }, [entrega, conEnvio, cotizaEnvio, usaGuardada, punto, items, comprador, cupon, medioPago]);
+  }, [entrega, conEnvio, usaGuardada, punto, items, comprador, cupon, medioPago]);
 
   /* Las opciones de «para cuándo», al día: lo elegido que dejó de valer se vuelve a elegir. */
   const traerAgenda = useCallback(async () => {
@@ -165,6 +169,18 @@ export function CheckoutMinorista() {
   const cot = cotizacion;
   const aPagar = cot ? cot.total : total;
   const cup = cot?.cupon ?? null;
+  /*
+   * LOS DESCUENTOS POR MEDIO DE PAGO (0199): lo que daría cada medio, para
+   * mostrarlo en la opción y animar a pagar así; el que corre ya está en el total.
+   * Con un cupón escrito no hay (no se suman); el cupón puede pedir sus medios.
+   */
+  const porMedio = cot?.porMedio ?? null;
+  const auto = cot?.automatico ?? null;
+  const mediosAElegir: MedioPagoTienda[] = cup?.vale && cup.medios.length ? cup.medios : porMedio ? ['efectivo', 'transferencia'] : [];
+  const mejorMedio = porMedio
+    ? (Object.entries(porMedio) as [MedioPagoTienda, DescuentoAutomatico | null][]).reduce<[MedioPagoTienda, DescuentoAutomatico] | null>(
+      (a, [m, d]) => (d && (!a || d.descuento > a[1].descuento) ? [m, d] : a), null)
+    : null;
   const aplicarCupon = () => { setCupon(cuponTexto.trim().toUpperCase()); setError(''); };
   const quitarCupon = () => { setCupon(''); setCuponTexto(''); setMedioPago(''); };
 
@@ -188,8 +204,8 @@ export function CheckoutMinorista() {
       setError(`El cupón ${cup.codigo} no vale: ${cup.motivo} Quitalo para seguir sin él.`);
       return;
     }
-    if (cup?.vale && cup.medios.length && !medioPago) {
-      setError('Elegí cómo vas a pagar: el cupón vale con ese medio.');
+    if (mediosAElegir.length && !medioPago) {
+      setError(cup?.vale ? 'Elegí cómo vas a pagar: el cupón vale con ese medio.' : 'Elegí cómo vas a pagar.');
       return;
     }
     setConfirmar(true);
@@ -352,17 +368,38 @@ export function CheckoutMinorista() {
             )}
           </div>
 
-          {cup?.vale && cup.medios.length > 0 && (
+          {mediosAElegir.length > 0 && (
             <div className={styles.field}>
-              <label>¿Cómo vas a pagar? *<span className={styles.hint}>El cupón vale pagando con {cup.medios.map((m) => MEDIOS[m].toLowerCase()).join(' o ')}.</span></label>
+              <label>
+                ¿Cómo vas a pagar? *
+                {cup?.vale
+                  ? <span className={styles.hint}>El cupón vale pagando con {cup.medios.map((m) => MEDIOS[m].toLowerCase()).join(' o ')}.</span>
+                  : mejorMedio && <span className={styles.medioIncentivo}>💸 Pagando en {MEDIOS[mejorMedio[0]].toLowerCase()} ahorrás {money(mejorMedio[1].descuento)}</span>}
+              </label>
               <div className={styles.entregas}>
-                {cup.medios.map((m) => (
-                  <label key={m} className={styles.entregaOpt} data-selected={medioPago === m}>
-                    <input type="radio" name="medio" checked={medioPago === m} onChange={() => setMedioPago(m)} />
-                    <span>{MEDIOS[m]}</span>
-                  </label>
-                ))}
+                {mediosAElegir.map((m) => {
+                  const d = porMedio?.[m] ?? null;
+                  return (
+                    <label key={m} className={styles.entregaOpt} data-selected={medioPago === m} data-descuento={!!d}>
+                      <input type="radio" name="medio" checked={medioPago === m} onChange={() => setMedioPago(m)} />
+                      <span className={styles.medioTexto}>
+                        <strong>{MEDIOS[m]}</strong>
+                        {d && <span className={styles.medioDetalle}>{d.descripcion || 'Descuento en los productos que no están en oferta'}</span>}
+                      </span>
+                      {d && (
+                        <span className={styles.medioAhorro}>
+                          <strong>{etiquetaDescuento(d)}</strong>
+                          {d.descuento > 0 && <small>ahorrás {money(d.descuento)}</small>}
+                        </span>
+                      )}
+                    </label>
+                  );
+                })}
               </div>
+              {porMedio && <span className={styles.medioNota}>No se suma a los productos en oferta ni a un cupón.</span>}
+              {conEnvio && medioPago === 'efectivo' && (
+                <p className={styles.medioCadete}>🛵 Con envío a domicilio, le abonás en efectivo al cadete cuando te entrega el pedido.</p>
+              )}
             </div>
           )}
 
@@ -415,7 +452,8 @@ export function CheckoutMinorista() {
                 {observaciones.trim() && (<><dt>Notas</dt><dd>{observaciones.trim()}</dd></>)}
                 {cot && cot.descuento > 0 && (<><dt>Descuento</dt><dd>−{money(cot.descuento)} (barrio {cot.barrio})</dd></>)}
                 {cup?.vale && (<><dt>Cupón</dt><dd>{cup.codigo} · {cup.envioGratis ? 'envío gratis' : `−${money(cup.descuento)}`}</dd></>)}
-                {medioPago && (<><dt>Pago</dt><dd>{MEDIOS[medioPago]}</dd></>)}
+                {auto && (<><dt>Descuento</dt><dd>{auto.descripcion || auto.codigo} · {auto.envioGratis ? 'envío gratis' : `−${money(auto.descuento)}`}</dd></>)}
+                {medioPago && (<><dt>Pago</dt><dd>{MEDIOS[medioPago]}{conEnvio && medioPago === 'efectivo' ? ' · se lo abonás al cadete' : ''}</dd></>)}
                 <dt>Total</dt><dd><strong>{money(aPagar)}</strong>{cot?.envio ? ' con envío' : ''}</dd>
               </dl>
               {error && <div className={styles.error}>{error}</div>}
@@ -442,6 +480,12 @@ export function CheckoutMinorista() {
           )}
           {cup?.vale && cup.descuento > 0 && (
             <div className={styles.summaryItem}><span>Cupón {cup.codigo}</span><span>−{money(cup.descuento)}</span></div>
+          )}
+          {auto && auto.descuento > 0 && (
+            <div className={`${styles.summaryItem} ${styles.summaryAhorro}`}>
+              <span>{medioPago ? `Pagando en ${MEDIOS[medioPago].toLowerCase()}` : auto.descripcion || 'Descuento'}{auto.porcentaje != null ? ` (${auto.porcentaje} %)` : ''}</span>
+              <span>−{money(auto.descuento)}</span>
+            </div>
           )}
           {cot && conEnvio && (
             <div className={styles.summaryItem}><span>Envío</span><span>{cot.envio === 0 ? 'Gratis' : cot.envio != null ? money(cot.envio) : 'A coordinar'}</span></div>
