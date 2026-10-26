@@ -30,8 +30,8 @@
   display: grid;
   grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
   align-items: center;
-  gap: clamp(28px, 5vw, 72px);
-  padding-block: clamp(40px, 5.5vw, 68px);
+  gap: clamp(24px, 4vw, 56px);
+  padding-block: clamp(28px, 4vw, 52px);
 }
 .enPortada .inner { padding-inline: clamp(20px, 4vw, 44px); }
 
@@ -39,7 +39,7 @@
 
 .sello {
   flex-shrink: 0;
-  width: clamp(140px, 15vw, 196px);
+  width: clamp(120px, 12vw, 170px);
   height: auto;
   color: #fff;
   overflow: visible;
@@ -56,7 +56,7 @@
   display: flex;
   flex-direction: column;
   gap: 4px;
-  font-size: clamp(32px, 4.4vw, 56px);
+  font-size: clamp(28px, 3.6vw, 48px);
   font-weight: 900;
   line-height: 1;
   letter-spacing: 0.02em;
@@ -109,6 +109,27 @@
   .titulo { align-items: center; }
   .texto { align-items: center; }
   .datos { justify-content: center; }
+}
+
+/*
+ * EN EL CELULAR, COMPACTO (26/10/2026, pedido del dueño: «más delicado, no tan
+ * grande»): el sello chico al lado del nombre en un renglón, el lema y los
+ * datos debajo, todo a la izquierda. El compromiso queda para la computadora.
+ */
+@media (max-width: 640px) {
+  .inner { justify-items: stretch; text-align: left; gap: 12px; padding-block: 18px 16px; }
+  .marca { flex-direction: row; gap: 12px; }
+  .sello { width: 64px; filter: none; }
+  .titulo { flex-direction: row; align-items: baseline; gap: 6px; font-size: 26px; letter-spacing: 0.01em; }
+  .rescate { -webkit-text-stroke-width: 1.2px; }
+  .texto { align-items: flex-start; gap: 10px; }
+  .lema { font-size: 14.5px; line-height: 1.35; text-wrap: pretty; }
+  .compromiso { display: none; }
+  .datos { justify-content: flex-start; gap: 6px; margin: 0; }
+  .datos li { padding: 4px 9px; font-size: 12px; }
+  .cta { min-height: 40px; padding: 8px 18px; font-size: 14px; }
+  .condiciones { font-size: 12px; }
+  .enPortada .inner { padding-inline: 16px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
