@@ -555,13 +555,15 @@ export function Header() {
                 </div>
               )}
             </div>
+            {/* Abierto, el mismo botón es la ✕ que lo cierra (26/10/2026, pedido del dueño). */}
             <button
               type="button"
               className={styles.mobileToggle}
-              aria-label="Abrir menú"
+              aria-label={menuAbierto ? 'Cerrar menú' : 'Abrir menú'}
+              aria-expanded={menuAbierto}
               onClick={() => setMenuAbierto((v) => !v)}
             >
-              ☰
+              {menuAbierto ? '✕' : '☰'}
             </button>
           </div>
         </div>
@@ -572,6 +574,11 @@ export function Header() {
         <>
           <div className={styles.mobileMenuFondo} onClick={() => setMenuAbierto(false)} aria-hidden />
           <div className={styles.mobileMenu}>
+            {/* Arriba, en una línea: quién es (o «Ingresar») y, chico, el cambio de tienda (26/10/2026). */}
+            <div className={styles.mCuenta}>
+              <BotonCuenta className={styles.cuentaMovil} />
+              {minorista && <ModoSwitch className={styles.modoMenu} alCambiar={() => setMenuAbierto(false)} />}
+            </div>
             <form onSubmit={buscar} className={styles.mobileSearch}>
               <svg className={styles.mobileSearchIcono} width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden>
                 <circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" />
@@ -737,11 +744,6 @@ export function Header() {
                   <span aria-hidden>ⓘ</span> Info de compra
                 </button>
               )}
-              {/* Al pie, en una línea: la cuenta y, chico, el cambio de tienda. */}
-              <div className={styles.mPie}>
-                <BotonCuenta className={styles.cuentaMovil} />
-                {minorista && <ModoSwitch className={styles.modoMenu} alCambiar={() => setMenuAbierto(false)} />}
-              </div>
             </nav>
           </div>
         </>
