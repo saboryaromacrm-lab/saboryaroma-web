@@ -31,7 +31,12 @@ export function CuandoEnvio({ agenda, valor, onCambio }: { agenda: AgendaEnvios 
     <div className={styles.entregas}>
       {opcion(
         'pronto', 'Lo antes posible',
-        agenda.pronto ? `Llega en 20 a 40 minutos: entre las ${horaAr(agenda.pronto.desde)} y las ${horaAr(agenda.pronto.hasta)}.` : 'Ahora el local está cerrado: elegí un horario o coordinalo por WhatsApp.',
+        agenda.pronto
+          ? `Llega en 20 a 40 minutos: entre las ${horaAr(agenda.pronto.desde)} y las ${horaAr(agenda.pronto.hasta)}.`
+          /* Por cerrar (28/10/2026): no llega antes del cierre, y se dice a qué hora cerramos. */
+          : agenda.abierto && agenda.cierra
+            ? `Cerramos a las ${horaAr(agenda.cierra)}: ya no llegamos a enviarlo antes. Elegí un horario o coordinalo por WhatsApp.`
+            : 'Ahora el local está cerrado: elegí un horario o coordinalo por WhatsApp.',
         !agenda.pronto,
       )}
       {agenda.dias.length > 0 && opcion('horario', 'Elijo el horario', 'De a 20 minutos, cuando el local está abierto.')}

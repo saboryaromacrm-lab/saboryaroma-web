@@ -25,7 +25,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { totalLinea, useCart } from '@/lib/cart';
 import { agendaEnvios, borrarDireccion, cotizarEnvio, crearPedidoMinorista } from '@/lib/api';
-import { textoCuando } from '@/lib/horarioEnvio';
+import { cuandoAbre, textoCuando } from '@/lib/horarioEnvio';
 import { pedidoEnviado } from '@/lib/analytics';
 import { leerToken } from '@/lib/sesion';
 import { money, telLegible } from '@/lib/format';
@@ -45,7 +45,7 @@ const ESPERA_COTIZAR_MS = 400;
 /** Cada cuánto se renuevan las opciones de «para cuándo». */
 const RENOVAR_AGENDA_MS = 60_000;
 /** Si no se pudieron traer los horarios: queda coordinarlo por WhatsApp. */
-const SIN_AGENDA: AgendaEnvios = { conHorario: false, pronto: null, dias: [] };
+const SIN_AGENDA: AgendaEnvios = { conHorario: false, abierto: null, cierra: null, abre: null, pronto: null, dias: [] };
 
 const lineasDe = (items: ItemCarrito[]) => items.map((it) => ({ productoId: it.productoId, cantidad: it.cantidad, ...(it.variante ? { variante: it.variante } : {}) }));
 
@@ -145,12 +145,12 @@ export function CheckoutMinorista() {
     setCuando((c) => ((c?.tipo === 'pronto' && !a.pronto)
       || (c?.tipo === 'horario' && !a.dias.some((d) => d.franjas.some((f) => f.desde === c.desde))) ? null : c));
   }, []);
+  /* Siempre, no solo con envío: con el local cerrado se avisa también al que retira (28/10/2026). */
   useEffect(() => {
-    if (!conEnvio) return undefined;
     traerAgenda();
     const t = setInterval(traerAgenda, RENOVAR_AGENDA_MS);
     return () => clearInterval(t);
-  }, [conEnvio, traerAgenda]);
+  }, [traerAgenda]);
 
   /* El cupón pide un solo medio: queda elegido solo. */
   const unicoMedio = cotizacion?.cupon?.vale && cotizacion.cupon.medios.length === 1 ? cotizacion.cupon.medios[0] : null;
@@ -501,6 +501,14 @@ export function CheckoutMinorista() {
               <label>¿En cuánto querés tu envío? *</label>
               <CuandoEnvio agenda={agenda} valor={cuando} onCambio={setCuando} />
             </div>
+          )}
+
+          {/* CERRADO (28/10/2026, pedido del dueño): se puede pedir igual, y se dice cuándo se contesta. */}
+          {agenda?.abierto === false && (
+            <p className={styles.avisoCerrado} role="status">
+              🌙 <strong>Ahora estamos cerrados.</strong> Podés hacer tu pedido igual: lo recibimos y te respondemos
+              {agenda.abre ? ` cuando volvamos a abrir, ${cuandoAbre(agenda.abre)}.` : ' apenas volvamos a abrir.'}
+            </p>
           )}
 
           {error && <div className={styles.error}>{error}</div>}

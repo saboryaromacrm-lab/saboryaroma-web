@@ -20,6 +20,12 @@ export function nombreDia(fecha: string) {
   return `${DIAS[new Date(`${fecha}T12:00:00Z`).getUTCDay()]} ${fecha.slice(8, 10)}/${fecha.slice(5, 7)}`;
 }
 
+/** «hoy a las 17:00», «mañana a las 08:00» o «el Lun 27/10 a las 08:00». */
+export function cuandoAbre(iso: string) {
+  const dia = nombreDia(fechaAr(new Date(iso)));
+  return `${dia === 'Hoy' ? 'hoy' : dia === 'Mañana' ? 'mañana' : `el ${dia}`} a las ${horaAr(iso)}`;
+}
+
 /** Lo elegido en una línea, para la confirmación. */
 export function textoCuando(c: CuandoEnvio, agenda: AgendaEnvios | null) {
   if (c.tipo === 'whatsapp') return 'Lo coordino por WhatsApp';

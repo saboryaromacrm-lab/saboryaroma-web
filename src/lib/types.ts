@@ -332,6 +332,12 @@ export interface Franja { desde: string; hasta: string }
 export interface AgendaEnvios {
   /** Hay horario cargado: sin él no hay franjas para elegir. */
   conHorario: boolean;
+  /** Abierto ahora (null = sin horario cargado, no se sabe). */
+  abierto: boolean | null;
+  /** Abierto: a qué hora cierra. */
+  cierra: string | null;
+  /** Cerrado: cuándo vuelve a abrir (null si no abre en los próximos días). */
+  abre: string | null;
   /** «Lo antes posible» (20 a 40 min), o null si el local está cerrado o por cerrar. */
   pronto: Franja | null;
   /** Los próximos días con franjas de 20 minutos (`fecha` = AAAA-MM-DD). */

@@ -153,6 +153,11 @@
 .dniEstado[data-tipo='ok'] { color: var(--color-success-dark); font-weight: 600; }
 .dniEstado[data-tipo='nuevo'] { color: var(--color-primary); font-weight: 600; }
 
+.avisoCerrado {
+  margin: 0; padding: 12px 14px; border-radius: 12px; font-size: 14px; line-height: 1.45;
+  background: #fff7ed; border: 1px solid #fdba74; color: #7c2d12;
+}
+
 .okDestacado { font-size: 17px; font-weight: 700; color: var(--color-primary); margin: 0 auto 10px; max-width: 520px; line-height: 1.45; }
 
 /* ---- Segunda confirmación ---- */
