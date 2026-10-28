@@ -10,6 +10,8 @@ import { IngresarParaComprar } from '@/components/Ingreso';
 import { LEMA_NUTRIOFERTAS, NUTRIOFERTAS, URL_NUTRIOFERTAS } from '@/lib/nutriofertas';
 import { enRescate } from '@/lib/nutrirescate';
 import { NutriRescateBanner } from '@/components/NutriRescate';
+import { SinTaccBanner } from '@/components/SinTaccBanner';
+import { WpnBanner } from '@/components/WpnBanner';
 import { CarruselBanners } from '@/components/CarruselBanners';
 import { bannersTienda } from '@/lib/bannersTienda';
 import type { Catalogo, ItemCatalogo, PortadaMinorista } from '@/lib/types';
@@ -155,6 +157,11 @@ export function HomeMinorista({ cat }: { cat: Catalogo }) {
           )}
         </section>
       )}
+
+      {/* SIN TACC (28/10/2026): la etiqueta con sus productos; sin productos con ella, no aparece. */}
+      <SinTaccBanner cat={cat} className={`container ${styles.seccion}`} />
+      {/* WPN (28/10/2026): proteínas, creatinas y demás de la marca; sin productos, no aparece. */}
+      <WpnBanner cat={cat} className={`container ${styles.seccion}`} />
 
       {/* NutriRescate (20/10/2026): lo próximo a vencer, si hay, como tarjeta que lleva a su sección. */}
       {rescate.length > 0 && (

@@ -1,0 +1,217 @@
+/*
+ * EL BANNER DE WPN (28/10/2026): negro y lima neón como los potes de la marca,
+ * rayas de velocidad, «FUERZA» gigante de fondo y la letra alta e inclinada.
+ * Los colores son los de WPN, no los de la tienda.
+ *
+ * LA FUENTE VIAJA CON EL SITIO (como la de la firma): Anton, subconjunto
+ * latino, 18 KB. `font-display: swap`: el texto se pinta al instante con
+ * Impact o la del sistema y cambia solo.
+ */
+@font-face {
+  font-family: 'Anton WPN';
+  src: url('../assets/fonts/anton-latin.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+.banner {
+  --lima: #d7f36b;
+  --negro: #0c0e0b;
+  --alta: 'Anton WPN', Impact, 'Arial Narrow', sans-serif;
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius-xl);
+  background:
+    radial-gradient(60% 90% at 78% 50%, rgba(215, 243, 107, 0.16) 0%, rgba(215, 243, 107, 0) 70%),
+    linear-gradient(160deg, #1a1d18 0%, var(--negro) 60%);
+  color: #fff;
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+  align-items: center;
+  gap: 16px;
+  padding: 46px 48px;
+  min-height: 400px;
+  box-shadow: 0 18px 40px -22px rgba(0, 0, 0, 0.7);
+}
+/* Rayas diagonales de velocidad */
+.banner::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(115deg, rgba(255, 255, 255, 0.035) 0 2px, transparent 2px 26px);
+}
+/* «FUERZA» gigante de fondo, solo el contorno */
+.fondo {
+  position: absolute;
+  left: -10px;
+  bottom: -48px;
+  font-family: var(--alta);
+  font-size: 210px;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  color: transparent;
+  -webkit-text-stroke: 1.5px rgba(215, 243, 107, 0.12);
+  transform: skewX(-8deg);
+  pointer-events: none;
+  user-select: none;
+  white-space: nowrap;
+}
+
+.texto { position: relative; z-index: 1; }
+.marca { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
+.logo {
+  display: inline-flex;
+  align-items: center;
+  height: 50px;
+  padding: 8px 14px 6px;
+  background: #fff;
+  color: var(--negro);
+  border-radius: 8px;
+  transform: skewX(-8deg);
+  text-decoration: none;
+  font-family: var(--alta);
+  font-size: 34px;
+  letter-spacing: 0.06em;
+  line-height: 1;
+}
+.logo img { height: 100%; width: auto; display: block; transform: skewX(8deg); }
+.eyebrow { font-size: 12.5px; font-weight: 800; letter-spacing: 0.18em; text-transform: uppercase; color: var(--lima); }
+.titulo {
+  margin: 0 0 14px;
+  font-family: var(--alta);
+  font-weight: 400;
+  text-transform: uppercase;
+  font-size: 64px;
+  line-height: 1.12;
+  letter-spacing: 0.01em;
+  transform: skewX(-6deg);
+  transform-origin: left;
+}
+.linea2 { display: block; margin-top: 0.1em; color: var(--lima); white-space: nowrap; }
+.bajada { margin: 0 0 22px; max-width: 31em; font-size: 17px; line-height: 1.5; color: rgba(255, 255, 255, 0.82); }
+
+.tipos { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 26px; }
+.tipo {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  color: #fff;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 14px;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 10px;
+  transform: skewX(-6deg);
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+.tipo > * { transform: skewX(6deg); }
+.tipo:hover { background: rgba(215, 243, 107, 0.14); border-color: rgba(215, 243, 107, 0.5); }
+.tipo small { color: rgba(255, 255, 255, 0.55); font-weight: 600; font-size: inherit; }
+.icono { display: inline-flex; color: var(--lima); }
+.icono svg { width: 18px; height: 18px; }
+
+.cta {
+  display: inline-flex;
+  align-items: center;
+  padding: 14px 30px 12px;
+  background: var(--lima);
+  color: var(--negro);
+  text-decoration: none;
+  font-family: var(--alta);
+  font-size: 22px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  border-radius: 10px;
+  transform: skewX(-8deg);
+  box-shadow: 0 12px 30px rgba(215, 243, 107, 0.25);
+  transition: box-shadow 0.15s ease, transform 0.15s ease;
+}
+.cta > span { display: inline-block; transform: skewX(8deg); }
+.cta:hover { transform: skewX(-8deg) translateY(-2px); box-shadow: 0 16px 36px rgba(215, 243, 107, 0.4); }
+.cta:focus-visible, .logo:focus-visible, .tipo:focus-visible { outline: 3px solid #fff; outline-offset: 3px; }
+
+/*
+ * EL ESCENARIO: un foco de luz y los potes encima con `multiply`, así el fondo
+ * blanco de las fotos desaparece. Por eso `.escena` NO lleva z-index ni
+ * transform: el multiply tiene que mezclarse con el fondo del banner.
+ */
+.escena { position: relative; display: block; height: 360px; }
+.foco {
+  position: absolute;
+  width: 360px;
+  height: 360px;
+  left: 50%;
+  top: 50%;
+  translate: -50% -50%;
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 42%, #fff 0%, #f4fbd9 45%, var(--lima) 100%);
+  box-shadow: 0 0 80px 10px rgba(215, 243, 107, 0.35);
+}
+.barra {
+  position: absolute;
+  width: 130%;
+  height: 64px;
+  left: 0;
+  top: 58%;
+  background: var(--lima);
+  rotate: -14deg;
+  opacity: 0.9;
+}
+.pote { position: absolute; mix-blend-mode: multiply; transition: scale 0.25s ease; }
+.pote img { width: 100%; height: 100%; object-fit: contain; display: block; }
+.centro { width: 230px; height: 230px; left: calc(50% - 115px); top: calc(50% - 128px); z-index: 3; }
+.izquierda { width: 165px; height: 165px; left: calc(50% - 178px); top: calc(50% - 42px); z-index: 2; }
+.derecha { width: 165px; height: 165px; left: calc(50% + 14px); top: calc(50% - 42px); z-index: 2; }
+.escena:hover .centro { scale: 1.05; }
+.sello {
+  position: absolute;
+  right: 4%;
+  top: 4%;
+  z-index: 4;
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  background: var(--negro);
+  border: 2px solid var(--lima);
+  color: var(--lima);
+  display: grid;
+  place-content: center;
+  text-align: center;
+  font-family: var(--alta);
+  line-height: 1;
+  rotate: 10deg;
+}
+.sello b { font-size: 34px; font-weight: 400; }
+.sello span { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; }
+
+/* Celular: una columna; título, escenario, atajos que se deslizan y el botón a lo ancho */
+@media (max-width: 760px) {
+  .banner { grid-template-columns: minmax(0, 1fr); gap: 4px; padding: 28px 22px 26px; }
+  .fondo { font-size: 120px; bottom: auto; top: 190px; }
+  .texto { display: contents; }
+  .marca, .titulos { order: 1; }
+  .logo { height: 40px; font-size: 26px; }
+  .eyebrow { font-size: 11px; letter-spacing: 0.14em; }
+  .titulo { font-size: 40px; }
+  .bajada { font-size: 15px; margin-bottom: 10px; }
+  .escena { order: 2; height: 270px; }
+  .foco { width: 250px; height: 250px; }
+  .centro { width: 160px; height: 160px; left: calc(50% - 80px); top: calc(50% - 92px); }
+  .izquierda { width: 116px; height: 116px; left: calc(50% - 124px); top: calc(50% - 30px); }
+  .derecha { width: 116px; height: 116px; left: calc(50% + 8px); top: calc(50% - 30px); }
+  .sello { width: 74px; height: 74px; right: 2%; top: 0; }
+  .sello b { font-size: 26px; }
+  .tipos { order: 3; flex-wrap: nowrap; overflow-x: auto; margin: 6px -22px 18px; padding: 4px 22px; scrollbar-width: none; }
+  .tipos::-webkit-scrollbar { display: none; }
+  .tipo { flex: none; }
+  .acciones { order: 4; }
+  .cta { width: 100%; justify-content: center; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tipo, .cta, .pote { transition: none; }
+}
